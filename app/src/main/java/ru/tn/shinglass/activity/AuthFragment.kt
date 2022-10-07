@@ -52,7 +52,7 @@ class AuthFragment : Fragment() {
 
         clearForm()
         with(binding.deviceInfoTextView) {
-            setTextColor(Color.BLUE)
+            setTextColor(resources.getColor(R.color.light_blue_900, requireContext().theme))
             text = "${Build.MANUFACTURER} ${Build.MODEL}"
             setOnClickListener {
                 val intent = Intent(requireContext(), SettingsActivity::class.java)
@@ -82,17 +82,17 @@ class AuthFragment : Fragment() {
                 return@observe
             }
 
-            binding.editTextLogin.setText(authStruct[0])
-            binding.editTextPassword.setText(authStruct[1])
+            binding.editTextLogin.editText?.setText(authStruct[0])
+            binding.editTextPassword.editText?.setText(authStruct[1])
         }
 
         binding.btnEnter.isEnabled = (apiService != null)
 
         binding.btnEnter.setOnClickListener {
 
-            val login = completeLogin(binding.editTextLogin.text.toString())
+            val login = completeLogin(binding.editTextLogin.editText?.text.toString())
             //if (login != DOMAIN_NAME) binding.editTextLogin.setText(login)
-            val pswdTxt = binding.editTextPassword.text.toString()
+            val pswdTxt = binding.editTextPassword.editText?.text.toString()
             val password = if (isBase64(pswdTxt)) pswdTxt else Base64.getEncoder()
                 .encodeToString(pswdTxt.toByteArray())
 
@@ -194,8 +194,8 @@ class AuthFragment : Fragment() {
     }
 
     private fun clearForm() {
-        binding.editTextLogin.setText("")
-        binding.editTextPassword.setText("")
+        binding.editTextLogin.editText?.setText("")
+        binding.editTextPassword.editText?.setText("")
     }
 
     override fun onResume() {

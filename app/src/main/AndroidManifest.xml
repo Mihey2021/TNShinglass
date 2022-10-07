@@ -29,10 +29,10 @@ package="ru.tn.shinglass">
         android:exported="false">
 
     </activity>
-    <service android:name="ru.tn.shinglass.api.Service1C">
-        <!--            android:enabled="true"-->
-        <!--            android:exported="true">-->
-    </service>
+<!--    <service android:name="ru.tn.shinglass.api.Service1C">-->
+<!--        &lt;!&ndash;            android:enabled="true"&ndash;&gt;-->
+<!--        &lt;!&ndash;            android:exported="true">&ndash;&gt;-->
+<!--    </service>-->
 </application>
 
 </manifest>

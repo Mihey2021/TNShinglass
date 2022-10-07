@@ -29,10 +29,14 @@
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/table_scan_item_layout.xml" value="0.33" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/menu/desktop_menu.xml" value="0.33" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/xml/root_preferences.xml" value="0.33" />
+        <entry key="..\:/My/Projects/Android/TNShinglass/app/src/main/res/drawable/ic_baseline_account_circle_24.xml" value="0.1415" />
+        <entry key="..\:/My/Projects/Android/TNShinglass/app/src/main/res/drawable/ic_baseline_lock_24.xml" value="0.1415" />
+        <entry key="..\:/My/Projects/Android/TNShinglass/app/src/main/res/drawable/ic_baseline_password_24.xml" value="0.1415" />
+        <entry key="..\:/My/Projects/Android/TNShinglass/app/src/main/res/layout/fragment_auth.xml" value="0.3319746376811594" />
       </map>
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_X" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>
   <component name="ProjectType">
