@@ -1,0 +1,64 @@
+<resources>
+    <string name="app_name">TNShinglass</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="authorization">Authorization</string>
+    <string name="enter">Enter</string>
+    <string name="tn_title">TechnoNicol</string>
+    <string name="err_barcode_format">Invalid barcode format</string>
+    <string name="https_service_connected">HTTPS: Service connected</string>
+    <string name="err_emty_login_or_password">Username or password not filled!</string>
+    <string name="err_an_error_has_occured">An error has occurred</string>
+    <string name="err_an_unknown_error_has_occured">An unknown error has occurred</string>
+    <string name="text_code">Code</string>
+    <string name="err_barcode_format_description">The barcode must be generated at https://barcode.tn.ru/Barcode/</string>
+    <string name="menu_exit">Exit</string>
+    <string name="menu_settings">Settings</string>
+    <!-- Preference Titles -->
+    <string name="settings_header">Basic settings</string>
+    <!--    <string name="sync_header">Sync</string>-->
+
+    <!-- Basic settings Preferences -->
+    <string name="service_url_title">Service URL</string>
+    <string name="response_scanning_title">Scan response</string>
+
+    <!-- Sync Preferences -->
+    <string name="additional_settings_title">Additional settings</string>
+    <!--    <string name="attachment_title">Download incoming attachments</string>-->
+    <!--    <string name="attachment_summary_on">Automatically download attachments for incoming emails-->
+    <!--    </string>-->
+    <!--    <string name="attachment_summary_off">Only download attachments when manually requested</string>-->
+    <string name="text_yes">Yes</string>
+    <string name="text_no">No</string>
+    <string name="text_sound">Sound</string>
+    <string name="text_nothing">Nothing</string>
+    <string name="text_vibration">Vibration</string>
+    <string name="service_user_name_title">1C username for http service</string>
+    <string name="service_user_password_title">1C user password for http service</string>
+    <string name="text_check_basic_settings">Check basic settings</string>
+    <string name="err_http_service_url_not_set">1C HTTP service URL not set</string>
+    <!--    Детальная форма сканирования-->
+    <string name="nomenclature_title">Nomenclature</string>
+    <string name="measure_of_unit_title">UOM</string>
+    <string name="division_title">Division\n</string>
+    <string name="workwear_ordinary_title">Workwear (regular)</string>
+    <string name="workwear_disposable_title">Workwear (disposable)</string>
+    <string name="warehouse_title">Warehouse</string>
+    <string name="purpose_of_use_title">Purpose of use:\n</string>
+    <string name="physical_person_title">Physical person:\n</string>
+    <string name="owner_title">Owner:</string>
+    <string name="documents_settings_title">Creating documents</string>
+    <string name="warehouse_list_description">Select a warehouse</string>
+    <string name="header_nomenclature">Nomenclature</string>
+    <string name="header_quantity">Qty</string>
+    <string name="header_unit_of_measurement">UOM</string>
+    <string name="header_cell">Cell</string>
+    <string name="retry_loading">Retry</string>
+    <string name="error_loading">An error occurred when accessing the server. Repeat later.</string>
+    <string name="settings_for_substituting_text">Settings for substituting values into documents</string>
+    <string name="cancel_text">Cancel</string>
+</resources>

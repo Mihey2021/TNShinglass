@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/optionGroupLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:alpha="0.5"
+    android:background="#FFFFFF"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/optionsItemTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin18"
+        android:fontFamily="sans-serif-light"
+        android:paddingStart="@dimen/margin36"
+        android:text="TextView"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        tools:text="Пункт меню" />
+
+</LinearLayout>

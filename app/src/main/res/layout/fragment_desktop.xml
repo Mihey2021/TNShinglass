@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/ic_gradient_background"
+    android:visibility="visible"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    tools:context=".activity.DesktopFragment">
+
+    <ImageView
+        android:id="@+id/imageViewTnLogo"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0.05"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_tn"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_tn" />
+
+<!--    <TextView-->
+<!--        android:id="@+id/userDescriptionText"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="@dimen/margin12"-->
+<!--        android:drawablePadding="@dimen/margin4"-->
+<!--        android:fontFamily="sans-serif-thin"-->
+<!--        android:gravity="right|center_vertical"-->
+<!--        android:textStyle="bold"-->
+<!--        app:drawableLeftCompat="@drawable/ic_baseline_account_circle_24"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/userInfoBarrier"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="parent" />-->
+
+<!--    <androidx.constraintlayout.widget.Barrier-->
+<!--        android:id="@+id/userInfoBarrier"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        app:barrierDirection="bottom"-->
+<!--        app:constraint_referenced_ids=" userDescriptionText" />-->
+
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/list"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="0dp"-->
+<!--        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintTop_toTopOf="@id/userInfoBarrier"-->
+<!--        app:layout_constraintVertical_bias="0.0"-->
+<!--        tools:itemCount="5"-->
+<!--        tools:layout_editor_absoluteX="0dp"-->
+<!--        tools:listitem="@layout/options_item" />-->
+    <fragment
+        android:id="@+id/mainMenuFragment"
+        android:name="ru.tn.shinglass.activity.MainMenuFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ExpandableListView
+        android:id="@+id/optionsMenuExpandableList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/mainMenuFragment"
+        app:layout_constraintVertical_bias="1.0"
+        tools:listitem="@layout/options_item">
+
+    </ExpandableListView>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/optionsMenuExpandableList"
+        app:layout_constraintVertical_bias="0.0"
+        tools:itemCount="5"
+        tools:layout_editor_absoluteX="0dp"
+        tools:listitem="@layout/options_item"
+        tools:visibility="gone" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

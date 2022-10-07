@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/margin36"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <ProgressBar
+        android:id="@+id/loadingProgressBar"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/margin36"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        tools:layout_editor_absoluteX="36dp"
+        tools:layout_editor_absoluteY="36dp">
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/tn_title"
+            android:src="@drawable/ic_tn" />
+
+        <EditText
+            android:id="@+id/editTextLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin18"
+            android:autofillHints=""
+            android:backgroundTintMode="multiply"
+            android:breakStrategy="simple"
+            android:bufferType="normal"
+            android:drawableEnd="@drawable/ic_baseline_qr_code_scanner_24"
+            android:ems="10"
+            android:hint="@string/login"
+            android:inputType="textPersonName"
+            android:maxWidth="@dimen/maxWidth"
+            android:minWidth="@dimen/minWidth"
+            android:minHeight="48dp" />
+
+        <EditText
+            android:id="@+id/editTextPassword"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin18"
+            android:allowUndo="false"
+            android:autofillHints=""
+            android:ems="10"
+            android:hint="@string/password"
+            android:inputType="textPassword"
+            android:maxWidth="@dimen/maxWidth"
+            android:minWidth="@dimen/minWidth"
+            android:minHeight="48dp" />
+
+        <TextView
+            android:id="@+id/deviceInfoTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawablePadding="@dimen/margin4"
+            app:drawableLeftCompat="@drawable/ic_baseline_settings_24" />
+
+        <Button
+            android:id="@+id/btnEnter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin18"
+            android:enabled="false"
+            android:text="@string/enter" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/retryButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/retry_loading"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/retryTitle" />
+
+    <TextView
+        android:id="@+id/retryTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin4"
+        android:text="@string/error_loading"
+        app:layout_constraintBottom_toTopOf="@+id/retryButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/errorTextView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin4"
+        android:gravity="center"
+        android:textColor="@color/design_default_color_error"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/retryButton"
+        tools:text="Error message" />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/errorGroup"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/white_alpha_rectangle_backround"
+        android:clickable="true"
+        android:visibility="gone"
+        app:constraint_referenced_ids="retryTitle,retryButton, errorTextView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

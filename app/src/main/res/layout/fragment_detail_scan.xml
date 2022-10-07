@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/ic_gradient_background"
+    android:visibility="visible"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    tools:context=".activity.TableScanFragment">
+
+    <ImageView
+        android:id="@+id/imageViewTnLogo"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:alpha="0.05"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_tn"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_tn" />
+
+    <ScrollView
+        android:id="@+id/scanFormScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            tools:context=".activity.DetailScanFragment">
+
+
+            <TextView
+                android:id="@+id/operationTitleTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TextView"
+                android:textAlignment="center"
+                android:textSize="24sp" />
+
+            <TextView
+                android:id="@+id/divisionTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/margin4"
+                android:textSize="18sp"
+                tools:text="Подразделение" />
+
+            <TextView
+                android:id="@+id/warehouseTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/margin4"
+                android:textSize="18sp"
+                tools:text="Склад" />
+
+            <TextView
+                android:id="@+id/itemTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/margin4"
+                android:fontFamily="monospace"
+                android:inputType="textMultiLine"
+                android:textAlignment="viewStart"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="Номенклатура" />
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <EditText
+                    android:id="@+id/countEditText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/margin4"
+                    android:ems="10"
+                    android:gravity="right"
+                    android:inputType="numberDecimal"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/itemMeasureOfUnitTitleTextView"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="0.00" />
+
+                <TextView
+                    android:id="@+id/itemMeasureOfUnitTitleTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_margin="@dimen/margin4"
+                    android:gravity="left|center_vertical"
+                    android:paddingBottom="@dimen/margin4"
+                    android:textAlignment="viewStart"
+                    android:textSize="18sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/countEditText"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:layout_constraintTop_toTopOf="parent"
+                    tools:text="Ед. изм." />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <CheckBox
+                android:id="@+id/workwearOrdinaryCheckBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="@string/workwear_ordinary_title" />
+
+            <CheckBox
+                android:id="@+id/workwearDisposableCheckBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:enabled="false"
+                android:text="@string/workwear_disposable_title" />
+
+            <TextView
+                android:id="@+id/purposeOfUseTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/margin4"
+                android:autoLink="none"
+                android:clickable="true"
+                android:linksClickable="false"
+                android:textSize="18sp"
+                app:drawableRightCompat="@drawable/ic_baseline_manage_search_24"
+                tools:text="Назначение использования" />
+
+            <TextView
+                android:id="@+id/phisicalPersonTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/margin4"
+                android:autoLink="none"
+                android:clickable="true"
+                android:linksClickable="false"
+                android:textSize="18sp"
+                app:drawableRightCompat="@drawable/ic_baseline_manage_search_24"
+                tools:text="Физическое лицо" />
+
+            <TextView
+                android:id="@+id/ownerTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin4"
+                android:layout_marginLeft="@dimen/margin4"
+                android:layout_marginTop="@dimen/margin36"
+                android:layout_marginEnd="@dimen/margin4"
+                android:layout_marginRight="@dimen/margin4"
+                android:layout_marginBottom="@dimen/margin4"
+                android:gravity="right"
+                android:textSize="18sp"
+                android:textStyle="italic"
+                tools:text="Ответственный" />
+
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>
