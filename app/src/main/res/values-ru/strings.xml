@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TNShinglass</string>
+    <string name="app_name">Склад ТМЦ (Шинглас)</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY CONTENT</string>
     <string name="password">Пароль</string>
@@ -50,4 +50,6 @@
     <string name="error_loading">An error occurred when accessing the server. Repeat later.</string>
     <string name="settings_for_substituting_text">Настройки подстановки значений в документы</string>
     <string name="cancel_text">Отмена</string>
+    <string name="empty_login_error_text">Логин не указан!</string>
+    <string name="empty_password_error_text">Пароль не указан!</string>
 </resources>

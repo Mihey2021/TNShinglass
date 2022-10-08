@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -50,6 +51,14 @@ class AuthFragment : Fragment() {
 
         binding = FragmentAuthBinding.inflate(inflater, container, false)
 
+        binding.passwordInputEditText.doAfterTextChanged { text ->
+            if (!text.isNullOrBlank()) binding.passwordTextInputLayout.error = null
+        }
+
+        binding.loginInputEditText.doAfterTextChanged { text ->
+            if (!text.isNullOrBlank()) binding.loginTextInputLayout.error = null
+        }
+
         clearForm()
         with(binding.deviceInfoTextView) {
             setTextColor(resources.getColor(R.color.light_blue_900, requireContext().theme))
@@ -82,24 +91,39 @@ class AuthFragment : Fragment() {
                 return@observe
             }
 
-            binding.editTextLogin.editText?.setText(authStruct[0])
-            binding.editTextPassword.editText?.setText(authStruct[1])
+            binding.loginInputEditText.setText(authStruct[0])
+            binding.passwordInputEditText.setText(authStruct[1])
         }
 
         binding.btnEnter.isEnabled = (apiService != null)
 
         binding.btnEnter.setOnClickListener {
 
-            val login = completeLogin(binding.editTextLogin.editText?.text.toString())
-            //if (login != DOMAIN_NAME) binding.editTextLogin.setText(login)
-            val pswdTxt = binding.editTextPassword.editText?.text.toString()
+            val clearLogin = binding.loginInputEditText.text.toString()
+            val login = completeLogin(clearLogin)
+            //if (login != DOMAIN_NAME) binding.loginTextInputLayout.setText(login)
+            val pswdTxt = binding.passwordInputEditText.text.toString()
             val password = if (isBase64(pswdTxt)) pswdTxt else Base64.getEncoder()
                 .encodeToString(pswdTxt.toByteArray())
 
-            if (login.isNullOrBlank() || password.isNullOrBlank()) {
-                showToast(getString(R.string.err_emty_login_or_password), Toast.LENGTH_SHORT)
-                return@setOnClickListener
+//            if (login.isNullOrBlank() || password.isNullOrBlank()) {
+//                showToast(getString(R.string.err_emty_login_or_password), Toast.LENGTH_SHORT)
+//                return@setOnClickListener
+//            }
+            var thereAreErrors = false
+
+            if (clearLogin.isBlank()) {
+                thereAreErrors = true
+                binding.loginTextInputLayout.error = getString(R.string.empty_login_error_text)
             }
+
+            if (password.isNullOrBlank()) {
+                thereAreErrors = true
+                binding.passwordTextInputLayout.error = getString(R.string.empty_password_error_text)
+            }
+
+            if (thereAreErrors) return@setOnClickListener
+
 
             binding.btnEnter.isEnabled = false
 
@@ -194,8 +218,8 @@ class AuthFragment : Fragment() {
     }
 
     private fun clearForm() {
-        binding.editTextLogin.editText?.setText("")
-        binding.editTextPassword.editText?.setText("")
+        binding.loginInputEditText.setText("")
+        binding.passwordInputEditText.setText("")
     }
 
     override fun onResume() {

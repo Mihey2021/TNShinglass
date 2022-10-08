@@ -28,9 +28,33 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/toolbar" />
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/deviceInfoTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="36dp"
+        android:drawablePadding="@dimen/margin4"
+        app:drawableLeftCompat="@drawable/ic_baseline_settings_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/authorizationFormLinearLayout" />
+
+    <Button
+        android:id="@+id/btnEnter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="36dp"
+        android:enabled="false"
+        android:text="@string/enter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/deviceInfoTextView" />
+
+    <LinearLayout
+        android:id="@+id/authorizationFormLinearLayout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:layout_margin="@dimen/margin36"
         android:layout_marginTop="8dp"
         android:gravity="center_horizontal"
@@ -55,7 +79,7 @@
             app:civ_border_width="3dp" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/editTextLogin"
+            android:id="@+id/loginTextInputLayout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -67,6 +91,7 @@
             app:startIconDrawable="@drawable/ic_baseline_account_circle_24">
 
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/loginInputEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:imeOptions="actionDone"
@@ -76,7 +101,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/editTextPassword"
+            android:id="@+id/passwordTextInputLayout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -84,10 +109,12 @@
             android:layout_marginRight="8dp"
             android:layout_marginBottom="8dp"
             app:errorEnabled="true"
+            app:errorIconDrawable="@drawable/ic_baseline_error_24"
             app:passwordToggleEnabled="true"
             app:startIconDrawable="@drawable/ic_baseline_lock_24">
 
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/passwordInputEditText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/password"
@@ -96,23 +123,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-
-        <TextView
-            android:id="@+id/deviceInfoTextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:drawablePadding="@dimen/margin4"
-            app:drawableLeftCompat="@drawable/ic_baseline_settings_24" />
-
-        <Button
-            android:id="@+id/btnEnter"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/margin18"
-            android:layout_marginTop="16dp"
-            android:enabled="false"
-            android:text="@string/enter" />
 
     </LinearLayout>
 
@@ -153,7 +163,7 @@
     <androidx.constraintlayout.widget.Group
         android:id="@+id/errorGroup"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:background="@drawable/white_alpha_rectangle_backround"
         android:clickable="true"
         android:visibility="gone"
