@@ -23,7 +23,9 @@
         android:id="@+id/deviceInfoTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="36dp"
+        android:layout_marginLeft="36dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginRight="36dp"
         android:drawablePadding="@dimen/margin4"
         android:drawableTint="@color/blue_gray_700"
         app:drawableLeftCompat="@drawable/ic_baseline_settings_24"
@@ -38,7 +40,6 @@
         android:layout_margin="36dp"
         android:enabled="false"
         android:text="@string/enter"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/deviceInfoTextView" />
