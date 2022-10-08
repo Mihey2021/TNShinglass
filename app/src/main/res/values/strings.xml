@@ -65,4 +65,5 @@
     <string name="empty_password_error_text">Password is not specified!</string>
     <string name="request_to_server">Request to the server...</string>
     <string name="question_exit_text">Do you really want to get out?</string>
+    <string name="ok_text">Ok</string>
 </resources>

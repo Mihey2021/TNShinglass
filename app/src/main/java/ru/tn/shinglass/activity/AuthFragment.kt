@@ -193,18 +193,44 @@ class AuthFragment : Fragment() {
                     }
                 } else {
                     when (response.code()) {
-                        401 -> showToast(
-                            "${getString(R.string.err_an_error_has_occured)}:\n${
-                                response.errorBody()!!.string()
-                            }(${getString(R.string.text_code)}: ${response.code()})",
-                            Toast.LENGTH_SHORT
-                        )
-                        else -> showToast(
-                            "${getString(R.string.err_an_unknown_error_has_occured)}:\n${
-                                response.errorBody()!!.string()
-                            }(${getString(R.string.text_code)}: ${response.code()})",
-                            Toast.LENGTH_SHORT
-                        )
+                        401 -> {
+                            DialogScreen.getDialogBuilder(
+                                requireContext(),
+                                DialogScreen.IDD_ERROR,
+                                "${
+                                    response.errorBody()!!.string()
+                                }(${getString(R.string.text_code)}: ${response.code()})"
+                            )
+                                .setPositiveButton(resources.getString(R.string.ok_text)) { dialog, _ ->
+                                    dialog.cancel()
+                                }
+                                .show()
+//                            showToast(
+//                            "${getString(R.string.err_an_error_has_occured)}:\n${
+//                                response.errorBody()!!.string()
+//                            }(${getString(R.string.text_code)}: ${response.code()})",
+//                            Toast.LENGTH_SHORT
+//                        )
+                        }
+                        else -> {
+                            DialogScreen.getDialogBuilder(
+                                requireContext(),
+                                DialogScreen.IDD_ERROR,
+                                "${
+                                    response.errorBody()!!.string()
+                                }(${getString(R.string.text_code)}: ${response.code()})"
+                            )
+                                .setPositiveButton(resources.getString(R.string.ok_text)) { dialog, _ ->
+                                    dialog.cancel()
+                                }
+                                .show()
+//                            showToast(
+//                                "${getString(R.string.err_an_unknown_error_has_occured)}:\n${
+//                                    response.errorBody()!!.string()
+//                                }(${getString(R.string.text_code)}: ${response.code()})",
+//                                Toast.LENGTH_SHORT
+//                            )
+                        }
                     }
                     binding.btnEnter.isEnabled = true
                 }
@@ -223,7 +249,7 @@ class AuthFragment : Fragment() {
                         loginAttempt(login, password)
                         dialog.dismiss()
                     }
-                    .setNegativeButton(resources.getString(R.string.cancel_text)) {dialog, _ ->
+                    .setNegativeButton(resources.getString(R.string.cancel_text)) { dialog, _ ->
                         binding.btnEnter.isEnabled = true
                         dialog.cancel()
                     }
