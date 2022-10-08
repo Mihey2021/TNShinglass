@@ -3,17 +3,17 @@ package ru.tn.shinglass.activity
 //import ru.tn.shinglass.adapters.ru.tn.shinglass.adapters.DynamicListAdapter
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import ru.tn.shinglass.R
+import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.adapters.extendsPreferences.ExtendListPreference
 import ru.tn.shinglass.api.ApiUtils
@@ -23,10 +23,12 @@ import ru.tn.shinglass.models.Warehouse
 import ru.tn.shinglass.viewmodel.SettingsViewModel
 
 private var apiService: ApiService? = null
+private var progressDialogBuilder: MaterialAlertDialogBuilder? = null
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
     private val settingsViewModel: SettingsViewModel by viewModels()
+    private var progressDialog: AlertDialog? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
@@ -42,6 +44,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         root.addPreference(categoryDocSettings)
 
         apiService = ApiUtils.getApiService(settingsViewModel.getBasicPreferences())
+        progressDialogBuilder = DialogScreen.getDialogBuilder(requireContext(), DialogScreen.IDD_PROGRESS)
 
         val warehouseListPreference = ExtendListPreference<Warehouse>(requireContext())
         val adapter =
@@ -53,15 +56,21 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val savedWarehouse = settingsViewModel.getWarehouseByGuid(
             settingsViewModel.getPreferenceByKey(warehouseKey) ?: ""
         )
+
         warehouseListPreference.summary =
             savedWarehouse?.title ?: getString(R.string.warehouse_list_description)
-        warehouseListPreference.icon = requireContext().getDrawable(R.drawable.ic_baseline_warehouse_24)
+        warehouseListPreference.icon =
+            requireContext().getDrawable(R.drawable.ic_baseline_warehouse_24)
         warehouseListPreference.setDialogTitle(getString(R.string.warehouse_list_description))
-        warehouseListPreference.setOnPreferenceClickListener(object: Preference.OnPreferenceClickListener{
+        warehouseListPreference.setOnPreferenceClickListener(object :
+            Preference.OnPreferenceClickListener {
             override fun onPreferenceClick(preference: Preference): Boolean {
-                if (warehouseListPreference.getDataListArray().isEmpty())
-                    setWarehousestDataList(warehouseListPreference)
-                return true
+                if (warehouseListPreference.getDataListArray().isEmpty()) {
+
+                    setWarehousesDataList(warehouseListPreference)
+                    return true
+                }
+                return false
             }
         })
 //        {
@@ -100,7 +109,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     //private fun getWarehousesList(): ArrayList<Warehouse> {
-    private fun setWarehousestDataList(warehouseListPreference: ExtendListPreference<Warehouse>) {
+    private fun setWarehousesDataList(warehouseListPreference: ExtendListPreference<Warehouse>) {
+
+        progressDialog = progressDialogBuilder?.show()
+
         val arrayListWarehouse = ArrayList<Warehouse>()
         val warehouseListFromDb = getAllWarehousesFromDb()
         if (warehouseListFromDb.isNotEmpty()) {
@@ -111,6 +123,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     call: Call<List<Warehouse>>,
                     response: Response<List<Warehouse>>
                 ) {
+                    progressDialog?.cancel()
                     if (!response.isSuccessful) {
                         //TODO: Обработка не 2хх кода ответа
                         return
@@ -127,11 +140,25 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     getAllWarehousesFromDb().forEach { arrayListWarehouse.add(it) }
                     //Установим список
                     warehouseListPreference.setDataListArray(arrayListWarehouse)
+                    warehouseListPreference.showDialog()
                     return
                 }
 
                 override fun onFailure(call: Call<List<Warehouse>>, t: Throwable) {
-                    //TODO:"Not yet implemented"
+                    progressDialog?.cancel()
+                    DialogScreen.getDialogBuilder(
+                        requireContext(),
+                        DialogScreen.IDD_ERROR,
+                        t.message.toString()
+                    )
+                        .setNegativeButton(resources.getString(R.string.cancel_text)) { dialog, _ ->
+                            dialog.cancel()
+                        }
+                        .setPositiveButton(resources.getString(R.string.retry_loading)) { dialog, _ ->
+                            setWarehousesDataList(warehouseListPreference)
+                            dialog.dismiss()
+                        }
+                        .show()
                     return
                 }
 

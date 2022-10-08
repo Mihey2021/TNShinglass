@@ -18,6 +18,12 @@ class ExtendListPreference<T>(context: Context, attrs: AttributeSet? = null) :
     private var dlgTitle: String = ""
 
     override fun onClick() {
+
+        showDialog()
+
+    }
+
+    fun showDialog() {
         val clickedDialogEntryIndex = findIndexOfValue(value)
 
         val builder = AlertDialog.Builder(context)
@@ -40,8 +46,8 @@ class ExtendListPreference<T>(context: Context, attrs: AttributeSet? = null) :
 
         builder.setCancelable(true)
         val dialog = builder.create()
-        dialog.show()
 
+        if(adapter.count > 0) dialog.show()
     }
 //    var myClickListener: DialogInterface.OnClickListener =
 //        DialogInterface.OnClickListener { dialog, which ->

@@ -7,6 +7,7 @@ import ru.tn.shinglass.R
 object DialogScreen {
     const val IDD_ERROR = 1
     const val IDD_PROGRESS = 2
+    const val IDD_QUESTION = 3
 
     fun getDialogBuilder(
         context: Context,
@@ -32,6 +33,21 @@ object DialogScreen {
                 with(alertDialog) {
                     setView(R.layout.progress_layout)
                     setCancelable(false)
+                }
+            }
+            3 -> {
+                with(alertDialog) {
+                    setTitle(message)
+                    setCancelable(false)
+                    setIcon(
+                        context.resources.getDrawable(
+                            R.drawable.ic_baseline_question_outline_24,
+                            context.theme
+                        )
+                    )
+                    setNegativeButton(context.resources.getString(R.string.cancel_text)) { dialog, _ ->
+                        dialog.cancel()
+                    }
                 }
             }
         }

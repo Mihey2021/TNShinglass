@@ -1,7 +1,6 @@
 package ru.tn.shinglass.activity
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,7 +12,6 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -29,6 +27,7 @@ import ru.tn.shinglass.viewmodel.SettingsViewModel
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
+import kotlin.system.exitProcess
 
 const val DOMAIN_NAME = "@tn.ru"
 
@@ -47,11 +46,33 @@ class AuthFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         apiService = ApiUtils.getApiService(settingsViewModel.getBasicPreferences())
 
         binding = FragmentAuthBinding.inflate(inflater, container, false)
+
+        binding.appToolbar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.menu_settings -> {
+                    openSettingsDialog()
+                    true
+                }
+                R.id.menu_exit -> {
+                    DialogScreen.getDialogBuilder(
+                        requireContext(),
+                        DialogScreen.IDD_QUESTION,
+                        resources.getString(R.string.question_exit_text)
+                    )
+                        .setPositiveButton(resources.getString(R.string.menu_exit)) { _, _ ->
+                            exitProcess(0)
+                        }
+                        .show()
+                    true
+                }
+                else -> false
+            }
+        }
 
         binding.passwordInputEditText.doAfterTextChanged { text ->
             if (!text.isNullOrBlank()) binding.passwordTextInputLayout.error = null
@@ -66,8 +87,7 @@ class AuthFragment : Fragment() {
             setTextColor(resources.getColor(R.color.light_blue_900, requireContext().theme))
             text = "${Build.MANUFACTURER} ${Build.MODEL}"
             setOnClickListener {
-                val intent = Intent(requireContext(), SettingsActivity::class.java)
-                startActivity(intent)
+                openSettingsDialog()
             }
         }
 
@@ -137,12 +157,18 @@ class AuthFragment : Fragment() {
         return binding.root
     }
 
+    private fun openSettingsDialog() {
+        val intent = Intent(requireContext(), SettingsActivity::class.java)
+        startActivity(intent)
+    }
+
     private fun completeLogin(login: String) =
         if ("@" in login) login else "$login$DOMAIN_NAME"
 
     private fun loginAttempt(login: String, password: String) {
 
-        val progressDialog = DialogScreen.getDialogBuilder(requireContext(), DialogScreen.IDD_PROGRESS).show()
+        val progressDialog =
+            DialogScreen.getDialogBuilder(requireContext(), DialogScreen.IDD_PROGRESS).show()
 
         if (apiService == null) return
 
@@ -188,12 +214,16 @@ class AuthFragment : Fragment() {
 
                 progressDialog.dismiss()
 
-                DialogScreen.getDialogBuilder(requireContext(), DialogScreen.IDD_ERROR, t.message.toString())
-                    .setPositiveButton(getString(R.string.retry_loading)) { dialog, _ ->
+                DialogScreen.getDialogBuilder(
+                    requireContext(),
+                    DialogScreen.IDD_ERROR,
+                    t.message.toString()
+                )
+                    .setPositiveButton(resources.getString(R.string.retry_loading)) { dialog, _ ->
                         loginAttempt(login, password)
                         dialog.dismiss()
                     }
-                    .setNegativeButton(getString(R.string.cancel_text)) { dialog, _ ->
+                    .setNegativeButton(resources.getString(R.string.cancel_text)) {dialog, _ ->
                         binding.btnEnter.isEnabled = true
                         dialog.cancel()
                     }
