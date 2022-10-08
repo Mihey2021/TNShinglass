@@ -60,7 +60,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         warehouseListPreference.summary =
             savedWarehouse?.title ?: getString(R.string.warehouse_list_description)
         warehouseListPreference.icon =
-            requireContext().getDrawable(R.drawable.ic_baseline_warehouse_24)
+            resources.getDrawable(R.drawable.ic_baseline_warehouse_24, requireContext().theme)
         warehouseListPreference.setDialogTitle(getString(R.string.warehouse_list_description))
         warehouseListPreference.setOnPreferenceClickListener(object :
             Preference.OnPreferenceClickListener {
@@ -108,7 +108,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener(prefListener)
     }
 
-    //private fun getWarehousesList(): ArrayList<Warehouse> {
     private fun setWarehousesDataList(warehouseListPreference: ExtendListPreference<Warehouse>) {
 
         progressDialog = progressDialogBuilder?.show()
@@ -117,6 +116,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val warehouseListFromDb = getAllWarehousesFromDb()
         if (warehouseListFromDb.isNotEmpty()) {
             warehouseListFromDb.forEach { arrayListWarehouse.add(it) }
+            warehouseListPreference.setDataListArray(arrayListWarehouse)
+            progressDialog?.cancel()
+            warehouseListPreference.showDialog()
         } else {
             apiService?.getAllWarehousesList()?.enqueue(object : Callback<List<Warehouse>> {
                 override fun onResponse(
@@ -140,6 +142,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     getAllWarehousesFromDb().forEach { arrayListWarehouse.add(it) }
                     //Установим список
                     warehouseListPreference.setDataListArray(arrayListWarehouse)
+                    //Покажем диалог выбора склада
                     warehouseListPreference.showDialog()
                     return
                 }
