@@ -52,4 +52,5 @@
     <string name="cancel_text">Отмена</string>
     <string name="empty_login_error_text">Логин не указан!</string>
     <string name="empty_password_error_text">Пароль не указан!</string>
+    <string name="request_to_server">Запрос на сервер...</string>
 </resources>

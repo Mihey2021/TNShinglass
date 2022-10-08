@@ -63,4 +63,5 @@
     <string name="cancel_text">Cancel</string>
     <string name="empty_login_error_text">Login is not specified!</string>
     <string name="empty_password_error_text">Password is not specified!</string>
+    <string name="request_to_server">Request to the server...</string>
 </resources>

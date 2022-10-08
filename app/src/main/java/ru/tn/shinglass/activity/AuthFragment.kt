@@ -13,10 +13,12 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import ru.tn.shinglass.R
+import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.data.api.ApiService
@@ -106,10 +108,6 @@ class AuthFragment : Fragment() {
             val password = if (isBase64(pswdTxt)) pswdTxt else Base64.getEncoder()
                 .encodeToString(pswdTxt.toByteArray())
 
-//            if (login.isNullOrBlank() || password.isNullOrBlank()) {
-//                showToast(getString(R.string.err_emty_login_or_password), Toast.LENGTH_SHORT)
-//                return@setOnClickListener
-//            }
             var thereAreErrors = false
 
             if (clearLogin.isBlank()) {
@@ -119,7 +117,8 @@ class AuthFragment : Fragment() {
 
             if (password.isNullOrBlank()) {
                 thereAreErrors = true
-                binding.passwordTextInputLayout.error = getString(R.string.empty_password_error_text)
+                binding.passwordTextInputLayout.error =
+                    getString(R.string.empty_password_error_text)
             }
 
             if (thereAreErrors) return@setOnClickListener
@@ -143,16 +142,16 @@ class AuthFragment : Fragment() {
 
     private fun loginAttempt(login: String, password: String) {
 
-        binding.loadingProgressBar.visibility = View.VISIBLE
-        binding.errorGroup.visibility = View.GONE
+        val progressDialog = DialogScreen.getDialogBuilder(requireContext(), DialogScreen.IDD_PROGRESS).show()
 
-        if(apiService == null) return
+        if (apiService == null) return
 
         val user1C = apiService?.authorization(RequestLogin(login, password))
 
         user1C?.enqueue(object : Callback<User1C?> {
             override fun onResponse(call: Call<User1C?>, response: Response<User1C?>) {
-                binding.loadingProgressBar.visibility = View.GONE
+                //binding.loadingProgressBar.visibility = View.GONE
+                progressDialog.dismiss()
                 if (response.isSuccessful) {
                     val user1C: User1C? = response.body()
                     if (user1C != null) {
@@ -186,18 +185,19 @@ class AuthFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<User1C?>, t: Throwable) {
-                binding.loadingProgressBar.visibility = View.GONE
-                binding.errorGroup.visibility = View.VISIBLE
-                binding.retryTitle.setTextColor(Color.BLACK)
-                binding.errorTextView.setTextColor(Color.RED)
-                binding.errorTextView.text = t.message
-                binding.errorGroup.elevation = 0.1f
-                binding.retryTitle.elevation = 1.0f
-                binding.errorTextView.elevation = 1.0f
-                binding.retryButton.setOnClickListener {
-                    loginAttempt(login, password)
-                }
-                binding.btnEnter.isEnabled = true
+
+                progressDialog.dismiss()
+
+                DialogScreen.getDialogBuilder(requireContext(), DialogScreen.IDD_ERROR, t.message.toString())
+                    .setPositiveButton(getString(R.string.retry_loading)) { dialog, _ ->
+                        loginAttempt(login, password)
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton(getString(R.string.cancel_text)) { dialog, _ ->
+                        binding.btnEnter.isEnabled = true
+                        dialog.cancel()
+                    }
+                    .show()
             }
         })
     }
