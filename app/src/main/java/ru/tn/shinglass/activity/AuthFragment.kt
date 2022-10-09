@@ -17,6 +17,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
+import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.data.api.ApiService
@@ -59,15 +60,24 @@ class AuthFragment : Fragment() {
                     true
                 }
                 R.id.menu_exit -> {
-                    DialogScreen.getDialogBuilder(
+                    DialogScreen.getDialog(
                         requireContext(),
                         DialogScreen.IDD_QUESTION,
-                        resources.getString(R.string.question_exit_text)
-                    )
-                        .setPositiveButton(resources.getString(R.string.menu_exit)) { _, _ ->
-                            exitProcess(0)
-                        }
-                        .show()
+                        resources.getString(R.string.question_exit_text),
+                        onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                            override fun onPositiveClickButton() {
+                                exitProcess(0)
+                            }
+                        })
+//                    DialogScreen.getDialogBuilder(
+//                        requireContext(),
+//                        DialogScreen.IDD_QUESTION,
+//                        resources.getString(R.string.question_exit_text)
+//                    )
+//                        .setPositiveButton(resources.getString(R.string.menu_exit)) { _, _ ->
+//                            exitProcess(0)
+//                        }
+//                        .show()
                     true
                 }
                 else -> false
@@ -167,8 +177,7 @@ class AuthFragment : Fragment() {
 
     private fun loginAttempt(login: String, password: String) {
 
-        val progressDialog =
-            DialogScreen.getDialogBuilder(requireContext(), DialogScreen.IDD_PROGRESS).show()
+        val progressDialog = DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
 
         if (apiService == null) return
 
@@ -194,17 +203,15 @@ class AuthFragment : Fragment() {
                 } else {
                     when (response.code()) {
                         401 -> {
-                            DialogScreen.getDialogBuilder(
+                            DialogScreen.getDialog(
                                 requireContext(),
-                                DialogScreen.IDD_ERROR,
+                                DialogScreen.IDD_ERROR_SINGLE_BUTTON,
                                 "${
                                     response.errorBody()!!.string()
-                                }(${getString(R.string.text_code)}: ${response.code()})"
+                                }(${getString(R.string.text_code)}: ${response.code()})",
+                                positiveButtonTitle = resources.getString(R.string.ok_text)
                             )
-                                .setPositiveButton(resources.getString(R.string.ok_text)) { dialog, _ ->
-                                    dialog.cancel()
-                                }
-                                .show()
+
 //                            showToast(
 //                            "${getString(R.string.err_an_error_has_occured)}:\n${
 //                                response.errorBody()!!.string()
@@ -213,18 +220,16 @@ class AuthFragment : Fragment() {
 //                        )
                         }
                         else -> {
-                            DialogScreen.getDialogBuilder(
+                            DialogScreen.getDialog(
                                 requireContext(),
                                 DialogScreen.IDD_ERROR,
                                 "${
                                     response.errorBody()!!.string()
-                                }(${getString(R.string.text_code)}: ${response.code()})"
+                                }(${getString(R.string.text_code)}: ${response.code()})",
+                                positiveButtonTitle = resources.getString(R.string.ok_text)
                             )
-                                .setPositiveButton(resources.getString(R.string.ok_text)) { dialog, _ ->
-                                    dialog.cancel()
-                                }
-                                .show()
-//                            showToast(
+
+                            //                            showToast(
 //                                "${getString(R.string.err_an_unknown_error_has_occured)}:\n${
 //                                    response.errorBody()!!.string()
 //                                }(${getString(R.string.text_code)}: ${response.code()})",
@@ -240,20 +245,20 @@ class AuthFragment : Fragment() {
 
                 progressDialog.dismiss()
 
-                DialogScreen.getDialogBuilder(
+                DialogScreen.getDialog(
                     requireContext(),
                     DialogScreen.IDD_ERROR,
-                    t.message.toString()
+                    t.message.toString(),
+                    onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                        override fun onPositiveClickButton() {
+                            loginAttempt(login, password)
+                        }
+
+                        override fun onNegativeClickButton() {
+                            binding.btnEnter.isEnabled = true
+                        }
+                    }
                 )
-                    .setPositiveButton(resources.getString(R.string.retry_loading)) { dialog, _ ->
-                        loginAttempt(login, password)
-                        dialog.dismiss()
-                    }
-                    .setNegativeButton(resources.getString(R.string.cancel_text)) { dialog, _ ->
-                        binding.btnEnter.isEnabled = true
-                        dialog.cancel()
-                    }
-                    .show()
             }
         })
     }

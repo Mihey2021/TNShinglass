@@ -14,6 +14,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
+import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.adapters.extendsPreferences.ExtendListPreference
 import ru.tn.shinglass.api.ApiUtils
@@ -23,12 +24,10 @@ import ru.tn.shinglass.models.Warehouse
 import ru.tn.shinglass.viewmodel.SettingsViewModel
 
 private var apiService: ApiService? = null
-private var progressDialogBuilder: MaterialAlertDialogBuilder? = null
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
     private val settingsViewModel: SettingsViewModel by viewModels()
-    private var progressDialog: AlertDialog? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
@@ -44,7 +43,6 @@ class SettingsFragment : PreferenceFragmentCompat() {
         root.addPreference(categoryDocSettings)
 
         apiService = ApiUtils.getApiService(settingsViewModel.getBasicPreferences())
-        progressDialogBuilder = DialogScreen.getDialogBuilder(requireContext(), DialogScreen.IDD_PROGRESS)
 
         val warehouseListPreference = ExtendListPreference<Warehouse>(requireContext())
         val adapter =
@@ -110,14 +108,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun setWarehousesDataList(warehouseListPreference: ExtendListPreference<Warehouse>) {
 
-        progressDialog = progressDialogBuilder?.show()
+        val progressDialog = DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
 
         val arrayListWarehouse = ArrayList<Warehouse>()
         val warehouseListFromDb = getAllWarehousesFromDb()
         if (warehouseListFromDb.isNotEmpty()) {
             warehouseListFromDb.forEach { arrayListWarehouse.add(it) }
             warehouseListPreference.setDataListArray(arrayListWarehouse)
-            progressDialog?.cancel()
+            progressDialog.cancel()
             warehouseListPreference.showDialog()
         } else {
             apiService?.getAllWarehousesList()?.enqueue(object : Callback<List<Warehouse>> {
@@ -125,7 +123,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     call: Call<List<Warehouse>>,
                     response: Response<List<Warehouse>>
                 ) {
-                    progressDialog?.cancel()
+                    progressDialog.cancel()
                     if (!response.isSuccessful) {
                         //TODO: Обработка не 2хх кода ответа
                         return
@@ -148,20 +146,25 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 }
 
                 override fun onFailure(call: Call<List<Warehouse>>, t: Throwable) {
-                    progressDialog?.cancel()
-                    DialogScreen.getDialogBuilder(
-                        requireContext(),
-                        DialogScreen.IDD_ERROR,
-                        t.message.toString()
-                    )
-                        .setNegativeButton(resources.getString(R.string.cancel_text)) { dialog, _ ->
-                            dialog.cancel()
-                        }
-                        .setPositiveButton(resources.getString(R.string.retry_loading)) { dialog, _ ->
+                    progressDialog.cancel()
+                    DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR, t.message.toString(), onDialogsInteractionListener = object : OnDialogsInteractionListener{
+                        override fun onPositiveClickButton() {
                             setWarehousesDataList(warehouseListPreference)
-                            dialog.dismiss()
                         }
-                        .show()
+                    })
+//                    DialogScreen.getDialogBuilder(
+//                        requireContext(),
+//                        DialogScreen.IDD_ERROR,
+//                        t.message.toString()
+//                    )
+//                        .setNegativeButton(resources.getString(R.string.cancel_text)) { dialog, _ ->
+//                            dialog.cancel()
+//                        }
+//                        .setPositiveButton(resources.getString(R.string.retry_loading)) { dialog, _ ->
+//                            setWarehousesDataList(warehouseListPreference)
+//                            dialog.dismiss()
+//                        }
+//                        .show()
                     return
                 }
 
