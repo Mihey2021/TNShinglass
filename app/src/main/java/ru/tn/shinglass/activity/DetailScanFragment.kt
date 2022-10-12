@@ -92,7 +92,7 @@ class DetailScanFragment : Fragment() {
                     )
                     phisicalPersonTextView.setAdapter(adapter)
                 } else {
-                    retrofitViewModel.getPhisicalPersonList()
+                    getPhysicalPersonList()
                     progressDialog =
                         DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
                 }
@@ -104,10 +104,26 @@ class DetailScanFragment : Fragment() {
         retrofitViewModel.listDataPhisicalPersons.observe(viewLifecycleOwner) {
             it.forEach { person -> dataList.add(person) }
             progressDialog?.dismiss()
+            binding.phisicalPersonTextView.callOnClick()
+        }
+
+        retrofitViewModel.requestError.observe(viewLifecycleOwner) {error ->
+            progressDialog?.dismiss()
+            DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR, error.message, null, object : OnDialogsInteractionListener {
+                override fun onPositiveClickButton() {
+                    if(error.requestName == "getPhysicalPersonList")
+                        progressDialog?.show()
+                        getPhysicalPersonList()
+                }
+            })
         }
 
 
         return binding.root
+    }
+
+    private fun getPhysicalPersonList() {
+        retrofitViewModel.getPhysicalPersonList()
     }
 
 
@@ -125,7 +141,7 @@ class DetailScanFragment : Fragment() {
 ////            warehouseListPreference.showDialog()
 ////        } else {
 //    val apiService = ApiUtils.getApiService(settingsViewModel.getBasicPreferences())
-//    apiService?.getPhisicalPersonList()?.enqueue(object : Callback<List<PhisicalPerson>> {
+//    apiService?.getPhysicalPersonList()?.enqueue(object : Callback<List<PhisicalPerson>> {
 //        override fun onResponse(
 //            call: Call<List<PhisicalPerson>>,
 //            response: Response<List<PhisicalPerson>>

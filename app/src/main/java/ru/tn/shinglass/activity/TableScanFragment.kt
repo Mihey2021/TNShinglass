@@ -61,11 +61,21 @@ class TableScanFragment : Fragment() {
         )
         val adapter = TableScanAdapter(object : OnTableScanItemInteractionListener {
             override fun selectItem(item: CurrentScanData) {
-                super.selectItem(item)
+                //super.selectItem(item)
+                //TODO: Для отладки
+                val args = Bundle()
+                args.putSerializable("userData", user1C)
+                args.putSerializable("selectedOption", selectedOption)
+                args.putString("itemBarCode", "")
+                findNavController().navigate(R.id.action_tableScanFragment_to_detailScanFragment, args)
             }
         })
 
         binding.list.adapter = adapter
+
+
+
+
 
         adapter.submitList(demoData)
 

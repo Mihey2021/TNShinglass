@@ -19,7 +19,7 @@ class RetrofitRepositoryImpl : RetrofitRepository {
         TODO("Not yet implemented")
     }
 
-    override fun getPhisicalPersonList(callback: RetrofitRepository.Callback<List<PhisicalPerson>>) {
+    override fun getPhysicalPersonList(callback: RetrofitRepository.Callback<List<PhisicalPerson>>) {
         apiService?.getPhisicalPersonList()?.enqueue(getCallbackHandler(callback))
     }
 

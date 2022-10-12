@@ -133,7 +133,14 @@ class AuthFragment : Fragment() {
 
         binding.btnEnter.setOnClickListener {
 
-            checkAndLogin()
+            val args = Bundle()
+            args.putSerializable("userData", User1C("Test","000-000-000"))
+            findNavController().navigate(
+                R.id.action_authFragment_to_desktopFragment,
+                args
+            )
+        //TODO: Для отладки
+        //checkAndLogin()
         }
 
         settingsViewModel.basicPrefs.observe(viewLifecycleOwner) {

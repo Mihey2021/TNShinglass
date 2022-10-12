@@ -8,7 +8,7 @@ import java.lang.Exception
 interface RetrofitRepository {
 
     fun authorization(user: RequestLogin, callback:Callback<User1C>)
-    fun getPhisicalPersonList(callback: Callback<List<PhisicalPerson>>)
+    fun getPhysicalPersonList(callback: Callback<List<PhisicalPerson>>)
 
     interface Callback<T> {
         fun onSuccess(receivedData: T) {}
