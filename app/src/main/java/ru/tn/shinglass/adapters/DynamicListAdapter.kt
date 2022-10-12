@@ -7,17 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import ru.tn.shinglass.databinding.DynamicPrefsLayoutBinding
+import ru.tn.shinglass.models.PhisicalPerson
 import ru.tn.shinglass.models.Warehouse
 
-class DynamicListAdapter<T>(context: Context, layout: Int) : ArrayAdapter<T>(context, layout) {
-
-//    override fun getItemId(position: Int): Long {
-//        val item = getItem(position)
-//        if (item is Warehouses) {
-//            return item.id
-//        }
-//        return super.getItemId(position)
-//    }
+class DynamicListAdapter<T> : ArrayAdapter<T> {
+    constructor(context: Context, layout: Int) : super(context, layout)
+    constructor(context: Context, layout: Int, listData: List<T>) : super(context, layout, listData)
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val binding = DynamicPrefsLayoutBinding.inflate(
@@ -33,6 +28,9 @@ class DynamicListAdapter<T>(context: Context, layout: Int) : ArrayAdapter<T>(con
 
             if (item is Warehouse) {
                 itemListTextView.text = item.title
+            }
+            if (item is PhisicalPerson) {
+                itemListTextView.text = item.fio
             } else {
                 itemListTextView.text = ""
             }
@@ -40,5 +38,7 @@ class DynamicListAdapter<T>(context: Context, layout: Int) : ArrayAdapter<T>(con
 
         return binding.root
     }
+
+
 
 }

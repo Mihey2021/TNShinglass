@@ -1,4 +1,4 @@
-package ru.tn.shinglass.adapters.extendsPreferences
+package ru.tn.shinglass.adapters.extendsComponents
 
 import android.content.Context
 import android.util.AttributeSet

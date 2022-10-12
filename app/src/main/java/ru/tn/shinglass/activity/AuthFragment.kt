@@ -125,38 +125,15 @@ class AuthFragment : Fragment() {
 
             binding.loginInputEditText.setText(authStruct[0])
             binding.passwordInputEditText.setText(authStruct[1])
+
+            if (authStruct[0].isNotBlank() && authStruct[1].isNotBlank()) checkAndLogin()
         }
 
         binding.btnEnter.isEnabled = (apiService != null)
 
         binding.btnEnter.setOnClickListener {
 
-            val clearLogin = binding.loginInputEditText.text.toString()
-            val login = completeLogin(clearLogin)
-            //if (login != DOMAIN_NAME) binding.loginTextInputLayout.setText(login)
-            val pswdTxt = binding.passwordInputEditText.text.toString()
-            val password = if (isBase64(pswdTxt)) pswdTxt else Base64.getEncoder()
-                .encodeToString(pswdTxt.toByteArray())
-
-            var thereAreErrors = false
-
-            if (clearLogin.isBlank()) {
-                thereAreErrors = true
-                binding.loginTextInputLayout.error = getString(R.string.empty_login_error_text)
-            }
-
-            if (password.isNullOrBlank()) {
-                thereAreErrors = true
-                binding.passwordTextInputLayout.error =
-                    getString(R.string.empty_password_error_text)
-            }
-
-            if (thereAreErrors) return@setOnClickListener
-
-
-            binding.btnEnter.isEnabled = false
-
-            loginAttempt(login, password)
+            checkAndLogin()
         }
 
         settingsViewModel.basicPrefs.observe(viewLifecycleOwner) {
@@ -165,6 +142,36 @@ class AuthFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun checkAndLogin() {
+        val clearLogin = binding.loginInputEditText.text.toString()
+        val login = completeLogin(clearLogin)
+        //if (login != DOMAIN_NAME) binding.loginTextInputLayout.setText(login)
+        val pswdTxt = binding.passwordInputEditText.text.toString()
+        val password = if (isBase64(pswdTxt)) pswdTxt else Base64.getEncoder()
+            .encodeToString(pswdTxt.toByteArray())
+
+        var thereAreErrors = false
+
+        if (clearLogin.isBlank()) {
+            thereAreErrors = true
+            binding.loginTextInputLayout.error = getString(R.string.empty_login_error_text)
+        }
+
+        if (password.isNullOrBlank()) {
+            thereAreErrors = true
+            binding.passwordTextInputLayout.error =
+                getString(R.string.empty_password_error_text)
+        }
+
+        if (thereAreErrors) return
+
+
+        binding.btnEnter.isEnabled = false
+
+        loginAttempt(login, password)
     }
 
     private fun openSettingsDialog() {
@@ -282,6 +289,7 @@ class AuthFragment : Fragment() {
         binding.loginInputEditText.setText("")
         binding.passwordInputEditText.setText("")
     }
+
 
     override fun onResume() {
         clearForm()
