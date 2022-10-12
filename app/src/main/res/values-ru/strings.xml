@@ -33,12 +33,12 @@
     <string name="err_http_service_url_not_set">Не задан URL HTTP-сервиса 1C</string>
     <string name="nomenclature_title">Номенклатура</string>
     <string name="measure_of_unit_title">Ед. изм.</string>
-    <string name="division_title">Подразделение:\n</string>
+    <string name="division_title">Подразделение</string>
     <string name="warehouse_title">Склад</string>
     <string name="workwear_ordinary_title">Спецодежда (обычная)</string>
     <string name="workwear_disposable_title">Спецодежда (одноразовая)</string>
-    <string name="purpose_of_use_title">Назначение использования:\n</string>
-    <string name="physical_person_title">Физическое лицо:\n</string>
+    <string name="purpose_of_use_title">Назначение использования</string>
+    <string name="physical_person_title">Физическое лицо</string>
     <string name="owner_title">Ответственный:</string>
     <string name="documents_settings_title">Создание документов</string>
     <string name="warehouse_list_description">Выберите склад</string>
@@ -55,4 +55,5 @@
     <string name="request_to_server">Запрос на сервер...</string>
     <string name="question_exit_text">Вы действительно хотите выйти?</string>
     <string name="ok_text">Ok</string>
+    <string name="quantity_full_text">Количество</string>
 </resources>

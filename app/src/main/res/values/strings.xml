@@ -44,12 +44,12 @@
     <!--    Детальная форма сканирования-->
     <string name="nomenclature_title">Nomenclature</string>
     <string name="measure_of_unit_title">UOM</string>
-    <string name="division_title">Division\n</string>
+    <string name="division_title">Division</string>
     <string name="workwear_ordinary_title">Workwear (regular)</string>
     <string name="workwear_disposable_title">Workwear (disposable)</string>
     <string name="warehouse_title">Warehouse</string>
-    <string name="purpose_of_use_title">Purpose of use:\n</string>
-    <string name="physical_person_title">Physical person:\n</string>
+    <string name="purpose_of_use_title">Purpose of use</string>
+    <string name="physical_person_title">Physical person</string>
     <string name="owner_title">Owner:</string>
     <string name="documents_settings_title">Creating documents</string>
     <string name="warehouse_list_description">Select a warehouse</string>
@@ -66,4 +66,5 @@
     <string name="request_to_server">Request to the server...</string>
     <string name="question_exit_text">Do you really want to get out?</string>
     <string name="ok_text">Ok</string>
+    <string name="quantity_full_text">Quantity</string>
 </resources>

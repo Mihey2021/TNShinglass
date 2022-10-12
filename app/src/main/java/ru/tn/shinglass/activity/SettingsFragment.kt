@@ -3,12 +3,10 @@ package ru.tn.shinglass.activity
 //import ru.tn.shinglass.adapters.ru.tn.shinglass.adapters.DynamicListAdapter
 import android.content.SharedPreferences
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -16,9 +14,10 @@ import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.adapters.DynamicListAdapter
-import ru.tn.shinglass.adapters.extendsPreferences.ExtendListPreference
+import ru.tn.shinglass.adapters.extendsComponents.ExtendListPreference
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.data.api.ApiService
+import ru.tn.shinglass.models.Division
 import ru.tn.shinglass.models.Warehouse
 //import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
@@ -71,12 +70,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 return false
             }
         })
-//        {
-//            if (warehouseListPreference.getDataListArray().isEmpty())
-//                setWarehousestDataList(warehouseListPreference)
-//            //settingsViewModel.updateWarehousesDataList(apiService)
-//            return@setOnPreferenceClickListener true
-//        }
+
+        val divisionListPreference = ExtendListPreference<Division>(requireContext())
+        val divisionAdapter = DynamicListAdapter<Division>(requireContext(), R.layout.dynamic_prefs_layout)
+
         categoryDocSettings.addPreference(warehouseListPreference)
 
         val prefListener =
