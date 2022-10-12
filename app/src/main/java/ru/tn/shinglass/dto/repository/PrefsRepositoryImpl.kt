@@ -33,14 +33,5 @@ class PrefsRepositoryImpl(context: Context) : PrefsRepository {
         return basicPreferences.getString(key, "")
     }
 
-//    override fun setAuthData(user1C: User1C?) {
-//        _userData.value = user1C
-////        with(prefs.edit()) {
-////            putString(key, gson.toJson(user1C))
-////            apply()
-////        }
-//    }
-//
-//    override fun getAuthData(): User1C? = userData.value
 
 }

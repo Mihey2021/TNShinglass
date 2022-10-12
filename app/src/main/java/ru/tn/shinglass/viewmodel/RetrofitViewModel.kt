@@ -10,6 +10,7 @@ import ru.tn.shinglass.dto.repository.PrefsRepositoryImpl
 import ru.tn.shinglass.dto.repository.RetrofitRepositoryImpl
 import ru.tn.shinglass.models.PhisicalPerson
 import ru.tn.shinglass.models.RequestError
+import ru.tn.shinglass.models.Warehouse
 import java.lang.Exception
 
 
@@ -21,19 +22,38 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
     val listDataPhisicalPersons: LiveData<List<PhisicalPerson>>
         get() = _listDataPhisicalPersons
 
-    private val _requestError: MutableLiveData<RequestError> = MutableLiveData()
-    val requestError: LiveData<RequestError>
+    private val _listDataWarehouses: MutableLiveData<List<Warehouse>> = MutableLiveData(listOf())
+    val listDataWarehouses: LiveData<List<Warehouse>>
+        get() = _listDataWarehouses
+
+    private val _requestError: MutableLiveData<RequestError?> = MutableLiveData(null)
+    val requestError: LiveData<RequestError?>
         get() = _requestError
 
     fun getPhysicalPersonList() {
         repository.getPhysicalPersonList(object : RetrofitRepository.Callback<List<PhisicalPerson>> {
             override fun onSuccess(receivedData: List<PhisicalPerson>) {
                 _listDataPhisicalPersons.value = receivedData
+                _requestError.value = null
             }
 
             override fun onError(e: Exception) {
                 _requestError.value = RequestError(e.message.toString(), "getPhisicalPersonList")
-                super.onError(e)
+                //super.onError(e)
+            }
+        })
+    }
+
+    fun getAllWarehouses() {
+        repository.getAllWarehousesList(object : RetrofitRepository.Callback<List<Warehouse>> {
+            override fun onSuccess(receivedData: List<Warehouse>) {
+                _listDataWarehouses.value = receivedData
+                _requestError.value = null
+            }
+
+            override fun onError(e: Exception) {
+                _requestError.value = RequestError(e.message.toString(), "getAllWarehousesList")
+                //super.onError(e)
             }
         })
     }

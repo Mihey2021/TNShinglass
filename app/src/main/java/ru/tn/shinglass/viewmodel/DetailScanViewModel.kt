@@ -28,4 +28,7 @@ class DetailScanViewModel(application: Application): AndroidViewModel(applicatio
     fun getPreferenceByKey(key: String) = repositoryPrefs.getPreferenceByKey(key)
 
     fun getWarehouseByGuid(guid: String) = repositoryWarehouses.getWarehouseByGuid(guid)
+
+    fun getAllWarehousesList() = repositoryWarehouses.getAllWarehouses()
+
 }

@@ -74,9 +74,8 @@
                     android:id="@+id/divisionTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:enabled="false"
                     android:imeOptions="actionDone"
-                    android:inputType="text"
+                    android:inputType="none"
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -90,7 +89,7 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/warehouseTextInputLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
@@ -100,14 +99,18 @@
                 app:errorEnabled="true"
                 app:startIconDrawable="@drawable/ic_baseline_warehouse_24">
 
-                <com.google.android.material.textfield.TextInputEditText
+<!--                <com.google.android.material.textfield.TextInputEditText-->
+<!--                    android:id="@+id/warehouseTextView"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:imeOptions="actionDone"-->
+<!--                    android:inputType="text"-->
+<!--                    android:maxLines="1" />-->
+                <AutoCompleteTextView
                     android:id="@+id/warehouseTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:imeOptions="actionDone"
-                    android:inputType="text"
-                    android:maxLines="1" />
+                    android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
 <!--            <TextView-->
@@ -172,7 +175,7 @@
                     android:id="@+id/phisicalPersonTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="none"/>
+                    android:inputType="text" />
 
             </com.google.android.material.textfield.TextInputLayout>
 

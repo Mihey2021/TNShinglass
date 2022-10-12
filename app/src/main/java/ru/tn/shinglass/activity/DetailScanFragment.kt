@@ -21,6 +21,7 @@ import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.api.ApiUtils
+import ru.tn.shinglass.databinding.FragmentDesktopBinding
 import ru.tn.shinglass.databinding.FragmentDetailScanBinding
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.models.Option
@@ -41,7 +42,6 @@ class DetailScanFragment : Fragment() {
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val retrofitViewModel: RetrofitViewModel by viewModels()
 
-    private var dataList = arrayListOf<PhisicalPerson>()
     private var progressDialog: AlertDialog? = null
 
     override fun onCreateView(
@@ -57,15 +57,36 @@ class DetailScanFragment : Fragment() {
         with(binding) {
             operationTitleTextView.text = selectedOption.title
             //divisionTextView.setText("Подразделение из настроек")
+
+            divisionTextInputLayout.error = "Подразделение не указано в настройках!".toString()
+
+
             val warehouseGuid = viewModel.getPreferenceByKey("warehouse_guid")
             if (warehouseGuid.isNullOrBlank()) {
-                divisionTextInputLayout.error = "Подразделение не указано в настройках!".toString()
+                warehouseTextInputLayout.error = "В настройках не задан склад!".toString()
             } else {
-                divisionTextView.setText(viewModel.getWarehouseByGuid(warehouseGuid)?.title)
-                divisionTextInputLayout.error = null
+                warehouseTextView.setText(viewModel.getWarehouseByGuid(warehouseGuid)?.title)
+                warehouseTextInputLayout.error = null
             }
+            warehouseTextView.setOnClickListener {
+                if (warehouseTextView.adapter == null) {
+                    progressDialog =
+                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+                    getAllWarehousesList(binding)
+                }
+            }
+            warehouseTextView.setOnItemClickListener { adapterView, _, position, _ ->
+                val warehouseItem = adapterView.getItemAtPosition(position) as Warehouse
+                warehouseTextView.setText(warehouseItem.title)
+            }
+//            warehouseTextInputLayout.setEndIconOnClickListener {
+//                if (warehouseTextView.adapter == null) {
+//                    progressDialog =
+//                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+//                    getAllWarehousesList(binding)
+//                }
+//            }
 
-            warehouseTextView.setText("Склад из натроек")
             itemTextView.setText(itemBarCode)
             countEditText.setText("1.0")
             //countEditText.contentDescription = "шт."
@@ -83,44 +104,97 @@ class DetailScanFragment : Fragment() {
             //phisicalPersonTextView.setText("Выбранное физическое лицо")
 
             phisicalPersonTextView.setOnClickListener {
-                //dataList = setPhisicalPersonDataList()
-                if (dataList.isNotEmpty()) {
-                    val adapter = DynamicListAdapter<PhisicalPerson>(
-                        requireContext(),
-                        R.layout.dynamic_prefs_layout,
-                        dataList
-                    )
-                    phisicalPersonTextView.setAdapter(adapter)
-                } else {
+                if (phisicalPersonTextView.adapter == null) {
                     getPhysicalPersonList()
                     progressDialog =
                         DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
                 }
+            }
+            phisicalPersonTextView.setOnItemClickListener { adapterView, _, position, _ ->
+                val physivalPeron = adapterView.getItemAtPosition(position) as PhisicalPerson
+                phisicalPersonTextView.setText(physivalPeron.fio)
             }
 
             ownerTextView.setText("${getString(R.string.owner_title)} ${user1C.getUser1C()}")
         }
 
         retrofitViewModel.listDataPhisicalPersons.observe(viewLifecycleOwner) {
+
+            if (it.isEmpty()) return@observe
+
+            val dataList = arrayListOf<PhisicalPerson>()
             it.forEach { person -> dataList.add(person) }
             progressDialog?.dismiss()
-            binding.phisicalPersonTextView.callOnClick()
+            val adapter = DynamicListAdapter<PhisicalPerson>(
+                requireContext(),
+                R.layout.dynamic_prefs_layout,
+                dataList
+            )
+            binding.phisicalPersonTextView.setAdapter(adapter)
+            //binding.phisicalPersonTextView.callOnClick()
         }
 
-        retrofitViewModel.requestError.observe(viewLifecycleOwner) {error ->
+        retrofitViewModel.listDataWarehouses.observe(viewLifecycleOwner) {
+            if (it.isEmpty()) return@observe
+            setWarehousesAdapter(it, binding)
+        }
+
+        retrofitViewModel.requestError.observe(viewLifecycleOwner) { error ->
+
+            if (error == null) return@observe
+
             progressDialog?.dismiss()
-            DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR, error.message, null, object : OnDialogsInteractionListener {
-                override fun onPositiveClickButton() {
-                    if(error.requestName == "getPhysicalPersonList")
-                        progressDialog?.show()
-                        getPhysicalPersonList()
-                }
-            })
-        }
+            DialogScreen.getDialog(
+                requireContext(),
+                DialogScreen.IDD_ERROR,
+                error.message,
+                null,
+                object : OnDialogsInteractionListener {
+                    override fun onPositiveClickButton() {
+                        when (error.requestName) {
+                            "getPhysicalPersonList" -> {
+                                progressDialog?.show()
+                                getPhysicalPersonList()
+                            }
+                            "getAllWarehousesList" -> {
+                                progressDialog?.show()
+                                getAllWarehousesList(binding)
+                            }
 
+                        }
+                    }
+                })
+        }
 
         return binding.root
     }
+
+    private fun setWarehousesAdapter(
+        warehousesList: List<Warehouse>,
+        binding: FragmentDetailScanBinding
+    ) {
+
+        val dataList = arrayListOf<Warehouse>()
+        warehousesList.forEach { warehouse -> dataList.add(warehouse) }
+        progressDialog?.dismiss()
+        val adapter = DynamicListAdapter<Warehouse>(
+            requireContext(),
+            R.layout.dynamic_prefs_layout,
+            dataList
+        )
+        binding.warehouseTextView.setAdapter(adapter)
+
+    }
+
+    private fun getAllWarehousesList(binding: FragmentDetailScanBinding) {
+        val dbWarehouses = viewModel.getAllWarehousesList()
+        if (dbWarehouses.isEmpty()) {
+            retrofitViewModel.getAllWarehouses()
+        } else {
+            setWarehousesAdapter(dbWarehouses, binding)
+        }
+    }
+
 
     private fun getPhysicalPersonList() {
         retrofitViewModel.getPhysicalPersonList()
