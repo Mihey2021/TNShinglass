@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TNShinglass</string>
+    <string name="app_name">TN Shinglas</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <!-- TODO: Remove or change this placeholder text -->
@@ -61,4 +61,9 @@
     <string name="error_loading">An error occurred when accessing the server. Repeat later.</string>
     <string name="settings_for_substituting_text">Settings for substituting values into documents</string>
     <string name="cancel_text">Cancel</string>
+    <string name="empty_login_error_text">Login is not specified!</string>
+    <string name="empty_password_error_text">Password is not specified!</string>
+    <string name="request_to_server">Request to the server...</string>
+    <string name="question_exit_text">Do you really want to get out?</string>
+    <string name="ok_text">Ok</string>
 </resources>

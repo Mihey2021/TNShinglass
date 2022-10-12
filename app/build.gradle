@@ -91,6 +91,10 @@ dependencies {
     //Конвертер GSON и XML
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
+    //Круговое представление изображения
+    def circleimageview_version = "3.1.0"
+    implementation "de.hdodenhof:circleimageview:$circleimageview_version"
+
 //    //anko
 //    def anko_version = "0.10.8"
 //    implementation "org.jetbrains.anko:anko-sdk25:$anko_version"

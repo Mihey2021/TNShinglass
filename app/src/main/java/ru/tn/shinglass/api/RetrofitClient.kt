@@ -36,26 +36,24 @@ object RetrofitClient {
 
     private fun initializeBasicPrefs(sharedPrefs: SharedPreferences) {
         var editingSharedPrefs = false
-        if (sharedPrefs != null) {
-            with(sharedPrefs) {
-                val editor = edit()
-                if (!contains(Settings.URL_SETTINGS.value)) {
-                    editingSharedPrefs = true
-                    editor.putString(
-                        Settings.URL_SETTINGS.value,
-                        "https://10.16.62.7/zil-test/hs/PalletQRCode/"
-                    )
-                }
-                if (!contains(Settings.USER_NAME_SETTINGS.value)) {
-                    editingSharedPrefs = true
-                    editor.putString(Settings.USER_NAME_SETTINGS.value, "obmen")
-                }
-                if (!contains(Settings.USER_PASSWORD_SETTINGS.value)) {
-                    editingSharedPrefs = true
-                    editor.putString(Settings.USER_PASSWORD_SETTINGS.value, "123")
-                }
-                if (editingSharedPrefs) editor.apply()
+        with(sharedPrefs) {
+            val editor = edit()
+            if (!contains(Settings.URL_SETTINGS.value)) {
+                editingSharedPrefs = true
+                editor.putString(
+                    Settings.URL_SETTINGS.value,
+                    "https://10.16.62.7/zil-test/hs/PalletQRCode/"
+                )
             }
+            if (!contains(Settings.USER_NAME_SETTINGS.value)) {
+                editingSharedPrefs = true
+                editor.putString(Settings.USER_NAME_SETTINGS.value, "obmen")
+            }
+            if (!contains(Settings.USER_PASSWORD_SETTINGS.value)) {
+                editingSharedPrefs = true
+                editor.putString(Settings.USER_PASSWORD_SETTINGS.value, "123")
+            }
+            if (editingSharedPrefs) editor.apply()
         }
     }
 }
