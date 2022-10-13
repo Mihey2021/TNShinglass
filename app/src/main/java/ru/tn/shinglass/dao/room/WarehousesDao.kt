@@ -16,6 +16,9 @@ interface WarehousesDao {
     @Query("SELECT id, title, guid, division_id FROM WarehousesEntity WHERE guid=:guid")
     fun getWarehouseByGuid(guid: String): WarehousesEntity?
 
+    @Query("SELECT id, title, guid, division_id FROM WarehousesEntity WHERE id=:id")
+    fun getWarehouseById(id: Long): WarehousesEntity?
+
     @Query("SELECT COUNT(id) FROM WarehousesEntity")
     fun getCountAllRecords(): Long
 

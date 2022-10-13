@@ -27,7 +27,7 @@ class WarehousesRepositoryRoomImpl(private val dao: WarehousesDao) : WarehousesR
     override fun getWarehousesCountRecordsByDivision(divisionId: Long) =
         dao.getCountRecordsByDivision(divisionId)
 
-    override fun save(warehouses: List<Warehouse>) {
+    override fun saveWarehouses(warehouses: List<Warehouse>) {
         warehouses.forEach { warehouse -> dao.save(WarehousesEntity.fromDto(warehouse)) }
     }
 

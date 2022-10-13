@@ -5,14 +5,17 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import ru.tn.shinglass.dao.room.OptionsDao
+import ru.tn.shinglass.dao.room.TableScanDao
 import ru.tn.shinglass.dao.room.WarehousesDao
 import ru.tn.shinglass.entity.OptionsEntity
+import ru.tn.shinglass.entity.TableScanEntity
 import ru.tn.shinglass.entity.WarehousesEntity
 
-@Database(entities = [OptionsEntity::class, WarehousesEntity::class], version = 1)
+@Database(entities = [OptionsEntity::class, WarehousesEntity::class, TableScanEntity::class], version = 1)
 abstract class AppDb : RoomDatabase() {
     abstract fun optionsDao(): OptionsDao
     abstract fun warehousesDao(): WarehousesDao
+    abstract fun tableScanDao(): TableScanDao
 
     companion object {
         @Volatile

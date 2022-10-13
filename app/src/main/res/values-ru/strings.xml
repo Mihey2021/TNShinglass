@@ -56,4 +56,5 @@
     <string name="question_exit_text">Вы действительно хотите выйти?</string>
     <string name="ok_text">Ok</string>
     <string name="quantity_full_text">Количество</string>
+    <string name="apply_text">Подтвердить</string>
 </resources>

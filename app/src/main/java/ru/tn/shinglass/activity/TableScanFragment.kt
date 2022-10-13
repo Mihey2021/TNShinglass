@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.setFragmentResult
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import ru.tn.shinglass.R
 import ru.tn.shinglass.databinding.FragmentTableScanBinding
@@ -16,9 +17,12 @@ import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.OnTableScanItemInteractionListener
 import ru.tn.shinglass.adapters.TableScanAdapter
 import ru.tn.shinglass.dto.models.User1C
-import ru.tn.shinglass.models.CurrentScanData
+import ru.tn.shinglass.models.TableScan
+import ru.tn.shinglass.viewmodel.TableScanFragmentViewModel
 
 class TableScanFragment : Fragment() {
+
+    private val viewModel: TableScanFragmentViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -37,47 +41,47 @@ class TableScanFragment : Fragment() {
         val user1C = arguments?.getSerializable("userData") as User1C
         setFragmentResult("requestUserData", bundleOf("userData" to user1C))
 
-        var demoData = listOf(
-            CurrentScanData
-                (
-                id = 0,
-                guid = "dfasdf-sdfsdf-sdf-sdf",
-                title = "Test data Test data Test data Test data Test data Test data Test data Test data Test data Test data Test data Test data",
-                count = 16.0,
-                unitOfMeasureGuid = "dsfsdfsdf-sdfgfgfd-fdgfdgfg-fhgdgdfgf",
-                unitOfMeasureTitle = "шт.",
-                barcode = "4562132486"
-            ),
-            CurrentScanData
-                (
-                id = 1,
-                guid = "dfasdf-sdfsdf-sdf-sdf",
-                title = "Test data 2 bla-bla-bla",
-                count = 1.6,
-                unitOfMeasureGuid = "dsfsdfsdf-sdfgfgfd-fdgfdgfg-fhgdgdfgf",
-                unitOfMeasureTitle = "кг.",
-                barcode = "4562132486"
-            )
-        )
+//        var demoData = listOf(
+//            CurrentScanData
+//                (
+//                id = 0,
+//                guid = "dfasdf-sdfsdf-sdf-sdf",
+//                title = "Test data Test data Test data Test data Test data Test data Test data Test data Test data Test data Test data Test data",
+//                count = 16.0,
+//                unitOfMeasureGuid = "dsfsdfsdf-sdfgfgfd-fdgfdgfg-fhgdgdfgf",
+//                unitOfMeasureTitle = "шт.",
+//                barcode = "4562132486"
+//            ),
+//            CurrentScanData
+//                (
+//                id = 1,
+//                guid = "dfasdf-sdfsdf-sdf-sdf",
+//                title = "Test data 2 bla-bla-bla",
+//                count = 1.6,
+//                unitOfMeasureGuid = "dsfsdfsdf-sdfgfgfd-fdgfdgfg-fhgdgdfgf",
+//                unitOfMeasureTitle = "кг.",
+//                barcode = "4562132486"
+//            )
+//        )
         val adapter = TableScanAdapter(object : OnTableScanItemInteractionListener {
-            override fun selectItem(item: CurrentScanData) {
+            override fun selectItem(item: TableScan) {
                 //super.selectItem(item)
                 //TODO: Для отладки
                 val args = Bundle()
                 args.putSerializable("userData", user1C)
                 args.putSerializable("selectedOption", selectedOption)
                 args.putString("itemBarCode", "")
+                args.putSerializable("scanRecord", item)
                 findNavController().navigate(R.id.action_tableScanFragment_to_detailScanFragment, args)
             }
         })
 
         binding.list.adapter = adapter
 
+        viewModel.data.observe(viewLifecycleOwner) {
+            adapter.submitList(it)
+        }
 
-
-
-
-        adapter.submitList(demoData)
 
         BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) {
 
@@ -87,25 +91,26 @@ class TableScanFragment : Fragment() {
 
             if (dataScanBarcode == "") return@observe
 
-            demoData += listOf(
-                CurrentScanData
-                    (
-                    id = 2,
-                    guid = "dfasdf-sdfsdf-sdf-sdf",
-                    title = "Test data 3",
-                    count = 21.0,
-                    unitOfMeasureGuid = "dsfsdfsdf-sdfgfgfd-fdgfdgfg-fhgdgdfgf",
-                    unitOfMeasureTitle = "упак.",
-                    barcode = "4562132486"
-                )
-            )
-
-            adapter.submitList(demoData)
+//            demoData += listOf(
+//                TableScan
+//                    (
+//                    id = 2,
+//                    guid = "dfasdf-sdfsdf-sdf-sdf",
+//                    title = "Test data 3",
+//                    count = 21.0,
+//                    unitOfMeasureGuid = "dsfsdfsdf-sdfgfgfd-fdgfdgfg-fhgdgdfgf",
+//                    unitOfMeasureTitle = "упак.",
+//                    barcode = "4562132486"
+//                )
+//            )
+//
+//            adapter.submitList(demoData)
 
             val args = Bundle()
             args.putSerializable("userData", user1C)
             args.putSerializable("selectedOption", selectedOption)
             args.putString("itemBarCode", dataScanBarcode)
+            args.putSerializable("scanRecord", TableScan(OwnerGuid = user1C.getUserGUID()))
             findNavController().navigate(R.id.action_tableScanFragment_to_detailScanFragment, args)
 
 //            val scanDialog = AlertDialog.Builder(requireContext())

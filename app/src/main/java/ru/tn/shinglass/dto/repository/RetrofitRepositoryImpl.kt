@@ -10,6 +10,7 @@ import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.domain.repository.RetrofitRepository
 import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C
+import ru.tn.shinglass.models.Cells
 import ru.tn.shinglass.models.PhisicalPerson
 import ru.tn.shinglass.models.Warehouse
 
@@ -26,6 +27,10 @@ class RetrofitRepositoryImpl : RetrofitRepository {
 
     override fun getAllWarehousesList(callback: RetrofitRepository.Callback<List<Warehouse>>) {
         apiService?.getAllWarehousesList()?.enqueue(getCallbackHandler(callback))
+    }
+
+    override fun getCellByBarcode(barcode: String, callback: RetrofitRepository.Callback<Cells>) {
+        apiService?.getCellByBarcode(barcode)?.enqueue(getCallbackHandler(callback))
     }
 
     private fun <T> getCallbackHandler(callback: RetrofitRepository.Callback<T>): Callback<T> {

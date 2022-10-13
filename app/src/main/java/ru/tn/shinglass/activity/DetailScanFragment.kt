@@ -1,5 +1,6 @@
 package ru.tn.shinglass.activity
 
+import android.bluetooth.le.ScanRecord
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -9,6 +10,7 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -19,6 +21,7 @@ import retrofit2.Response
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
+import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.databinding.FragmentDesktopBinding
@@ -26,6 +29,7 @@ import ru.tn.shinglass.databinding.FragmentDetailScanBinding
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.models.Option
 import ru.tn.shinglass.models.PhisicalPerson
+import ru.tn.shinglass.models.TableScan
 import ru.tn.shinglass.models.Warehouse
 import ru.tn.shinglass.viewmodel.DetailScanViewModel
 import ru.tn.shinglass.viewmodel.RetrofitViewModel
@@ -43,6 +47,7 @@ class DetailScanFragment : Fragment() {
     private val retrofitViewModel: RetrofitViewModel by viewModels()
 
     private var progressDialog: AlertDialog? = null
+    private lateinit var currentRecord: TableScan
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -53,19 +58,40 @@ class DetailScanFragment : Fragment() {
         val selectedOption = arguments?.getSerializable("selectedOption") as Option
         val user1C = arguments?.getSerializable("userData") as User1C
         val itemBarCode = arguments?.getString("itemBarCode")
+        var scanRecord = arguments?.getSerializable("scanRecord") as TableScan
+
+        val tempScanRecord = TempScanRecord(scanRecord)
+
+        //currentRecord = TableScan(OwnerGuid = user1C.getUserGUID())
 
         with(binding) {
             operationTitleTextView.text = selectedOption.title
             //divisionTextView.setText("Подразделение из настроек")
 
-            divisionTextInputLayout.error = "Подразделение не указано в настройках!".toString()
-
-
-            val warehouseGuid = viewModel.getPreferenceByKey("warehouse_guid")
-            if (warehouseGuid.isNullOrBlank()) {
-                warehouseTextInputLayout.error = "В настройках не задан склад!".toString()
+            if (selectedOption.type == "ИНВЕНТАРИЗАЦИЯ") {
+                divisionTextInputLayout.visibility = View.GONE
+                purposeOfUseTextInputLayout.visibility = View.GONE
+                workwearDisposableCheckBox.visibility = View.GONE
+                workwearOrdinaryCheckBox.visibility = View.GONE
             } else {
-                warehouseTextView.setText(viewModel.getWarehouseByGuid(warehouseGuid)?.title)
+                divisionTextInputLayout.visibility = View.VISIBLE
+                purposeOfUseTextInputLayout.visibility = View.VISIBLE
+                workwearDisposableCheckBox.visibility = View.VISIBLE
+                workwearOrdinaryCheckBox.visibility = View.VISIBLE
+            }
+            divisionTextInputLayout.error = "Укажите подразделение!".toString()
+
+
+            val warehouseGuidByPrefs = viewModel.getPreferenceByKey("warehouse_guid")
+            if (warehouseGuidByPrefs.isNullOrBlank()) {
+                warehouseTextInputLayout.error = "Склад не задан в настройках!".toString()
+            } else {
+                val warehouse = viewModel.getWarehouseByGuid(
+                    scanRecord?.warehouseGuid
+                        ?: warehouseGuidByPrefs
+                )
+                warehouseTextView.setText(warehouse?.title)
+                tempScanRecord.warehouseGuid = warehouse?.guid.toString()
                 warehouseTextInputLayout.error = null
             }
             warehouseTextView.setOnClickListener {
@@ -78,6 +104,7 @@ class DetailScanFragment : Fragment() {
             warehouseTextView.setOnItemClickListener { adapterView, _, position, _ ->
                 val warehouseItem = adapterView.getItemAtPosition(position) as Warehouse
                 warehouseTextView.setText(warehouseItem.title)
+                tempScanRecord.warehouseGuid = warehouseItem.guid
             }
 //            warehouseTextInputLayout.setEndIconOnClickListener {
 //                if (warehouseTextView.adapter == null) {
@@ -95,6 +122,7 @@ class DetailScanFragment : Fragment() {
 
             //itemMeasureOfUnitTitleTextView.text = "шт."
             workwearDisposableCheckBox.isChecked = true
+
             purposeOfUseTextView.setText("Выбранное назначение использования")
             purposeOfUseTextView.setOnClickListener {
                 //TODO: Обработка выбора назначения использования
@@ -103,6 +131,7 @@ class DetailScanFragment : Fragment() {
 
             //phisicalPersonTextView.setText("Выбранное физическое лицо")
 
+            phisicalPersonTextInputLayout.hint = "МОЛ"
             phisicalPersonTextView.setOnClickListener {
                 if (phisicalPersonTextView.adapter == null) {
                     getPhysicalPersonList()
@@ -113,10 +142,39 @@ class DetailScanFragment : Fragment() {
             phisicalPersonTextView.setOnItemClickListener { adapterView, _, position, _ ->
                 val physivalPeron = adapterView.getItemAtPosition(position) as PhisicalPerson
                 phisicalPersonTextView.setText(physivalPeron.fio)
+                tempScanRecord.PhysicalPersonGUID = physivalPeron.guid
+                tempScanRecord.PhysicalPersonTitle = physivalPeron.fio
             }
 
             ownerTextView.setText("${getString(R.string.owner_title)} ${user1C.getUser1C()}")
+            tempScanRecord.OwnerGuid = user1C.getUserGUID()
+
+            buttonApply.setOnClickListener {
+                сheckFillingAndSave(tempScanRecord, user1C, selectedOption)
+            }
         }
+
+        BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) {
+
+            val dataScanPair = BarcodeScannerReceiver.dataScan.value
+            val dataScanBarcode = dataScanPair?.first ?: ""
+            val dataScanBarcodeType = dataScanPair?.second ?: ""
+
+            if (dataScanBarcode == "") return@observe
+
+            if (dataScanBarcodeType == "Code 128")
+                retrofitViewModel.getCellByBarcode(dataScanBarcode)
+
+        }
+
+        retrofitViewModel.cellData.observe(viewLifecycleOwner) {
+
+            if (it == null) return@observe
+            binding.cellTextView.setText(it.title)
+
+        }
+
+
 
         retrofitViewModel.listDataPhisicalPersons.observe(viewLifecycleOwner) {
 
@@ -136,7 +194,8 @@ class DetailScanFragment : Fragment() {
 
         retrofitViewModel.listDataWarehouses.observe(viewLifecycleOwner) {
             if (it.isEmpty()) return@observe
-            setWarehousesAdapter(it, binding)
+            viewModel.saveWarehouses(it)
+            setWarehousesAdapter(binding)
         }
 
         retrofitViewModel.requestError.observe(viewLifecycleOwner) { error ->
@@ -169,12 +228,21 @@ class DetailScanFragment : Fragment() {
         return binding.root
     }
 
+    private fun сheckFillingAndSave(tempScanRecord: TempScanRecord, user1C: User1C, selectedOption: Option) {
+
+        viewModel.saveScanRecord(tempScanRecord.toScanRecord())
+        val args = Bundle()
+        args.putSerializable("userData", user1C)
+        args.putSerializable("selectedOption", selectedOption)
+        findNavController().navigate(R.id.action_detailScanFragment_to_tableScanFragment, args)
+    }
+
     private fun setWarehousesAdapter(
-        warehousesList: List<Warehouse>,
         binding: FragmentDetailScanBinding
     ) {
 
         val dataList = arrayListOf<Warehouse>()
+        val warehousesList = viewModel.getAllWarehousesList()
         warehousesList.forEach { warehouse -> dataList.add(warehouse) }
         progressDialog?.dismiss()
         val adapter = DynamicListAdapter<Warehouse>(
@@ -191,7 +259,7 @@ class DetailScanFragment : Fragment() {
         if (dbWarehouses.isEmpty()) {
             retrofitViewModel.getAllWarehouses()
         } else {
-            setWarehousesAdapter(dbWarehouses, binding)
+            setWarehousesAdapter(binding)
         }
     }
 
@@ -280,3 +348,77 @@ class DetailScanFragment : Fragment() {
 
 
 }
+
+class TempScanRecord {
+    var id: Long = 0L
+    var OperationId: Long = 0L
+    var OperationTitle: String = ""
+    var cellTitle: String = ""
+    var cellGuid: String = ""
+    var ItemTitle: String = ""
+    var ItemGUID: String = ""
+    var ItemMeasureOfUnitTitle: String = ""
+    var ItemMeasureOfUnitGUID: String = ""
+    var Count: Double = 0.0
+    var WorkwearOrdinary: Boolean = false
+    var WorkwearDisposable: Boolean = false
+    var DivisionId: Long = 0L
+    var DivisionOrganization: Long = 0L
+    var warehouseGuid: String = ""
+    var PurposeOfUseTitle: String = ""
+    var PurposeOfUse: String = ""
+    var PhysicalPersonTitle: String = ""
+    var PhysicalPersonGUID: String = ""
+    var OwnerGuid: String = ""
+
+    constructor(scanRecord: TableScan) {
+        id = scanRecord.id
+        OperationId = scanRecord.OperationId
+        OperationTitle = scanRecord.OperationTitle
+        cellTitle = scanRecord.cellTitle
+        cellGuid = scanRecord.cellGuid
+        ItemTitle = scanRecord.ItemTitle
+        ItemGUID = scanRecord.ItemGUID
+        ItemMeasureOfUnitTitle = scanRecord.ItemMeasureOfUnitTitle
+        ItemMeasureOfUnitGUID = scanRecord.ItemMeasureOfUnitGUID
+        Count = scanRecord.Count
+        WorkwearOrdinary = scanRecord.WorkwearOrdinary
+        WorkwearDisposable = scanRecord.WorkwearDisposable
+        DivisionId = scanRecord.DivisionId
+        DivisionOrganization = scanRecord.DivisionOrganization
+        warehouseGuid = scanRecord.warehouseGuid
+        PurposeOfUseTitle = scanRecord.PurposeOfUseTitle
+        PurposeOfUse = scanRecord.PurposeOfUse
+        PhysicalPersonTitle = scanRecord.PhysicalPersonTitle
+        PhysicalPersonGUID = scanRecord.PhysicalPersonGUID
+        OwnerGuid = scanRecord.OwnerGuid
+    }
+
+    fun toScanRecord(): TableScan {
+        return TableScan(
+            id = id,
+            OperationId = OperationId,
+            OperationTitle = OperationTitle,
+            cellTitle = cellTitle,
+            cellGuid = cellGuid,
+            ItemTitle = ItemTitle,
+            ItemGUID = ItemGUID,
+            ItemMeasureOfUnitTitle = ItemMeasureOfUnitTitle,
+            ItemMeasureOfUnitGUID = ItemMeasureOfUnitGUID,
+            Count = Count,
+            WorkwearOrdinary = WorkwearOrdinary,
+            WorkwearDisposable = WorkwearDisposable,
+            DivisionId = DivisionId,
+            DivisionOrganization = DivisionOrganization,
+            warehouseGuid = warehouseGuid,
+            PurposeOfUseTitle = PurposeOfUseTitle,
+            PurposeOfUse = PurposeOfUse,
+            PhysicalPersonTitle = PhysicalPersonTitle,
+            PhysicalPersonGUID = PhysicalPersonGUID,
+            OwnerGuid = OwnerGuid
+        )
+    }
+
+}
+
+

@@ -67,4 +67,5 @@
     <string name="question_exit_text">Do you really want to get out?</string>
     <string name="ok_text">Ok</string>
     <string name="quantity_full_text">Quantity</string>
+    <string name="apply_text">Apply</string>
 </resources>

@@ -180,39 +180,6 @@
             </com.google.android.material.textfield.TextInputLayout>
 
 <!--            <TextView-->
-<!--                android:id="@+id/itemTextView"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_margin="@dimen/margin4"-->
-<!--                android:fontFamily="monospace"-->
-<!--                android:inputType="textMultiLine"-->
-<!--                android:textAlignment="viewStart"-->
-<!--                android:textSize="16sp"-->
-<!--                android:textStyle="bold"-->
-<!--                tools:text="Номенклатура" />-->
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/itemTextInputLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginRight="8dp"
-                android:hint="@string/nomenclature_title"
-                app:errorEnabled="true">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/itemTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:imeOptions="actionDone"
-                    android:inputType="text"
-                    android:maxLines="1" />
-            </com.google.android.material.textfield.TextInputLayout>
-
-<!--            <TextView-->
 <!--                android:id="@+id/cellTxtView"-->
 <!--                android:layout_width="match_parent"-->
 <!--                android:layout_height="wrap_content"-->
@@ -237,6 +204,27 @@
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/cellTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/itemTextInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="8dp"
+                android:hint="@string/nomenclature_title"
+                app:errorEnabled="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/itemTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:enabled="false"
@@ -330,6 +318,13 @@
                 android:textSize="16sp"
                 android:textStyle="italic"
                 tools:text="Ответственный" />
+
+            <Button
+                android:id="@+id/buttonApply"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="@string/apply_text" />
 
         </LinearLayout>
     </ScrollView>

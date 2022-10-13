@@ -5,17 +5,12 @@ import android.content.*
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 //import ru.tn.shinglass.activity.apiService
-import ru.tn.shinglass.data.api.ApiService
 import ru.tn.shinglass.db.room.AppDb
 import ru.tn.shinglass.domain.repository.PrefsRepository
 import ru.tn.shinglass.domain.repository.WarehousesRepository
 import ru.tn.shinglass.dto.repository.PrefsRepositoryImpl
 import ru.tn.shinglass.dto.repository.WarehousesRepositoryRoomImpl
-import ru.tn.shinglass.models.Division
 import ru.tn.shinglass.models.Warehouse
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
@@ -57,7 +52,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 //        }
 //    }
 
-    fun save(warehouses: List<Warehouse>) = repositoryWarehouses.save(warehouses)
+    fun save(warehouses: List<Warehouse>) = repositoryWarehouses.saveWarehouses(warehouses)
     fun getWarehouseByGuid(guid: String) = repositoryWarehouses.getWarehouseByGuid(guid)
     fun getAllWarehousesByDivision(divisionId: Long) = repositoryWarehouses.getAllWarehousesByDivision(divisionId)
     fun getWarehousesCountRecords() = repositoryWarehouses.getWarehousesCountRecords()

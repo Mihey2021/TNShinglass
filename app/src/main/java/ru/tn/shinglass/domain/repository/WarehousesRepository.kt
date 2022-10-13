@@ -8,5 +8,5 @@ interface WarehousesRepository {
     fun getWarehouseByGuid(guid: String): Warehouse?
     fun getWarehousesCountRecords(): Long
     fun getWarehousesCountRecordsByDivision(divisionId: Long): Long
-    fun save(warehouses: List<Warehouse>)
+    fun saveWarehouses(warehouses: List<Warehouse>)
 }

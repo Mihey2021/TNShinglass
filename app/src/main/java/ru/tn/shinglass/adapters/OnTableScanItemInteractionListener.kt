@@ -1,8 +1,8 @@
 package ru.tn.shinglass.adapters
 
-import ru.tn.shinglass.models.CurrentScanData
+import ru.tn.shinglass.models.TableScan
 
 
 interface OnTableScanItemInteractionListener {
-    fun selectItem(item: CurrentScanData) {}
+    fun selectItem(item: TableScan) {}
 }

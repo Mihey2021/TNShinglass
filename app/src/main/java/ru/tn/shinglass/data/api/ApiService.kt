@@ -4,6 +4,7 @@ import retrofit2.Call
 import retrofit2.http.*
 import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C
+import ru.tn.shinglass.models.Cells
 import ru.tn.shinglass.models.PhisicalPerson
 import ru.tn.shinglass.models.Warehouse
 
@@ -23,4 +24,7 @@ interface ApiService {
 
     @GET("getPhisicalPersonList")
     fun getPhisicalPersonList(): Call<List<PhisicalPerson>>
+
+    @GET("getCellByBarcode")
+    fun getCellByBarcode(@Query("barcode") barcode: String): Call<Cells>
 }
