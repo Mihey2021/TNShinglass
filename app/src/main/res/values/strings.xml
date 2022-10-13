@@ -68,4 +68,6 @@
     <string name="ok_text">Ok</string>
     <string name="quantity_full_text">Quantity</string>
     <string name="apply_text">Apply</string>
+    <string name="complete_and_send_text">Complete and send to 1C</string>
+    <string name="add_more_text">Add\nmore</string>
 </resources>

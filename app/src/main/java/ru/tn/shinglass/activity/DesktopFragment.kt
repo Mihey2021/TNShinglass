@@ -74,4 +74,6 @@ class DesktopFragment : Fragment() {
 
         return binding.root
     }
+
 }
+

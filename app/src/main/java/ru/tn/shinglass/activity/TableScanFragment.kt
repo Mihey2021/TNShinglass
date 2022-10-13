@@ -24,6 +24,9 @@ class TableScanFragment : Fragment() {
 
     private val viewModel: TableScanFragmentViewModel by viewModels()
 
+    private lateinit var selectedOption: Option
+    private lateinit var user1C: User1C
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -36,33 +39,11 @@ class TableScanFragment : Fragment() {
             headerCellTextView.setTextColor(Color.BLACK)
         }
 
-        val selectedOption = arguments?.getSerializable("selectedOption") as Option
+        selectedOption = arguments?.getSerializable("selectedOption") as Option
         setFragmentResult("requestSelectedOption", bundleOf("selectedOption" to selectedOption))
-        val user1C = arguments?.getSerializable("userData") as User1C
+        user1C = arguments?.getSerializable("userData") as User1C
         setFragmentResult("requestUserData", bundleOf("userData" to user1C))
 
-//        var demoData = listOf(
-//            CurrentScanData
-//                (
-//                id = 0,
-//                guid = "dfasdf-sdfsdf-sdf-sdf",
-//                title = "Test data Test data Test data Test data Test data Test data Test data Test data Test data Test data Test data Test data",
-//                count = 16.0,
-//                unitOfMeasureGuid = "dsfsdfsdf-sdfgfgfd-fdgfdgfg-fhgdgdfgf",
-//                unitOfMeasureTitle = "шт.",
-//                barcode = "4562132486"
-//            ),
-//            CurrentScanData
-//                (
-//                id = 1,
-//                guid = "dfasdf-sdfsdf-sdf-sdf",
-//                title = "Test data 2 bla-bla-bla",
-//                count = 1.6,
-//                unitOfMeasureGuid = "dsfsdfsdf-sdfgfgfd-fdgfdgfg-fhgdgdfgf",
-//                unitOfMeasureTitle = "кг.",
-//                barcode = "4562132486"
-//            )
-//        )
         val adapter = TableScanAdapter(object : OnTableScanItemInteractionListener {
             override fun selectItem(item: TableScan) {
                 //super.selectItem(item)
@@ -78,6 +59,8 @@ class TableScanFragment : Fragment() {
 
         binding.list.adapter = adapter
 
+        viewModel.refreshTableScan(user1C.getUserGUID(), selectedOption.id)
+
         viewModel.data.observe(viewLifecycleOwner) {
             adapter.submitList(it)
         }
@@ -91,25 +74,10 @@ class TableScanFragment : Fragment() {
 
             if (dataScanBarcode == "") return@observe
 
-//            demoData += listOf(
-//                TableScan
-//                    (
-//                    id = 2,
-//                    guid = "dfasdf-sdfsdf-sdf-sdf",
-//                    title = "Test data 3",
-//                    count = 21.0,
-//                    unitOfMeasureGuid = "dsfsdfsdf-sdfgfgfd-fdgfdgfg-fhgdgdfgf",
-//                    unitOfMeasureTitle = "упак.",
-//                    barcode = "4562132486"
-//                )
-//            )
-//
-//            adapter.submitList(demoData)
-
             val args = Bundle()
             args.putSerializable("userData", user1C)
             args.putSerializable("selectedOption", selectedOption)
-            args.putString("itemBarCode", dataScanBarcode)
+            args.putString("barcode", dataScanBarcode)
             args.putSerializable("scanRecord", TableScan(OwnerGuid = user1C.getUserGUID()))
             findNavController().navigate(R.id.action_tableScanFragment_to_detailScanFragment, args)
 
@@ -131,4 +99,8 @@ class TableScanFragment : Fragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        viewModel.refreshTableScan(user1C.getUserGUID(), selectedOption.id)
+        super.onResume()
+    }
 }

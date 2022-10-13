@@ -28,7 +28,10 @@ class TableScanAdapter(private val onTableScanItemInteractionListener: OnTableSc
                 unitOfMeasureTextView.setTextColor(Color.BLACK)
                 cellTextView.text = tableScan.cellTitle
                 cellTextView.setTextColor(Color.BLACK)
-                titleTextView.setOnClickListener {
+//                titleTextView.setOnClickListener {
+//                    onTableScanItemInteractionListener.selectItem(tableScan)
+//                }
+                tableItemScanLayout.setOnClickListener {
                     onTableScanItemInteractionListener.selectItem(tableScan)
                 }
             }

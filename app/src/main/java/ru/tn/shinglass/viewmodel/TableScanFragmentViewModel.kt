@@ -18,9 +18,8 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
         get() = _data
 
 
-    fun getTableScan(ownerGuid: String, operationId: Long){
+    fun refreshTableScan(ownerGuid: String, operationId: Long){
         _data.value = repositoryTableScan.getAllScanRecordsByOwner(ownerGuid, operationId)
     }
-
 
 }

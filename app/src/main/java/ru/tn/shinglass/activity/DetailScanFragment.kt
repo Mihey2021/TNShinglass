@@ -4,11 +4,13 @@ import android.bluetooth.le.ScanRecord
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import kotlinx.coroutines.CoroutineScope
@@ -57,12 +59,14 @@ class DetailScanFragment : Fragment() {
 
         val selectedOption = arguments?.getSerializable("selectedOption") as Option
         val user1C = arguments?.getSerializable("userData") as User1C
-        val itemBarCode = arguments?.getString("itemBarCode")
+        var barcode = arguments?.getString("barcode")
         var scanRecord = arguments?.getSerializable("scanRecord") as TableScan
 
-        val tempScanRecord = TempScanRecord(scanRecord)
+        //BarcodeScannerReceiver.clearData()
 
-        //currentRecord = TableScan(OwnerGuid = user1C.getUserGUID())
+        val tempScanRecord = TempScanRecord(scanRecord)
+        tempScanRecord.OperationId = selectedOption.id
+        tempScanRecord.OperationTitle = selectedOption.title
 
         with(binding) {
             operationTitleTextView.text = selectedOption.title
@@ -104,6 +108,7 @@ class DetailScanFragment : Fragment() {
             warehouseTextView.setOnItemClickListener { adapterView, _, position, _ ->
                 val warehouseItem = adapterView.getItemAtPosition(position) as Warehouse
                 warehouseTextView.setText(warehouseItem.title)
+                warehouseTextInputLayout.error = null
                 tempScanRecord.warehouseGuid = warehouseItem.guid
             }
 //            warehouseTextInputLayout.setEndIconOnClickListener {
@@ -114,11 +119,20 @@ class DetailScanFragment : Fragment() {
 //                }
 //            }
 
-            itemTextView.setText(itemBarCode)
+            itemTextView.setText(barcode)
             countEditText.setText("1.0")
             //countEditText.contentDescription = "шт."
             if (!countEditText.text.isNullOrBlank())
                 countTextInputLayout.hint = "шт."
+            countEditText.setOnTouchListener { _, motionEvent ->
+                when (motionEvent.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        countTextInputLayout.error = null
+                        false
+                    }
+                    else -> false
+                }
+            }
 
             //itemMeasureOfUnitTitleTextView.text = "шт."
             workwearDisposableCheckBox.isChecked = true
@@ -142,6 +156,7 @@ class DetailScanFragment : Fragment() {
             phisicalPersonTextView.setOnItemClickListener { adapterView, _, position, _ ->
                 val physivalPeron = adapterView.getItemAtPosition(position) as PhisicalPerson
                 phisicalPersonTextView.setText(physivalPeron.fio)
+                phisicalPersonTextInputLayout.error = null
                 tempScanRecord.PhysicalPersonGUID = physivalPeron.guid
                 tempScanRecord.PhysicalPersonTitle = physivalPeron.fio
             }
@@ -150,27 +165,34 @@ class DetailScanFragment : Fragment() {
             tempScanRecord.OwnerGuid = user1C.getUserGUID()
 
             buttonApply.setOnClickListener {
-                сheckFillingAndSave(tempScanRecord, user1C, selectedOption)
+                сheckFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
             }
         }
 
         BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) {
 
             val dataScanPair = BarcodeScannerReceiver.dataScan.value
-            val dataScanBarcode = dataScanPair?.first ?: ""
+            val dataScanBarcodeFromScaner = dataScanPair?.first ?: ""
+            val dataScanBarcode =
+                if (dataScanBarcodeFromScaner == "") barcode ?: "" else dataScanBarcodeFromScaner
+            barcode = ""
+
             val dataScanBarcodeType = dataScanPair?.second ?: ""
 
             if (dataScanBarcode == "") return@observe
 
-            if (dataScanBarcodeType == "Code 128")
+            if (dataScanBarcodeType == "Code 128") {
                 retrofitViewModel.getCellByBarcode(dataScanBarcode)
-
+                binding.cellTextInputLayout.error = null
+            }
         }
 
         retrofitViewModel.cellData.observe(viewLifecycleOwner) {
 
             if (it == null) return@observe
             binding.cellTextView.setText(it.title)
+            tempScanRecord.cellGuid = it.guid
+            tempScanRecord.cellTitle = it.title
 
         }
 
@@ -228,13 +250,53 @@ class DetailScanFragment : Fragment() {
         return binding.root
     }
 
-    private fun сheckFillingAndSave(tempScanRecord: TempScanRecord, user1C: User1C, selectedOption: Option) {
+    private fun сheckFillingAndSave(
+        tempScanRecord: TempScanRecord,
+        user1C: User1C,
+        selectedOption: Option,
+        binding: FragmentDetailScanBinding
+    ) {
+
+        var isError = false
+
+        with(binding) {
+            if (binding.warehouseTextView.text.isNullOrBlank()) {
+                warehouseTextInputLayout.error = "Укажите склад!"
+                isError = true
+            }
+            if (binding.phisicalPersonTextView.text.isNullOrBlank()) {
+                phisicalPersonTextInputLayout.error = "Укажите МОЛ!"
+                isError = true
+            }
+            if (binding.cellTextView.text.isNullOrBlank()) {
+                cellTextInputLayout.error = "Ячейка не отсканирована!"
+                isError = true
+            }
+            if (binding.itemTextView.text.isNullOrBlank()) {
+                itemTextInputLayout.error = "Номенклатура не отсканирована!"
+                isError = true
+            }
+            if (binding.countEditText.text.toString().isBlank())
+                tempScanRecord.Count = 0.0
+            else
+                tempScanRecord.Count = binding.countEditText.text.toString().toDouble()
+
+            if (binding.countEditText.text.isNullOrBlank() || tempScanRecord.Count == 0.0) {
+                countTextInputLayout.error = "Количество не может быть нулевым!"
+                isError = true
+            }
+        }
+
+        if (isError) return
 
         viewModel.saveScanRecord(tempScanRecord.toScanRecord())
         val args = Bundle()
         args.putSerializable("userData", user1C)
         args.putSerializable("selectedOption", selectedOption)
-        findNavController().navigate(R.id.action_detailScanFragment_to_tableScanFragment, args)
+        //findNavController().navigate(R.id.action_detailScanFragment_to_tableScanFragment, args)
+        BarcodeScannerReceiver.clearData()
+        findNavController().navigateUp()
+        //requireActivity().supportFragmentManager.beginTransaction().remove(this).commit()
     }
 
     private fun setWarehousesAdapter(
@@ -346,7 +408,10 @@ class DetailScanFragment : Fragment() {
 //    return arrayPhisicalPersonList
 //}
 
-
+    override fun onStop() {
+        BarcodeScannerReceiver.clearData()
+        super.onStop()
+    }
 }
 
 class TempScanRecord {
