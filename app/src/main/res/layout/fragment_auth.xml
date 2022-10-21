@@ -19,18 +19,45 @@
         app:title="@string/app_name"
         app:titleTextColor="?colorOnPrimary" />
 
-    <ScrollView
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/profile_image"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="left"
+        android:alpha="0.1"
+        android:src="@drawable/ic_tn"
+        app:civ_border_color="?colorPrimary"
+        app:civ_border_width="3dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/appToolbar">
+        app:layout_constraintTop_toBottomOf="@id/appToolbar" />
+
+    <Button
+        android:id="@+id/btnEnter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="@string/enter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/authScrollLayout" />
+
+    <ScrollView
+        android:id="@+id/authScrollLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/btnEnter"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appToolbar"
+        tools:layout_constraintTop_toBottomOf="@id/appToolbar">
 
         <LinearLayout
             android:id="@+id/authorizationFormLinearLayout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_margin="24dp"
+            android:layout_marginLeft="24dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginRight="24dp"
             android:gravity="center_horizontal"
             android:orientation="vertical"
             app:layout_constraintTop_toBottomOf="@id/appToolbar"
@@ -44,14 +71,18 @@
             <!--            android:contentDescription="@string/tn_title"-->
             <!--            android:src="@drawable/ic_tn" />-->
 
-            <de.hdodenhof.circleimageview.CircleImageView
-                android:id="@+id/profile_image"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_marginBottom="16dp"
-                android:src="@drawable/ic_tn"
-                app:civ_border_color="?colorPrimary"
-                app:civ_border_width="3dp" />
+            <TextView
+                android:id="@+id/deviceInfoTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="8dp"
+                android:drawablePadding="@dimen/margin4"
+                android:drawableTint="@color/blue_gray_700"
+                app:drawableLeftCompat="@drawable/ic_baseline_settings_24"
+                tools:text="Device info" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/loginTextInputLayout"
@@ -97,26 +128,6 @@
                     android:inputType="textPassword" />
 
             </com.google.android.material.textfield.TextInputLayout>
-
-            <TextView
-                android:id="@+id/deviceInfoTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginRight="8dp"
-                android:drawablePadding="@dimen/margin4"
-                android:drawableTint="@color/blue_gray_700"
-                app:drawableLeftCompat="@drawable/ic_baseline_settings_24"
-                tools:text="Device info" />
-
-            <Button
-                android:id="@+id/btnEnter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8dp"
-                android:enabled="false"
-                android:text="@string/enter" />
 
 
         </LinearLayout>

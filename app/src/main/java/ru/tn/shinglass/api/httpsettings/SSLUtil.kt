@@ -1,8 +1,11 @@
 package ru.tn.shinglass.api.httpsettings
 
-import okhttp3.*
+
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
+import java.util.concurrent.TimeUnit
 import javax.net.ssl.*
 
 fun createSocketFactory(userName: String, password: String): OkHttpClient {
@@ -10,6 +13,9 @@ fun createSocketFactory(userName: String, password: String): OkHttpClient {
     val sClient = OkHttpClient.Builder().apply {
         addInterceptor(BasicAuthInterceptor(userName, password))
         protocols(mutableListOf(Protocol.HTTP_1_1))
+        connectTimeout(5, TimeUnit.MINUTES)
+        writeTimeout(5, TimeUnit.MINUTES)
+        readTimeout(5, TimeUnit.MINUTES)
     }.build()
 
     var sc: SSLContext? = null

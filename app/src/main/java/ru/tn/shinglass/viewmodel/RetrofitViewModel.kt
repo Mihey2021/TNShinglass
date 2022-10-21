@@ -4,14 +4,11 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import ru.tn.shinglass.domain.repository.PrefsRepository
 import ru.tn.shinglass.domain.repository.RetrofitRepository
-import ru.tn.shinglass.dto.repository.PrefsRepositoryImpl
+import ru.tn.shinglass.dto.models.CreatedDocumentDetails
 import ru.tn.shinglass.dto.repository.RetrofitRepositoryImpl
-import ru.tn.shinglass.models.Cells
-import ru.tn.shinglass.models.PhisicalPerson
-import ru.tn.shinglass.models.RequestError
-import ru.tn.shinglass.models.Warehouse
+import ru.tn.shinglass.entity.Nomenclature
+import ru.tn.shinglass.models.*
 import java.lang.Exception
 
 
@@ -31,6 +28,14 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
     private val _cellData: MutableLiveData<Cells> = MutableLiveData(null)
     val cellData: LiveData<Cells>
         get() = _cellData
+
+    private val _itemData: MutableLiveData<Nomenclature> = MutableLiveData(null)
+    val itemData: LiveData<Nomenclature>
+        get() = _itemData
+
+    private val _docCreated: MutableLiveData<CreatedDocumentDetails?> = MutableLiveData(null)
+    val docCreated: LiveData<CreatedDocumentDetails?>
+        get() = _docCreated
 
     private val _requestError: MutableLiveData<RequestError?> = MutableLiveData(null)
     val requestError: LiveData<RequestError?>
@@ -77,6 +82,37 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
                 //super.onError(e)
             }
         })
+    }
+
+    fun createInventoryOfGoods(scanRecords: List<TableScan>){
+        repository.createInventoryOfGoods(scanRecords, object : RetrofitRepository.Callback<CreatedDocumentDetails> {
+            override fun onSuccess(receivedData: CreatedDocumentDetails) {
+                _docCreated.value = receivedData
+                _requestError.value = null
+            }
+
+            override fun onError(e: Exception) {
+                _requestError.value = RequestError(e.message.toString(), "createInventoryOfGoods")
+            }
+        })
 
     }
+
+    fun resetTheDocumentCreatedFlag() {
+        _docCreated.value = null
+    }
+
+    fun getItemByBarcode(barcode: String) {
+        repository.getItemByBarcode(barcode, object : RetrofitRepository.Callback<Nomenclature> {
+            override fun onSuccess(receivedData: Nomenclature) {
+                _itemData.value = receivedData
+                _requestError.value = null
+            }
+
+            override fun onError(e: Exception) {
+                _requestError.value = RequestError(e.message.toString(), "getItemByBarcode")
+            }
+        })
+    }
+
 }

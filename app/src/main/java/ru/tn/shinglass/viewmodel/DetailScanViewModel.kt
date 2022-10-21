@@ -33,6 +33,6 @@ class DetailScanViewModel(application: Application): AndroidViewModel(applicatio
 
     fun getAllWarehousesList() = repositoryWarehouses.getAllWarehouses()
 
-    fun saveScanRecord(record: TableScan) = repositoryTableScan.saveScanRecord(record)
+    fun saveScanRecord(record: TableScan, forceOverwrite: Boolean) = repositoryTableScan.saveScanRecord(record, forceOverwrite)
 
 }

@@ -127,6 +127,7 @@
                     android:id="@+id/warehouseTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:imeOptions="actionDone"
                     android:inputType="text" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -192,6 +193,7 @@
                     android:id="@+id/phisicalPersonTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:imeOptions="actionDone"
                     android:inputType="text" />
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -307,6 +309,27 @@
                     android:maxLines="1" />
             </com.google.android.material.textfield.TextInputLayout>
 
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/qualityTextInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="8dp"
+                android:hint="@string/quality_text"
+                app:errorEnabled="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/qualityEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:maxLines="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
             <CheckBox
                 android:id="@+id/workwearOrdinaryCheckBox"
                 android:layout_width="match_parent"
@@ -333,7 +356,6 @@
                 android:layout_marginBottom="@dimen/margin4"
                 android:gravity="right"
                 android:textSize="16sp"
-                android:textStyle="italic"
                 tools:text="Ответственный" />
 
         </LinearLayout>

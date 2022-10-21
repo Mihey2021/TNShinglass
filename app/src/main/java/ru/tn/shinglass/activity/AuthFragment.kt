@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.widget.doAfterTextChanged
@@ -22,8 +23,10 @@ import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.data.api.ApiService
 import ru.tn.shinglass.databinding.FragmentAuthBinding
+import ru.tn.shinglass.databinding.InventoryInitDialogBinding
 import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C
+import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
 import java.util.*
 import java.util.regex.Matcher
@@ -37,6 +40,10 @@ class AuthFragment : Fragment() {
     private lateinit var binding: FragmentAuthBinding
 
     private val settingsViewModel: SettingsViewModel by viewModels(
+        ownerProducer = ::requireParentFragment
+    )
+
+    private val retrofitViewModel: RetrofitViewModel by viewModels(
         ownerProducer = ::requireParentFragment
     )
 
@@ -131,16 +138,29 @@ class AuthFragment : Fragment() {
 
         binding.btnEnter.isEnabled = (apiService != null)
 
+
+//        val layoutInflater = LayoutInflater.from(requireContext())//.inflate(R.layout.inventory_init_dialog, null)
+//        val dlgBinding = InventoryInitDialogBinding.inflate(layoutInflater)
+//        dlgBinding.cellTextView.setText("Wow!");
+//
+//        val dlg = DialogScreen.getDialog(
+//            requireContext(),
+//            DialogScreen.IDD_INPUT,
+//            title = "Enter text here",
+//            customView = dlgBinding.root,
+//        )
+
         binding.btnEnter.setOnClickListener {
 
-            val args = Bundle()
-            args.putSerializable("userData", User1C("Test","000-000-000"))
-            findNavController().navigate(
-                R.id.action_authFragment_to_desktopFragment,
-                args
-            )
-        //TODO: Для отладки
-        //checkAndLogin()
+//            //TODO: Для отладки
+//            val args = Bundle()
+//            args.putSerializable("userData", User1C("Test","000-000-000"))
+//            findNavController().navigate(
+//                R.id.action_authFragment_to_desktopFragment,
+//                args
+//            )
+
+            checkAndLogin()
         }
 
         settingsViewModel.basicPrefs.observe(viewLifecycleOwner) {

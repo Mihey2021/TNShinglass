@@ -70,4 +70,10 @@
     <string name="apply_text">Apply</string>
     <string name="complete_and_send_text">Complete and send to 1C</string>
     <string name="add_more_text">Add\nmore</string>
+    <string name="quality_text">Quality</string>
+    <string name="delete_text">Delete</string>
+    <string name="edit_record_text">Edit</string>
+    <string name="document_init_dialog_title">Requisites</string>
+    <string name="info_table_scan_start_text">To get started, scan the cell</string>
+    <string name="info_table_scan_continue_text">To continue, scan the cell or item.\nCurrent cell:</string>
 </resources>

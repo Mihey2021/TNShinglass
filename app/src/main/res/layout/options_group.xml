@@ -17,6 +17,7 @@
         android:fontFamily="sans-serif-light"
         android:paddingStart="@dimen/margin36"
         android:text="TextView"
+        android:textColor="@color/black"
         android:textSize="24sp"
         android:textStyle="bold"
         tools:text="Пункт меню" />

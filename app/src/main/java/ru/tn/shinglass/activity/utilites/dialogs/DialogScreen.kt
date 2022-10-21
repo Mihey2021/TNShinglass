@@ -1,6 +1,7 @@
 package ru.tn.shinglass.activity.utilites.dialogs
 
 import android.content.Context
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ru.tn.shinglass.R
@@ -10,13 +11,19 @@ object DialogScreen {
     const val IDD_ERROR_SINGLE_BUTTON = 2
     const val IDD_PROGRESS = 3
     const val IDD_QUESTION = 4
+    const val IDD_SUCCESS = 5
+    const val IDD_INPUT = 6
 
     fun getDialog(
         context: Context,
         ID: Int,
         message: String = "",
+        title: String = "",
         positiveButtonTitle: String? = null,
-        onDialogsInteractionListener: OnDialogsInteractionListener? = null
+        negativeButtonTitle: String? = null,
+        onDialogsInteractionListener: OnDialogsInteractionListener? = null,
+        customView: View? = null,
+        isCancelable: Boolean = false,
     ): AlertDialog {
         val alertDialog = MaterialAlertDialogBuilder(context)
         when (ID) {
@@ -24,7 +31,7 @@ object DialogScreen {
                 with(alertDialog) {
                     setTitle(context.resources.getString(R.string.err_an_error_has_occured))
                     setMessage(message)
-                    setCancelable(false)
+                    setCancelable(isCancelable)
                     setIcon(
                         context.resources.getDrawable(
                             R.drawable.ic_baseline_error_24,
@@ -43,25 +50,24 @@ object DialogScreen {
                     }
                     if (ID == 1) {
                         setNegativeButton(
-                            context.resources.getString(
-                                R.string.cancel_text
-                            )
+                            negativeButtonTitle ?: context.resources.getString(R.string.cancel_text)
                         ) { dialog, _ ->
                             onDialogsInteractionListener?.onNegativeClickButton()
-                            dialog.cancel() }
+                            dialog.cancel()
+                        }
                     }
                 }
             }
             3 -> {
                 with(alertDialog) {
                     setView(R.layout.progress_layout)
-                    setCancelable(false)
+                    setCancelable(isCancelable)
                 }
             }
             4 -> {
                 with(alertDialog) {
                     setTitle(message)
-                    setCancelable(false)
+                    setCancelable(isCancelable)
                     setIcon(
                         context.resources.getDrawable(
                             R.drawable.ic_baseline_question_outline_24,
@@ -69,15 +75,55 @@ object DialogScreen {
                         )
                     )
 
-                    setPositiveButton(positiveButtonTitle
-                        ?: context.resources.getString(R.string.ok_text)) { dialog, _ ->
+                    setPositiveButton(
+                        positiveButtonTitle
+                            ?: context.resources.getString(R.string.ok_text)
+                    ) { dialog, _ ->
                         onDialogsInteractionListener?.onPositiveClickButton()
                         dialog.dismiss()
                     }
 
-                    setNegativeButton(context.resources.getString(R.string.cancel_text)) { dialog, _ ->
+                    setNegativeButton(
+                        negativeButtonTitle ?: context.resources.getString(R.string.cancel_text)
+                    ) { dialog, _ ->
                         onDialogsInteractionListener?.onNegativeClickButton()
                         dialog.cancel()
+                    }
+                }
+            }
+            5 -> {
+                with(alertDialog) {
+                    setTitle(title)
+                    setMessage(message)
+                    setCancelable(isCancelable)
+                    setIcon(
+                        context.resources.getDrawable(
+                            R.drawable.ic_baseline_check_24,
+                            context.theme
+                        )
+                    )
+
+                    setPositiveButton(
+                        positiveButtonTitle
+                            ?: context.resources.getString(R.string.ok_text)
+                    ) { dialog, _ ->
+                        onDialogsInteractionListener?.onPositiveClickButton()
+                        dialog.dismiss()
+                    }
+                }
+            }
+            6 -> {
+                with(alertDialog) {
+                    if (customView != null)
+                        setView(customView)
+                    setTitle(message)
+                    setCancelable(isCancelable)
+                    setPositiveButton(
+                        positiveButtonTitle
+                            ?: context.resources.getString(R.string.ok_text)
+                    ) { _, _ ->
+                        onDialogsInteractionListener?.onPositiveClickButton()
+                        //dialog.dismiss()
                     }
                 }
             }

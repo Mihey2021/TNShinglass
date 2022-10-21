@@ -1,32 +1,20 @@
 package ru.tn.shinglass.activity
 
-import android.bluetooth.le.ScanRecord
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.DynamicListAdapter
-import ru.tn.shinglass.api.ApiUtils
-import ru.tn.shinglass.databinding.FragmentDesktopBinding
 import ru.tn.shinglass.databinding.FragmentDetailScanBinding
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.models.Option
@@ -36,7 +24,7 @@ import ru.tn.shinglass.models.Warehouse
 import ru.tn.shinglass.viewmodel.DetailScanViewModel
 import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
-import kotlin.coroutines.EmptyCoroutineContext
+import java.lang.Exception
 
 class DetailScanFragment : Fragment() {
 
@@ -47,6 +35,7 @@ class DetailScanFragment : Fragment() {
     private val viewModel: DetailScanViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val retrofitViewModel: RetrofitViewModel by viewModels()
+    private var forceOverwrite = false
 
     private var progressDialog: AlertDialog? = null
     private lateinit var currentRecord: TableScan
@@ -60,11 +49,13 @@ class DetailScanFragment : Fragment() {
         val selectedOption = arguments?.getSerializable("selectedOption") as Option
         val user1C = arguments?.getSerializable("userData") as User1C
         var barcode = arguments?.getString("barcode")
-        var scanRecord = arguments?.getSerializable("scanRecord") as TableScan
+        var editRecord = arguments?.getSerializable("editRecord") as TableScan
+
+        forceOverwrite = editRecord.id != 0L
 
         //BarcodeScannerReceiver.clearData()
 
-        val tempScanRecord = TempScanRecord(scanRecord)
+        val tempScanRecord = TempScanRecord(editRecord)
         tempScanRecord.OperationId = selectedOption.id
         tempScanRecord.OperationTitle = selectedOption.title
 
@@ -85,19 +76,26 @@ class DetailScanFragment : Fragment() {
             }
             divisionTextInputLayout.error = "Укажите подразделение!".toString()
 
+            val isNextRecordInSession = editRecord.id == 0L && !editRecord.cellGuid.isNullOrBlank()
+
 
             val warehouseGuidByPrefs = viewModel.getPreferenceByKey("warehouse_guid")
+
+            warehouseTextInputLayout.isEnabled = editRecord.id == 0L && editRecord.warehouseGuid.isNullOrBlank()
+            //warehouseTextInputLayout.visibility = if (isNextRecordInSession) View.GONE else View.VISIBLE
+            warehouseTextInputLayout.visibility = View.GONE
+
             if (warehouseGuidByPrefs.isNullOrBlank()) {
                 warehouseTextInputLayout.error = "Склад не задан в настройках!".toString()
-            } else {
-                val warehouse = viewModel.getWarehouseByGuid(
-                    scanRecord?.warehouseGuid
-                        ?: warehouseGuidByPrefs
-                )
-                warehouseTextView.setText(warehouse?.title)
-                tempScanRecord.warehouseGuid = warehouse?.guid.toString()
-                warehouseTextInputLayout.error = null
             }
+
+            val warehouseGuid = if (editRecord?.warehouseGuid.isNullOrBlank()) warehouseGuidByPrefs else editRecord?.warehouseGuid
+            val warehouse = viewModel.getWarehouseByGuid(warehouseGuid ?: "")
+
+            warehouseTextView.setText(warehouse?.title)
+            tempScanRecord.warehouseGuid = warehouse?.guid.toString()
+            warehouseTextInputLayout.error = null
+
             warehouseTextView.setOnClickListener {
                 if (warehouseTextView.adapter == null) {
                     progressDialog =
@@ -119,11 +117,12 @@ class DetailScanFragment : Fragment() {
 //                }
 //            }
 
-            itemTextView.setText(barcode)
-            countEditText.setText("1.0")
+            //itemTextView.setText(barcode)
+            countEditText.setText(editRecord.Count.toString())
             //countEditText.contentDescription = "шт."
             if (!countEditText.text.isNullOrBlank())
-                countTextInputLayout.hint = "шт."
+                countTextInputLayout.hint =
+                    if (editRecord.ItemMeasureOfUnitTitle.isNullOrBlank()) "<?>" else editRecord.ItemMeasureOfUnitTitle
             countEditText.setOnTouchListener { _, motionEvent ->
                 when (motionEvent.action) {
                     MotionEvent.ACTION_DOWN -> {
@@ -135,9 +134,9 @@ class DetailScanFragment : Fragment() {
             }
 
             //itemMeasureOfUnitTitleTextView.text = "шт."
-            workwearDisposableCheckBox.isChecked = true
+            workwearDisposableCheckBox.isChecked = editRecord.WorkwearDisposable
 
-            purposeOfUseTextView.setText("Выбранное назначение использования")
+            purposeOfUseTextView.setText(editRecord.PurposeOfUse)
             purposeOfUseTextView.setOnClickListener {
                 //TODO: Обработка выбора назначения использования
                 Toast.makeText(requireContext(), "Клик по ссылке", Toast.LENGTH_SHORT).show()
@@ -146,6 +145,11 @@ class DetailScanFragment : Fragment() {
             //phisicalPersonTextView.setText("Выбранное физическое лицо")
 
             phisicalPersonTextInputLayout.hint = "МОЛ"
+            phisicalPersonTextInputLayout.isEnabled = editRecord.id == 0L && editRecord.PhysicalPersonGUID.isNullOrBlank()
+            //phisicalPersonTextInputLayout.visibility = if (isNextRecordInSession) View.GONE else View.VISIBLE
+            phisicalPersonTextInputLayout.visibility = View.GONE
+            //phisicalPersonTextView.inputType = if (editRecord.PhysicalPersonGUID.isNullOrBlank()) InputType.TYPE_NULL else InputType.TYPE_CLASS_TEXT
+            phisicalPersonTextView.setText(editRecord.PhysicalPersonTitle)
             phisicalPersonTextView.setOnClickListener {
                 if (phisicalPersonTextView.adapter == null) {
                     getPhysicalPersonList()
@@ -161,15 +165,31 @@ class DetailScanFragment : Fragment() {
                 tempScanRecord.PhysicalPersonTitle = physivalPeron.fio
             }
 
+            binding.cellTextView.setText(editRecord.cellTitle)
+            binding.itemTextView.setText(editRecord.ItemTitle)
+
             ownerTextView.setText("${getString(R.string.owner_title)} ${user1C.getUser1C()}")
             tempScanRecord.OwnerGuid = user1C.getUserGUID()
 
+            buttonApply.setOnTouchListener{_, motionEvent ->
+                when (motionEvent.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        сheckFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
+                        false
+                    }
+                    else -> false
+                }
+            }
+
             buttonApply.setOnClickListener {
-                сheckFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
+                //сheckFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
+                binding.buttonApply.clearFocus()
             }
         }
 
         BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) {
+
+            binding.buttonApply.clearFocus()
 
             val dataScanPair = BarcodeScannerReceiver.dataScan.value
             val dataScanBarcodeFromScaner = dataScanPair?.first ?: ""
@@ -181,15 +201,38 @@ class DetailScanFragment : Fragment() {
 
             if (dataScanBarcode == "") return@observe
 
+            progressDialog?.show()
             if (dataScanBarcodeType == "Code 128") {
                 retrofitViewModel.getCellByBarcode(dataScanBarcode)
                 binding.cellTextInputLayout.error = null
+            } else {
+                if (binding.cellTextView.text.isNullOrBlank()) {
+                    binding.cellTextInputLayout.error = "Отсканируйте ячейку!"
+                    return@observe
+                }
+                retrofitViewModel.getItemByBarcode(dataScanBarcode)
+
+                var newCount = try {
+                    (binding.countEditText.text.toString()).toDouble() + (if(editRecord.coefficient != 0.0) editRecord.coefficient else 1.0)
+                } catch(e:Exception) {
+                    editRecord.Count + 1
+                }
+//                var newCount =
+//                    if (binding.countEditText.text.isNullOrBlank()) 0.0 else editRecord.Count + 1
+                binding.countEditText.setText(newCount.toString())
+
+                binding.itemTextInputLayout.error = null
             }
         }
 
         retrofitViewModel.cellData.observe(viewLifecycleOwner) {
 
             if (it == null) return@observe
+            if (it.guid.isNullOrBlank()) {
+                DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR_SINGLE_BUTTON, "Ячейка не найдена!", "Ok")
+                return@observe
+            }
+            progressDialog?.dismiss()
             binding.cellTextView.setText(it.title)
             tempScanRecord.cellGuid = it.guid
             tempScanRecord.cellTitle = it.title
@@ -197,6 +240,26 @@ class DetailScanFragment : Fragment() {
         }
 
 
+        retrofitViewModel.itemData.observe(viewLifecycleOwner) {
+
+            if (it == null) return@observe
+            if (it.itemGuid.isNullOrBlank()) {
+                DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR_SINGLE_BUTTON, "Номенклатура не найдена!", "Ok")
+                return@observe
+            }
+            progressDialog?.dismiss()
+            binding.itemTextView.setText(it.itemTitle)
+            binding.countTextInputLayout.hint = it.unitOfMeasurementTitle
+            binding.qualityEditText.setText(it.qualityTitle)
+
+            tempScanRecord.ItemGUID = it.itemGuid
+            tempScanRecord.ItemTitle = it.itemTitle
+            tempScanRecord.ItemMeasureOfUnitGUID = it.unitOfMeasurementGuid
+            tempScanRecord.ItemMeasureOfUnitTitle = it.unitOfMeasurementTitle
+            tempScanRecord.coefficient = it.coefficient
+            tempScanRecord.qualityGuid = it.qualityGuid
+            tempScanRecord.qualityTitle = it.qualityTitle
+        }
 
         retrofitViewModel.listDataPhisicalPersons.observe(viewLifecycleOwner) {
 
@@ -229,8 +292,7 @@ class DetailScanFragment : Fragment() {
                 requireContext(),
                 DialogScreen.IDD_ERROR,
                 error.message,
-                null,
-                object : OnDialogsInteractionListener {
+                onDialogsInteractionListener = object : OnDialogsInteractionListener {
                     override fun onPositiveClickButton() {
                         when (error.requestName) {
                             "getPhysicalPersonList" -> {
@@ -289,7 +351,7 @@ class DetailScanFragment : Fragment() {
 
         if (isError) return
 
-        viewModel.saveScanRecord(tempScanRecord.toScanRecord())
+        viewModel.saveScanRecord(tempScanRecord.toScanRecord(), forceOverwrite)
         val args = Bundle()
         args.putSerializable("userData", user1C)
         args.putSerializable("selectedOption", selectedOption)
@@ -330,84 +392,6 @@ class DetailScanFragment : Fragment() {
         retrofitViewModel.getPhysicalPersonList()
     }
 
-
-//private fun setPhisicalPersonDataList(): List<PhisicalPerson> {
-//
-//    val progressDialog = DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
-//
-//    val arrayPhisicalPersonList = ArrayList<PhisicalPerson>()
-//
-////        val warehouseListFromDb = getAllWarehousesFromDb()
-////        if (warehouseListFromDb.isNotEmpty()) {
-////            warehouseListFromDb.forEach { arrayListWarehouse.add(it) }
-////            warehouseListPreference.setDataListArray(arrayListWarehouse)
-////            progressDialog.cancel()
-////            warehouseListPreference.showDialog()
-////        } else {
-//    val apiService = ApiUtils.getApiService(settingsViewModel.getBasicPreferences())
-//    apiService?.getPhysicalPersonList()?.enqueue(object : Callback<List<PhisicalPerson>> {
-//        override fun onResponse(
-//            call: Call<List<PhisicalPerson>>,
-//            response: Response<List<PhisicalPerson>>
-//        ) {
-//            progressDialog.cancel()
-//            if (!response.isSuccessful) {
-//                //TODO: Обработка не 2хх кода ответа
-//                return
-//            }
-//
-//            val phisicalPersonList = response.body()
-//            if (phisicalPersonList == null) {
-//                //TODO: Обработка пустого ответа
-//                return
-//            }
-//            //Сохраним полученные склады в базу данных
-//            //settingsViewModel.save(phisicalPersonList)
-//            //Прочитаем из БД
-//            //getAllWarehousesFromDb().forEach { arrayListWarehouse.add(it) }
-//            //Установим список
-////                    warehouseListPreference.setDataListArray(arrayListWarehouse)
-////                    //Покажем диалог выбора склада
-////                    warehouseListPreference.showDialog()
-//            phisicalPersonList.forEach { arrayPhisicalPersonList.add(it) }
-//            return
-//        }
-//
-//        override fun onFailure(call: Call<List<PhisicalPerson>>, t: Throwable) {
-//            progressDialog.cancel()
-//            DialogScreen.getDialog(
-//                requireContext(),
-//                DialogScreen.IDD_ERROR,
-//                t.message.toString(),
-//                onDialogsInteractionListener = object :
-//                    OnDialogsInteractionListener {
-//                    override fun onPositiveClickButton() {
-//                        setPhisicalPersonDataList()
-//                    }
-//                })
-////                    DialogScreen.getDialogBuilder(
-////                        requireContext(),
-////                        DialogScreen.IDD_ERROR,
-////                        t.message.toString()
-////                    )
-////                        .setNegativeButton(resources.getString(R.string.cancel_text)) { dialog, _ ->
-////                            dialog.cancel()
-////                        }
-////                        .setPositiveButton(resources.getString(R.string.retry_loading)) { dialog, _ ->
-////                            setWarehousesDataList(warehouseListPreference)
-////                            dialog.dismiss()
-////                        }
-////                        .show()
-//            return
-//        }
-//
-//    })
-//    //}
-//
-//    //warehouseListPreference.setDataListArray(arrayListWarehouse)
-//    return arrayPhisicalPersonList
-//}
-
     override fun onStop() {
         BarcodeScannerReceiver.clearData()
         super.onStop()
@@ -425,6 +409,9 @@ class TempScanRecord {
     var ItemMeasureOfUnitTitle: String = ""
     var ItemMeasureOfUnitGUID: String = ""
     var Count: Double = 0.0
+    var coefficient: Double = 0.0
+    var qualityGuid: String = ""
+    var qualityTitle: String = ""
     var WorkwearOrdinary: Boolean = false
     var WorkwearDisposable: Boolean = false
     var DivisionId: Long = 0L
@@ -447,6 +434,9 @@ class TempScanRecord {
         ItemMeasureOfUnitTitle = scanRecord.ItemMeasureOfUnitTitle
         ItemMeasureOfUnitGUID = scanRecord.ItemMeasureOfUnitGUID
         Count = scanRecord.Count
+        coefficient = scanRecord.coefficient
+        qualityGuid = scanRecord.qualityGuid
+        qualityTitle = scanRecord.qualityTitle
         WorkwearOrdinary = scanRecord.WorkwearOrdinary
         WorkwearDisposable = scanRecord.WorkwearDisposable
         DivisionId = scanRecord.DivisionId
@@ -471,6 +461,9 @@ class TempScanRecord {
             ItemMeasureOfUnitTitle = ItemMeasureOfUnitTitle,
             ItemMeasureOfUnitGUID = ItemMeasureOfUnitGUID,
             Count = Count,
+            coefficient = coefficient,
+            qualityGuid = qualityGuid,
+            qualityTitle = qualityTitle,
             WorkwearOrdinary = WorkwearOrdinary,
             WorkwearDisposable = WorkwearDisposable,
             DivisionId = DivisionId,

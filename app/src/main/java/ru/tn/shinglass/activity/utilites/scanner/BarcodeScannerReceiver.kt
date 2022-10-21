@@ -49,11 +49,19 @@ class BarcodeScannerReceiver {
                     }
                     _dataScan.value = String(barcode!!, 0, barocodelen) to tmpType
                 }
+
                 BarcodeActions.DS2_BARCODE.action -> {
                     tmpType = intent.getStringExtra("EXTRA_BARCODE_DECODED_SYMBOLE").toString()
                     _dataScan.value =
                         intent.getStringExtra("EXTRA_BARCODE_DECODED_DATA").toString() to tmpType
                 }
+
+                BarcodeActions.M3.action -> {
+                    tmpType = intent.getStringExtra("m3scanner_code_type").toString()
+                    _dataScan.value =
+                        intent.getStringExtra("m3scannerdata").toString() to tmpType
+                }
+
             }
         }
     }

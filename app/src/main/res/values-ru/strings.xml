@@ -59,4 +59,10 @@
     <string name="apply_text">Подтвердить</string>
     <string name="complete_and_send_text">Завершить и отправить в 1С</string>
     <string name="add_more_text">Добавить\nещё</string>
+    <string name="quality_text">Качество</string>
+    <string name="delete_text">Удалить</string>
+    <string name="edit_record_text">Изменить</string>
+    <string name="document_init_dialog_title">Реквизиты</string>
+    <string name="info_table_scan_start_text">Чтобы начать, отсканируйте ячейку</string>
+    <string name="info_table_scan_continue_text">Чтобы продолжить, отсканируйте ячейку или номенклатуру.\nТекущая ячейка:</string>
 </resources>

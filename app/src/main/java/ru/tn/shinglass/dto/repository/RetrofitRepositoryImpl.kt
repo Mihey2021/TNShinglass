@@ -1,17 +1,18 @@
 package ru.tn.shinglass.dto.repository
 
-import android.content.Context
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
-import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.domain.repository.RetrofitRepository
+import ru.tn.shinglass.dto.models.CreatedDocumentDetails
+import ru.tn.shinglass.dto.models.InventoryOfGoods
 import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C
+import ru.tn.shinglass.entity.Nomenclature
 import ru.tn.shinglass.models.Cells
 import ru.tn.shinglass.models.PhisicalPerson
+import ru.tn.shinglass.models.TableScan
 import ru.tn.shinglass.models.Warehouse
 
 class RetrofitRepositoryImpl : RetrofitRepository {
@@ -31,6 +32,20 @@ class RetrofitRepositoryImpl : RetrofitRepository {
 
     override fun getCellByBarcode(barcode: String, callback: RetrofitRepository.Callback<Cells>) {
         apiService?.getCellByBarcode(barcode)?.enqueue(getCallbackHandler(callback))
+    }
+
+    override fun getItemByBarcode(
+        barcode: String,
+        callback: RetrofitRepository.Callback<Nomenclature>
+    ) {
+        apiService?.getItemByBarcode(barcode)?.enqueue(getCallbackHandler(callback))
+    }
+
+    override fun createInventoryOfGoods(
+        scanRecords: List<TableScan>,
+        callback: RetrofitRepository.Callback<CreatedDocumentDetails>
+    ) {
+        apiService?.createInventoryOfGoods(InventoryOfGoods(records = scanRecords))?.enqueue(getCallbackHandler(callback))
     }
 
     private fun <T> getCallbackHandler(callback: RetrofitRepository.Callback<T>): Callback<T> {
