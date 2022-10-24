@@ -10,20 +10,20 @@ interface WarehousesDao {
     @Query("SELECT * FROM WarehousesEntity")
     fun getAllWarehouses(): List<WarehousesEntity>
 
-    @Query("SELECT id, title, guid, division_id FROM WarehousesEntity WHERE division_id=:divisionId")
-    fun getAllWarehousesByDivision(divisionId: Long): List<WarehousesEntity>
+    @Query("SELECT id, title, guid, divisionGuid, responsibleGuid FROM WarehousesEntity WHERE divisionGuid=:divisionGuid")
+    fun getAllWarehousesByDivision(divisionGuid: String): List<WarehousesEntity>
 
-    @Query("SELECT id, title, guid, division_id FROM WarehousesEntity WHERE guid=:guid")
+    @Query("SELECT id, title, guid, divisionGuid, responsibleGuid FROM WarehousesEntity WHERE guid=:guid")
     fun getWarehouseByGuid(guid: String): WarehousesEntity?
 
-    @Query("SELECT id, title, guid, division_id FROM WarehousesEntity WHERE id=:id")
+    @Query("SELECT id, title, guid, divisionGuid, responsibleGuid FROM WarehousesEntity WHERE id=:id")
     fun getWarehouseById(id: Long): WarehousesEntity?
 
     @Query("SELECT COUNT(id) FROM WarehousesEntity")
     fun getCountAllRecords(): Long
 
-    @Query("SELECT COUNT(id) FROM WarehousesEntity WHERE division_id=:divisionId")
-    fun getCountRecordsByDivision(divisionId: Long): Long
+    @Query("SELECT COUNT(id) FROM WarehousesEntity WHERE divisionGuid=:divisionGuid")
+    fun getCountRecordsByDivision(divisionGuid: String): Long
 
     @Insert
     fun insert(warehouse: WarehousesEntity)

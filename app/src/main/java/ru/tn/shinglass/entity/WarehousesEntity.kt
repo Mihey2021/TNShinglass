@@ -11,12 +11,13 @@ data class WarehousesEntity(
     val id: Long = 0,
     val title: String,
     val guid: String,
-    @ColumnInfo(name = "division_id")
-    val division: Long,
+    //@ColumnInfo(name = "division_guid")
+    val divisionGuid: String,
+    val responsibleGuid: String,
 ) {
 
     fun toDto() =
-        Warehouse(id = id, title = title, guid = guid, division = division)
+        Warehouse(id = id, title = title, guid = guid, divisionGuid = divisionGuid, responsibleGuid = responsibleGuid)
 
     companion object {
         fun fromDto(dto: Warehouse) =
@@ -24,7 +25,8 @@ data class WarehousesEntity(
                 id = dto.id,
                 title = dto.title,
                 guid = dto.guid,
-                division = dto.division,
+                divisionGuid = dto.divisionGuid,
+                responsibleGuid = dto.responsibleGuid
             )
 
     }

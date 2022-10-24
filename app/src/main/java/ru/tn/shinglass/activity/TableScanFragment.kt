@@ -134,12 +134,9 @@ class TableScanFragment : Fragment() {
             itemList = it
 
             if (itemList.isNotEmpty()) {
-                //val lastIndex = itemList.count() - 1
                 binding.infoTextView.text =
                     "${getString(R.string.info_table_scan_continue_text)} ${itemList[0].cellTitle}"
             } else {
-//                DocumentHeaders.setWarehouse(null)
-//                DocumentHeaders.setPhysicalPerson(null)
                 binding.infoTextView.text = getString(R.string.info_table_scan_start_text)
             }
         }
@@ -184,7 +181,7 @@ class TableScanFragment : Fragment() {
                     if (dlg != null)
                         showingHeadersDialog = !dlg!!.isShowing
                     if (showingHeadersDialog) {
-                        dlg = getDocumentHeadersDialog(args, false)
+                        dlg = getDocumentHeadersDialog(args)
                     }
                 }
                 openDetailScanFragment(args, dlg)
@@ -236,7 +233,10 @@ class TableScanFragment : Fragment() {
         return binding.root
     }
 
-    private fun getDocumentHeadersDialog(args: Bundle? = null, cancellable: Boolean): AlertDialog? {
+    private fun getDocumentHeadersDialog(
+        args: Bundle? = null,
+        cancellable: Boolean = true
+    ): AlertDialog? {
         val layoutInflater =
             LayoutInflater.from(requireContext())//.inflate(R.layout.inventory_init_dialog, null)
         dlgBinding = InventoryInitDialogBinding.inflate(layoutInflater)
@@ -365,8 +365,18 @@ class TableScanFragment : Fragment() {
 
     override fun onResume() {
         viewModel.refreshTableScan(user1C.getUserGUID(), selectedOption.id)
-        if (DocumentHeaders.getWarehouse() == null || DocumentHeaders.getPhysicalPerson() == null)
-            dlg = getDocumentHeadersDialog(cancellable = true)
+        if (itemList.isEmpty()) {
+            if (DocumentHeaders.getWarehouse() == null || DocumentHeaders.getPhysicalPerson() == null)
+                dlg = getDocumentHeadersDialog()
+        }
         super.onResume()
+    }
+
+    override fun onDestroy() {
+        if (itemList.isEmpty()) {
+            DocumentHeaders.setWarehouse(null)
+            DocumentHeaders.setPhysicalPerson(null)
+        }
+        super.onDestroy()
     }
 }

@@ -12,8 +12,8 @@ class WarehousesRepositoryRoomImpl(private val dao: WarehousesDao) : WarehousesR
             warehousesEntity.toDto()
         }
 
-    override fun getAllWarehousesByDivision(divisionId: Long) =
-        dao.getAllWarehousesByDivision(divisionId).map { warehousesEntity ->
+    override fun getAllWarehousesByDivision(divisionGuid: String) =
+        dao.getAllWarehousesByDivision(divisionGuid).map { warehousesEntity ->
             warehousesEntity.toDto()
         }
 
@@ -24,8 +24,8 @@ class WarehousesRepositoryRoomImpl(private val dao: WarehousesDao) : WarehousesR
 
     override fun getWarehousesCountRecords() = dao.getCountAllRecords()
 
-    override fun getWarehousesCountRecordsByDivision(divisionId: Long) =
-        dao.getCountRecordsByDivision(divisionId)
+    override fun getWarehousesCountRecordsByDivision(divisionGuid: String) =
+        dao.getCountRecordsByDivision(divisionGuid)
 
     override fun saveWarehouses(warehouses: List<Warehouse>) {
         warehouses.forEach { warehouse -> dao.save(WarehousesEntity.fromDto(warehouse)) }

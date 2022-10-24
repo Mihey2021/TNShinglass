@@ -54,9 +54,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun save(warehouses: List<Warehouse>) = repositoryWarehouses.saveWarehouses(warehouses)
     fun getWarehouseByGuid(guid: String) = repositoryWarehouses.getWarehouseByGuid(guid)
-    fun getAllWarehousesByDivision(divisionId: Long) = repositoryWarehouses.getAllWarehousesByDivision(divisionId)
+    fun getAllWarehousesByDivision(divisionGuid: String) = repositoryWarehouses.getAllWarehousesByDivision(divisionGuid)
     fun getWarehousesCountRecords() = repositoryWarehouses.getWarehousesCountRecords()
-    fun getWarehousesCountRecordsByDivision(divisionId: Long) = repositoryWarehouses.getWarehousesCountRecordsByDivision(divisionId)
+    fun getWarehousesCountRecordsByDivision(divisionGuid: String) = repositoryWarehouses.getWarehousesCountRecordsByDivision(divisionGuid)
 
 //    fun updateWarehousesDataList(apiService: ApiService?) {
 //        val warehousesArrayListData = ArrayList<Warehouse>()
