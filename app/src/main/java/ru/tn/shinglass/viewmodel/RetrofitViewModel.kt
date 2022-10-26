@@ -16,10 +16,10 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
 
     private val repository: RetrofitRepository = RetrofitRepositoryImpl()
 
-    private val _listDataPhisicalPersons: MutableLiveData<List<PhisicalPerson>> =
+    private val _listDataPhysicalPersons: MutableLiveData<List<PhysicalPerson>> =
         MutableLiveData(listOf())
-    val listDataPhisicalPersons: LiveData<List<PhisicalPerson>>
-        get() = _listDataPhisicalPersons
+    val listDataPhysicalPersons: LiveData<List<PhysicalPerson>>
+        get() = _listDataPhysicalPersons
 
     private val _listDataWarehouses: MutableLiveData<List<Warehouse>> = MutableLiveData(listOf())
     val listDataWarehouses: LiveData<List<Warehouse>>
@@ -41,34 +41,34 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
     val requestError: LiveData<RequestError?>
         get() = _requestError
 
-    fun getPhysicalPersonList() {
-        repository.getPhysicalPersonList(object :
-            RetrofitRepository.Callback<List<PhisicalPerson>> {
-            override fun onSuccess(receivedData: List<PhisicalPerson>) {
-                _listDataPhisicalPersons.value = receivedData
-                _requestError.value = null
-            }
+//    fun getPhysicalPersonList() {
+//        repository.getPhysicalPersonList(object :
+//            RetrofitRepository.Callback<List<PhysicalPerson>> {
+//            override fun onSuccess(receivedData: List<PhysicalPerson>) {
+//                _listDataPhysicalPersons.value = receivedData
+//                _requestError.value = null
+//            }
+//
+//            override fun onError(e: Exception) {
+//                _requestError.value = RequestError(e.message.toString(), "getPhisicalPersonList")
+//                //super.onError(e)
+//            }
+//        })
+//    }
 
-            override fun onError(e: Exception) {
-                _requestError.value = RequestError(e.message.toString(), "getPhisicalPersonList")
-                //super.onError(e)
-            }
-        })
-    }
-
-    fun getAllWarehouses() {
-        repository.getAllWarehousesList(object : RetrofitRepository.Callback<List<Warehouse>> {
-            override fun onSuccess(receivedData: List<Warehouse>) {
-                _listDataWarehouses.value = receivedData
-                _requestError.value = null
-            }
-
-            override fun onError(e: Exception) {
-                _requestError.value = RequestError(e.message.toString(), "getAllWarehousesList")
-                //super.onError(e)
-            }
-        })
-    }
+//    fun getAllWarehouses() {
+//        repository.getAllWarehousesList(object : RetrofitRepository.Callback<List<Warehouse>> {
+//            override fun onSuccess(receivedData: List<Warehouse>) {
+//                _listDataWarehouses.value = receivedData
+//                _requestError.value = null
+//            }
+//
+//            override fun onError(e: Exception) {
+//                _requestError.value = RequestError(e.message.toString(), "getAllWarehousesList")
+//                //super.onError(e)
+//            }
+//        })
+//    }
 
     fun getCellByBarcode(barcode: String) {
         repository.getCellByBarcode(barcode, object : RetrofitRepository.Callback<Cells> {

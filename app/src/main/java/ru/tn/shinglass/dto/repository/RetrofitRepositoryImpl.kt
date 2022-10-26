@@ -10,10 +10,7 @@ import ru.tn.shinglass.dto.models.InventoryOfGoods
 import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.entity.Nomenclature
-import ru.tn.shinglass.models.Cells
-import ru.tn.shinglass.models.PhisicalPerson
-import ru.tn.shinglass.models.TableScan
-import ru.tn.shinglass.models.Warehouse
+import ru.tn.shinglass.models.*
 
 class RetrofitRepositoryImpl : RetrofitRepository {
 
@@ -22,13 +19,13 @@ class RetrofitRepositoryImpl : RetrofitRepository {
         TODO("Not yet implemented")
     }
 
-    override fun getPhysicalPersonList(callback: RetrofitRepository.Callback<List<PhisicalPerson>>) {
-        apiService?.getPhisicalPersonList()?.enqueue(getCallbackHandler(callback))
-    }
+//    override suspend fun getPhysicalPersonList() {
+//        apiService?.getPhysicalPersonList()?.enqueue(getCallbackHandler(callback))
+//    }
 
-    override fun getAllWarehousesList(callback: RetrofitRepository.Callback<List<Warehouse>>) {
-        apiService?.getAllWarehousesList()?.enqueue(getCallbackHandler(callback))
-    }
+//    override fun getAllWarehousesList(callback: RetrofitRepository.Callback<List<Warehouse>>) {
+//        apiService?.getAllWarehousesList()?.enqueue(getCallbackHandler(callback))
+//    }
 
     override fun getCellByBarcode(barcode: String, callback: RetrofitRepository.Callback<Cells>) {
         apiService?.getCellByBarcode(barcode)?.enqueue(getCallbackHandler(callback))
@@ -46,6 +43,10 @@ class RetrofitRepositoryImpl : RetrofitRepository {
         callback: RetrofitRepository.Callback<CreatedDocumentDetails>
     ) {
         apiService?.createInventoryOfGoods(InventoryOfGoods(records = scanRecords))?.enqueue(getCallbackHandler(callback))
+    }
+
+    override fun getAllDivisionsList(callback: RetrofitRepository.Callback<List<Division>>) {
+        apiService?.getAllDivisionsList()?.enqueue(getCallbackHandler(callback))
     }
 
     private fun <T> getCallbackHandler(callback: RetrofitRepository.Callback<T>): Callback<T> {

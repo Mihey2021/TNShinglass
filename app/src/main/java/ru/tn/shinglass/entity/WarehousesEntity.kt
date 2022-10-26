@@ -3,13 +3,15 @@ package ru.tn.shinglass.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import ru.tn.shinglass.models.PhysicalPerson
 import ru.tn.shinglass.models.Warehouse
 
 @Entity
 data class WarehousesEntity(
-    @PrimaryKey(autoGenerate = true)
+    //@PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val title: String,
+    @PrimaryKey(autoGenerate = false)
     val guid: String,
     //@ColumnInfo(name = "division_guid")
     val divisionGuid: String,
@@ -31,4 +33,7 @@ data class WarehousesEntity(
 
     }
 }
+
+fun List<WarehousesEntity>.toDto(): List<Warehouse> = map(WarehousesEntity::toDto)
+fun List<Warehouse>.toEntity(): List<WarehousesEntity> = map(WarehousesEntity::fromDto)
 

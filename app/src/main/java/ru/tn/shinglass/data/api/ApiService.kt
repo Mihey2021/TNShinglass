@@ -1,6 +1,7 @@
 package ru.tn.shinglass.data.api
 
 import retrofit2.Call
+import retrofit2.Response
 import retrofit2.http.*
 import ru.tn.shinglass.dto.models.CreatedDocumentDetails
 import ru.tn.shinglass.dto.models.InventoryOfGoods
@@ -8,7 +9,8 @@ import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.entity.Nomenclature
 import ru.tn.shinglass.models.Cells
-import ru.tn.shinglass.models.PhisicalPerson
+import ru.tn.shinglass.models.Division
+import ru.tn.shinglass.models.PhysicalPerson
 import ru.tn.shinglass.models.Warehouse
 
 interface ApiService {
@@ -19,14 +21,14 @@ interface ApiService {
     fun getWarehousesListByDivision(@Query("division") divisionGuid: String = ""): Call<List<Warehouse>>
 
     @GET("getWarehousesList")
-    fun getAllWarehousesList(): Call<List<Warehouse>>
+    suspend fun getAllWarehousesList(): Response<List<Warehouse>>
 
-    fun getWarehousesList(divisionGuid: String = "") {
-        if (divisionGuid.isBlank()) getAllWarehousesList() else getWarehousesListByDivision(divisionGuid)
-    }
+//    fun getWarehousesList(divisionGuid: String = "") {
+//        if (divisionGuid.isBlank()) getAllWarehousesList() else getWarehousesListByDivision(divisionGuid)
+//    }
 
-    @GET("getPhisicalPersonList")
-    fun getPhisicalPersonList(): Call<List<PhisicalPerson>>
+    @GET("getPhysicalPersonList")
+    suspend fun getPhysicalPersonList(): Response<List<PhysicalPerson>>
 
     @GET("getCellByBarcode")
     fun getCellByBarcode(@Query("barcode") barcode: String): Call<Cells>
@@ -36,4 +38,7 @@ interface ApiService {
 
     @POST("createInventoryOfGoods")
     fun createInventoryOfGoods(@Body scanRecords: InventoryOfGoods): Call<CreatedDocumentDetails>
+
+    @GET("getDivisionsList")
+    fun getAllDivisionsList(): Call<List<Division>>
 }

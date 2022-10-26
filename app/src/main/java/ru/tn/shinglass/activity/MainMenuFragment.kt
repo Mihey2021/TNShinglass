@@ -24,7 +24,7 @@ class MainMenuFragment : Fragment() {
         val binding = FragmentMainMenuBinding.inflate(inflater, container, false)
         requireParentFragment().setFragmentResultListener("requestSelectedOption") { requestKey, bundle ->
             val param = bundle.getSerializable("selectedOption") as Option
-            binding.operationTextView.text = param.title
+            binding.operationTextView.text = param.docType?.title ?: ""
         }
         //binding.operationTextView.text = arguments?.optionObj?.title ?: ""//"[ UNDEFINED ]"
         //binding.operationTextView.text = optionsViewModel.getSelectedOption()?.title ?: "[ UNDEFINED ]"

@@ -3,7 +3,12 @@ package ru.tn.shinglass.activity
 //import ru.tn.shinglass.adapters.ru.tn.shinglass.adapters.DynamicListAdapter
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
+import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
@@ -18,11 +23,13 @@ import ru.tn.shinglass.adapters.extendsComponents.ExtendListPreference
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.data.api.ApiService
 import ru.tn.shinglass.models.Division
+import ru.tn.shinglass.models.PhysicalPerson
 import ru.tn.shinglass.models.Warehouse
-//import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
 
 private var apiService: ApiService? = null
+private lateinit var listener: SharedPreferences.OnSharedPreferenceChangeListener
+private var progressDialog: AlertDialog? = null
 
 class SettingsFragment : PreferenceFragmentCompat() {
 
@@ -36,12 +43,45 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val categoryDocSettings = PreferenceCategory(requireContext())
         categoryDocSettings.key = "document_settings"
         categoryDocSettings.title = getString(R.string.documents_settings_title)
-        //categoryDocSettings.summary = getString(R.string.settings_for_substituting_text)
-        //categoryDocSettings.icon = requireContext().getDrawable(R.drawable.ic_baseline_settings_24)
 
         root.addPreference(categoryDocSettings)
 
         apiService = ApiUtils.getApiService(settingsViewModel.getBasicPreferences())
+
+        val divisionListPreference = ExtendListPreference<Division>(requireContext())
+        val divisionAdapter =
+            DynamicListAdapter<Division>(requireContext(), R.layout.dynamic_prefs_layout)
+
+        divisionListPreference.setAdapter(divisionAdapter)
+        val divisionKey = "division_guid"
+        divisionListPreference.key = divisionKey
+        divisionListPreference.title = getString(R.string.division_title)
+        val savedDivision = settingsViewModel.getDivisionByGuid(
+            settingsViewModel.getPreferenceByKey(divisionKey) ?: ""
+        )
+
+        divisionListPreference.summary =
+            savedDivision?.title ?: getString(R.string.division_list_description)
+        divisionListPreference.icon =
+            resources.getDrawable(R.drawable.ic_baseline_division_24, requireContext().theme)
+        divisionListPreference.setDialogTitle(getString(R.string.division_list_description))
+        divisionListPreference.onPreferenceClickListener = object :
+            Preference.OnPreferenceClickListener {
+            override fun onPreferenceClick(preference: Preference): Boolean {
+                if (divisionListPreference.getDataListArray().isEmpty()) {
+                    setDivisionDataList(divisionListPreference)
+                    return true
+                }
+                return false
+            }
+        }
+
+        //Заполним список подразделений сразу при открытии
+        if (divisionListPreference.getDataListArray().isEmpty()) {
+            setDivisionDataList(divisionListPreference, showSelectionList = false)
+        }
+//
+        categoryDocSettings.addPreference(divisionListPreference)
 
         val warehouseListPreference = ExtendListPreference<Warehouse>(requireContext())
         val adapter =
@@ -50,6 +90,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val warehouseKey = "warehouse_guid"
         warehouseListPreference.key = warehouseKey
         warehouseListPreference.title = getString(R.string.warehouse_title)
+        warehouseListPreference
         val savedWarehouse = settingsViewModel.getWarehouseByGuid(
             settingsViewModel.getPreferenceByKey(warehouseKey) ?: ""
         )
@@ -59,123 +100,182 @@ class SettingsFragment : PreferenceFragmentCompat() {
         warehouseListPreference.icon =
             resources.getDrawable(R.drawable.ic_baseline_warehouse_24, requireContext().theme)
         warehouseListPreference.setDialogTitle(getString(R.string.warehouse_list_description))
-        warehouseListPreference.setOnPreferenceClickListener(object :
-            Preference.OnPreferenceClickListener {
-            override fun onPreferenceClick(preference: Preference): Boolean {
-                if (warehouseListPreference.getDataListArray().isEmpty()) {
 
-                    setWarehousesDataList(warehouseListPreference)
-                    return true
-                }
-                return false
-            }
-        })
-
-        val divisionListPreference = ExtendListPreference<Division>(requireContext())
-        val divisionAdapter = DynamicListAdapter<Division>(requireContext(), R.layout.dynamic_prefs_layout)
+        //Заполним список складов сразу при открытии
+        if (warehouseListPreference.getDataListArray().isEmpty()) {
+            settingsViewModel.getAllWarehouses()
+        }
 
         categoryDocSettings.addPreference(warehouseListPreference)
 
-        val prefListener =
+        listener =
             SharedPreferences.OnSharedPreferenceChangeListener { sharedPrefs, key ->
-                settingsViewModel.getBasicPreferences()
                 when (key) {
-                    "serviceUrl" -> {
-//                        serviceViewModel.updateBasicPreferences(requireContext(), sharedPrefs)
-//                        val url = sharedPrefs.getString("serviceUrl", "").toString()
-//                        val service1C = serviceViewModel.connectionService1C.value
-//                        val okHttpClient = service1C?.okHttpClient
-//                        val retrofit = service1C?.retrofit
-//                        if (retrofit != null) {
-//                            retrofit.newBuilder()
-//                                .baseUrl(url)
-//                                .client(okHttpClient)
-//                                .addConverterFactory(GsonConverterFactory.create())
-//                                .build()
-//
-//                            service1C.httpService1CUserApi = retrofit.create(UserApi::class.java)
-//                        }
+                    "warehouse_guid" -> {
+                        if (sharedPrefs.getString("division_guid", "").toString() == "") {
+                            val division = settingsViewModel.getDivisionByGuid(
+                                settingsViewModel.getWarehouseByGuid(
+                                    sharedPrefs.getString(
+                                        "warehouse_guid",
+                                        ""
+                                    ).toString()
+                                )?.divisionGuid ?: ""
+                            )
+                            if (division != null) {
+                                divisionListPreference.value = division.guid
+                                divisionListPreference.summary = division.title
+                            }
+                        }
                     }
-
+                    "division_guid" -> {
+                        if (sharedPrefs.getString("warehouse_guid", "").toString() == "") {
+                            val warehouse =
+                                settingsViewModel.getWarehouseByGuid(
+                                    settingsViewModel.getDivisionByGuid(
+                                        sharedPrefs.getString(
+                                            "division_guid",
+                                            ""
+                                        ).toString()
+                                    )?.defaultWarehouseGuid ?: ""
+                                )
+                            if (warehouse != null) {
+                                warehouseListPreference.value = warehouse.guid
+                                warehouseListPreference.summary = warehouse.title
+                            }
+                        }
+                    }
                 }
             }
 
-        preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener(prefListener)
+        preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener(listener)
     }
 
-    private fun setWarehousesDataList(warehouseListPreference: ExtendListPreference<Warehouse>) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val warehouseListPreference =
+            preferenceManager.preferenceScreen.findPreference<ListPreference>("warehouse_guid") as ExtendListPreference<Warehouse>
 
-        val progressDialog = DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+        settingsViewModel.warehousesList.observe(viewLifecycleOwner) {
+            if (it.isEmpty()) return@observe
 
-        val arrayListWarehouse = ArrayList<Warehouse>()
-        val warehouseListFromDb = getAllWarehousesFromDb()
-        if (warehouseListFromDb.isNotEmpty()) {
-            warehouseListFromDb.forEach { arrayListWarehouse.add(it) }
-            warehouseListPreference.setDataListArray(arrayListWarehouse)
-            progressDialog.cancel()
-            warehouseListPreference.showDialog()
+            val dataList = ArrayList<Warehouse>()
+            dataList.add(Warehouse(-1, getString(R.string.not_chosen_text), "", "", ""))
+            it.forEach { warehouse ->
+                dataList.add(warehouse)
+            }
+            //progressDialog?.dismiss()
+
+            if (warehouseListPreference.getDataListArray().isEmpty())
+                warehouseListPreference.setDataListArray(dataList)
+        }
+
+        settingsViewModel.dataState.observe(viewLifecycleOwner) {
+            if (it.loading) {
+                if (progressDialog?.isShowing == false || progressDialog == null)
+                    progressDialog =
+                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+            } else
+                progressDialog?.dismiss()
+
+            if (it.error)
+                DialogScreen.getDialog(
+                    requireContext(),
+                    DialogScreen.IDD_ERROR,
+                    title = it.errorMessage
+                )
+        }
+    }
+
+    private fun setDivisionDataList(
+        divisionListPreference: ExtendListPreference<Division>,
+        showSelectionList: Boolean = true
+    ) {
+
+        //val progressDialog = DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+
+        val arrayListDivision = ArrayList<Division>()
+        val divisionListFromDb = getAllDivisionsFromDb()
+        if (divisionListFromDb.isNotEmpty()) {
+            arrayListDivision.add(Division(-1, getString(R.string.not_chosen_text), "", ""))
+            divisionListFromDb.forEach { arrayListDivision.add(it) }
+            divisionListPreference.setDataListArray(arrayListDivision)
+            //progressDialog.cancel()
+            if (showSelectionList)
+                divisionListPreference.showDialog()
         } else {
-            apiService?.getAllWarehousesList()?.enqueue(object : Callback<List<Warehouse>> {
+            apiService?.getAllDivisionsList()?.enqueue(object : Callback<List<Division>> {
                 override fun onResponse(
-                    call: Call<List<Warehouse>>,
-                    response: Response<List<Warehouse>>
+                    call: Call<List<Division>>,
+                    response: Response<List<Division>>
                 ) {
-                    progressDialog.cancel()
+                    //progressDialog.cancel()
                     if (!response.isSuccessful) {
                         //TODO: Обработка не 2хх кода ответа
                         return
                     }
 
-                    val warehousesList = response.body()
-                    if (warehousesList == null) {
+                    val divisionsList = response.body()
+                    if (divisionsList == null) {
                         //TODO: Обработка пустого ответа
                         return
                     }
-                    //Сохраним полученные склады в базу данных
-                    settingsViewModel.save(warehousesList)
+                    //Сохраним полученные подразделения в базу данных
+                    settingsViewModel.saveDivisions(divisionsList)
+                    arrayListDivision.add(
+                        Division(
+                            -1,
+                            getString(R.string.not_chosen_text),
+                            "",
+                            ""
+                        )
+                    )
                     //Прочитаем из БД
-                    getAllWarehousesFromDb().forEach { arrayListWarehouse.add(it) }
+                    getAllDivisionsFromDb().forEach { arrayListDivision.add(it) }
                     //Установим список
-                    warehouseListPreference.setDataListArray(arrayListWarehouse)
+                    divisionListPreference.setDataListArray(arrayListDivision)
                     //Покажем диалог выбора склада
-                    warehouseListPreference.showDialog()
+                    if (showSelectionList)
+                        divisionListPreference.showDialog()
                     return
                 }
 
-                override fun onFailure(call: Call<List<Warehouse>>, t: Throwable) {
-                    progressDialog.cancel()
-                    DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR, t.message.toString(), onDialogsInteractionListener = object : OnDialogsInteractionListener{
-                        override fun onPositiveClickButton() {
-                            setWarehousesDataList(warehouseListPreference)
-                        }
-                    })
-//                    DialogScreen.getDialogBuilder(
-//                        requireContext(),
-//                        DialogScreen.IDD_ERROR,
-//                        t.message.toString()
-//                    )
-//                        .setNegativeButton(resources.getString(R.string.cancel_text)) { dialog, _ ->
-//                            dialog.cancel()
-//                        }
-//                        .setPositiveButton(resources.getString(R.string.retry_loading)) { dialog, _ ->
-//                            setWarehousesDataList(warehouseListPreference)
-//                            dialog.dismiss()
-//                        }
-//                        .show()
+                override fun onFailure(call: Call<List<Division>>, t: Throwable) {
+                    //progressDialog.cancel()
+                    DialogScreen.getDialog(
+                        requireContext(),
+                        DialogScreen.IDD_ERROR,
+                        t.message.toString(),
+                        onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                            override fun onPositiveClickButton() {
+                                setDivisionDataList(divisionListPreference)
+                            }
+                        })
                     return
                 }
 
             })
         }
 
-        warehouseListPreference.setDataListArray(arrayListWarehouse)
-        //return arrayListWarehouse
+        divisionListPreference.setDataListArray(arrayListDivision)
     }
 
 
-    private fun getAllWarehousesFromDb(): List<Warehouse> {
-        return settingsViewModel.getAllWarehouses()
+    private fun getAllWarehouses() {
+        settingsViewModel.getAllWarehouses()
     }
 
+    private fun getAllDivisionsFromDb(): List<Division> {
+        return settingsViewModel.getAllDivisions()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        preferenceManager.sharedPreferences?.unregisterOnSharedPreferenceChangeListener(listener)
+    }
 }
 

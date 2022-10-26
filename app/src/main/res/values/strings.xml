@@ -76,4 +76,6 @@
     <string name="document_init_dialog_title">Requisites</string>
     <string name="info_table_scan_start_text">To get started, scan the cell</string>
     <string name="info_table_scan_continue_text">To continue, scan the cell or item.\nCurrent cell:</string>
+    <string name="division_list_description">Select division</string>
+    <string name="not_chosen_text">[Not chosen]</string>
 </resources>

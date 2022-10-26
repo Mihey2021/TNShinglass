@@ -5,13 +5,20 @@ import android.content.*
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 //import ru.tn.shinglass.activity.apiService
 import ru.tn.shinglass.db.room.AppDb
+import ru.tn.shinglass.domain.repository.DivisionRepository
 import ru.tn.shinglass.domain.repository.PrefsRepository
 import ru.tn.shinglass.domain.repository.WarehousesRepository
+import ru.tn.shinglass.dto.repository.DivisionRepositoryImpl
 import ru.tn.shinglass.dto.repository.PrefsRepositoryImpl
 import ru.tn.shinglass.dto.repository.WarehousesRepositoryRoomImpl
+import ru.tn.shinglass.models.Division
+import ru.tn.shinglass.models.ModelState
 import ru.tn.shinglass.models.Warehouse
+import java.lang.Exception
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -21,27 +28,39 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val repositoryWarehouses: WarehousesRepository =
         WarehousesRepositoryRoomImpl(AppDb.getInstance(context = application).warehousesDao())
 
+    val warehousesList: LiveData<List<Warehouse>> = repositoryWarehouses.warehousesList
+
+    private val repositoryDivisions: DivisionRepository =
+        DivisionRepositoryImpl(AppDb.getInstance(context = application).divisionsDao())
+
     private val _basicPrefs: MutableLiveData<SharedPreferences?> = MutableLiveData(null)
     val basicPrefs: LiveData<SharedPreferences?>
         get() = _basicPrefs
-
-//    private val _warehousesList = MutableLiveData<ArrayList<Warehouse>>()
-//    val warehousesList: LiveData<ArrayList<Warehouse>>
-//        get() = _warehousesList
-//
-//    private val _divisionList = MutableLiveData<ArrayList<Division>>()
-//    val divisionList: LiveData<ArrayList<Division>>
-//        get() = _divisionList
 
     fun updateBasicPreferences() {
         _basicPrefs.value = repositoryPrefs.getBasicPreferences()
     }
 
+    private val _dataState = MutableLiveData<ModelState>()
+    val dataState: LiveData<ModelState>
+        get() = _dataState
+
     fun getBasicPreferences() = repositoryPrefs.getBasicPreferences()
 
     fun getPreferenceByKey(key: String) = repositoryPrefs.getPreferenceByKey(key)
 
-    fun getAllWarehouses() = repositoryWarehouses.getAllWarehouses()
+    //fun getAllWarehouses() = repositoryWarehouses.getAllWarehouses()
+    fun getAllWarehouses() {
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                repositoryWarehouses.getAllWarehousesList()
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(error = true, errorMessage = e.message.toString(), requestName = "getAllWarehousesList")
+            }
+        }
+    }
 //    fun getAllWarehouses(): List<Warehouses> {
 //        if (getWarehousesCountRecords() != 0L) {
 //            return repositoryWarehouses.getAllWarehouses()
@@ -53,7 +72,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 //    }
 
     fun save(warehouses: List<Warehouse>) = repositoryWarehouses.saveWarehouses(warehouses)
+    fun saveDivisions(divisions: List<Division>) = repositoryDivisions.saveDivisions(divisions)
     fun getWarehouseByGuid(guid: String) = repositoryWarehouses.getWarehouseByGuid(guid)
+
+    fun getDivisionByGuid(guid: String) = repositoryDivisions.getDivisionByGuid(guid)
+    fun getAllDivisions() = repositoryDivisions.getAllDivisions()
+
     fun getAllWarehousesByDivision(divisionGuid: String) = repositoryWarehouses.getAllWarehousesByDivision(divisionGuid)
     fun getWarehousesCountRecords() = repositoryWarehouses.getWarehousesCountRecords()
     fun getWarehousesCountRecordsByDivision(divisionGuid: String) = repositoryWarehouses.getWarehousesCountRecordsByDivision(divisionGuid)

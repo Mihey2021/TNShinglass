@@ -3,17 +3,18 @@ package ru.tn.shinglass.dto.repository.initdata
 import ru.tn.shinglass.models.DocType
 import ru.tn.shinglass.models.Option
 import ru.tn.shinglass.models.OptionType
+import ru.tn.shinglass.models.SubOptionType
 
 class OptionsInitData {
     private val optionsList = listOf(
-        Option(type = OptionType.SELECTION.title, title = OptionType.SELECTION.title),
-        Option(type = OptionType.ACCEPTANCE.title, title = OptionType.ACCEPTANCE.title),
-        Option(type = OptionType.INVENTORY.title, title = OptionType.INVENTORY.title),
-        Option(type = OptionType.SELECTION.title, subOptionId = 1, title = DocType.REQUIREMENT_INVOICE.title,  description = DocType.REQUIREMENT_INVOICE.description),
-        Option(type = OptionType.SELECTION.title, subOptionId = 1, title = DocType.WORKWEAR_TOOLS.title,  description = DocType.WORKWEAR_TOOLS.description),
-        Option(type = OptionType.SELECTION.title, subOptionId = 1, title = DocType.DISPOSABLE_PPE.title, description = DocType.DISPOSABLE_PPE.description),
-        Option(type = OptionType.ACCEPTANCE.title, subOptionId = 2, title = DocType.STANDARD_ACCEPTANCE.title, description = DocType.STANDARD_ACCEPTANCE.description),
-        Option(type = OptionType.INVENTORY.title, subOptionId = 3, title = DocType.INVENTORY_IN_CELLS.title, description = DocType.INVENTORY_IN_CELLS.description),
+        Option(option = OptionType.SELECTION),
+        Option(option = OptionType.ACCEPTANCE),
+        Option(option = OptionType.INVENTORY),
+        Option(option = OptionType.SELECTION, subOption = DocType.REQUIREMENT_INVOICE.subType, docType = DocType.REQUIREMENT_INVOICE),
+        Option(option = OptionType.SELECTION, subOption = DocType.WORKWEAR_TOOLS.subType, docType = DocType.WORKWEAR_TOOLS),
+        Option(option = OptionType.SELECTION, subOption = DocType.DISPOSABLE_PPE.subType, docType = DocType.DISPOSABLE_PPE),
+        Option(option = OptionType.ACCEPTANCE, subOption = DocType.STANDARD_ACCEPTANCE.subType, docType = DocType.STANDARD_ACCEPTANCE),
+        Option(option = OptionType.INVENTORY, subOption = DocType.INVENTORY_IN_CELLS.subType, docType = DocType.INVENTORY_IN_CELLS),
     )
 
     fun getOptionsInitData() = optionsList

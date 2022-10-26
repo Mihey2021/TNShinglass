@@ -16,6 +16,7 @@ import ru.tn.shinglass.adapters.OptionsMenuExpListAdapter
 import ru.tn.shinglass.databinding.FragmentDesktopBinding
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.models.Option
+import ru.tn.shinglass.models.OptionType
 import ru.tn.shinglass.viewmodel.DesktopViewModel
 
 private const val ATTR_OPTION_GROUP = "option"
@@ -43,15 +44,28 @@ class DesktopFragment : Fragment() {
 
             val groupData = ArrayList<Map<Option, ArrayList<Option>>>()
 
-            options
-                .filter { option -> option.subOptionId == 0L }
+            for (optionType in OptionType.values())
+            {
+                options
+                .filter { option -> option.option == optionType && option.subOption == null }
                 .forEach { groupOption ->
                     val childDataItem = ArrayList<Option>()
                     options
-                        .filter { subOption -> subOption.subOptionId == groupOption.id }
+                        .filter { subOption -> subOption.option == groupOption.option && subOption.subOption != null }
                         .forEach { subOption -> childDataItem.add(subOption) }
                         .also { groupData.add(hashMapOf(groupOption to childDataItem)) }
                 }
+            }
+
+//            options
+//                .filter { option -> option.subOption == null }
+//                .forEach { groupOption ->
+//                    val childDataItem = ArrayList<Option>()
+//                    options
+//                        .filter { subOption -> subOption.option == groupOption.option }
+//                        .forEach { subOption -> childDataItem.add(subOption) }
+//                        .also { groupData.add(hashMapOf(groupOption to childDataItem)) }
+//                }
 
             val adapter = OptionsMenuExpListAdapter(
                 requireContext(),

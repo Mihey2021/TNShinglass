@@ -2,29 +2,30 @@ package ru.tn.shinglass.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import ru.tn.shinglass.models.DocType
 import ru.tn.shinglass.models.Option
+import ru.tn.shinglass.models.OptionType
+import ru.tn.shinglass.models.SubOptionType
 
 @Entity
 data class OptionsEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0L,
-    val subOptionId: Long = 0L,
-    val type: String,
-    val title: String,
-    val description: String,
+    val subOption: SubOptionType? = null,
+    val option: OptionType,
+    val docType: DocType? = null
 ) {
 
     fun toDto() =
-        Option(id = id, subOptionId = subOptionId, type = type, title = title, description = description)
+        Option(id = id, subOption = subOption, option = option, docType = docType)
 
     companion object {
         fun fromDto(dto: Option) =
             OptionsEntity(
                 id = dto.id,
-                subOptionId = dto.subOptionId,
-                type = dto.type,
-                title = dto.title,
-                description = dto.description,
+                subOption = dto.subOption,
+                option = dto.option,
+                docType = dto.docType
             )
     }
 }

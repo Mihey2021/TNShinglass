@@ -31,7 +31,7 @@ class DetailScanViewModel(application: Application): AndroidViewModel(applicatio
 
     fun saveWarehouses(warehouses: List<Warehouse>) = repositoryWarehouses.saveWarehouses(warehouses)
 
-    fun getAllWarehousesList() = repositoryWarehouses.getAllWarehouses()
+    //fun getAllWarehousesList() = repositoryWarehouses.getAllWarehouses()
 
     fun saveScanRecord(record: TableScan, forceOverwrite: Boolean) = repositoryTableScan.saveScanRecord(record, forceOverwrite)
 

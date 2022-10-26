@@ -65,4 +65,6 @@
     <string name="document_init_dialog_title">Реквизиты</string>
     <string name="info_table_scan_start_text">Чтобы начать, отсканируйте ячейку</string>
     <string name="info_table_scan_continue_text">Чтобы продолжить, отсканируйте ячейку или номенклатуру.\nТекущая ячейка:</string>
+    <string name="division_list_description">Выберите подразделение</string>
+    <string name="not_chosen_text">[Не выбрано]</string>
 </resources>

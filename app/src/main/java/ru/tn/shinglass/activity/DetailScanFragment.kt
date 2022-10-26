@@ -17,10 +17,7 @@ import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.databinding.FragmentDetailScanBinding
 import ru.tn.shinglass.dto.models.User1C
-import ru.tn.shinglass.models.Option
-import ru.tn.shinglass.models.PhisicalPerson
-import ru.tn.shinglass.models.TableScan
-import ru.tn.shinglass.models.Warehouse
+import ru.tn.shinglass.models.*
 import ru.tn.shinglass.viewmodel.DetailScanViewModel
 import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
@@ -57,13 +54,13 @@ class DetailScanFragment : Fragment() {
 
         val tempScanRecord = TempScanRecord(editRecord)
         tempScanRecord.OperationId = selectedOption.id
-        tempScanRecord.OperationTitle = selectedOption.title
+        tempScanRecord.OperationTitle = selectedOption.docType?.title ?: ""
 
         with(binding) {
-            operationTitleTextView.text = selectedOption.title
+            operationTitleTextView.text = selectedOption.docType?.title ?: ""
             //divisionTextView.setText("Подразделение из настроек")
 
-            if (selectedOption.type == "ИНВЕНТАРИЗАЦИЯ") {
+            if (selectedOption.docType == DocType.INVENTORY_IN_CELLS) {
                 divisionTextInputLayout.visibility = View.GONE
                 purposeOfUseTextInputLayout.visibility = View.GONE
                 workwearDisposableCheckBox.visibility = View.GONE
@@ -158,7 +155,7 @@ class DetailScanFragment : Fragment() {
                 }
             }
             phisicalPersonTextView.setOnItemClickListener { adapterView, _, position, _ ->
-                val physivalPeron = adapterView.getItemAtPosition(position) as PhisicalPerson
+                val physivalPeron = adapterView.getItemAtPosition(position) as PhysicalPerson
                 phisicalPersonTextView.setText(physivalPeron.fio)
                 phisicalPersonTextInputLayout.error = null
                 tempScanRecord.PhysicalPersonGUID = physivalPeron.guid
@@ -261,14 +258,14 @@ class DetailScanFragment : Fragment() {
             tempScanRecord.qualityTitle = it.qualityTitle
         }
 
-        retrofitViewModel.listDataPhisicalPersons.observe(viewLifecycleOwner) {
+        retrofitViewModel.listDataPhysicalPersons.observe(viewLifecycleOwner) {
 
             if (it.isEmpty()) return@observe
 
-            val dataList = arrayListOf<PhisicalPerson>()
+            val dataList = arrayListOf<PhysicalPerson>()
             it.forEach { person -> dataList.add(person) }
             progressDialog?.dismiss()
-            val adapter = DynamicListAdapter<PhisicalPerson>(
+            val adapter = DynamicListAdapter<PhysicalPerson>(
                 requireContext(),
                 R.layout.dynamic_prefs_layout,
                 dataList
@@ -365,31 +362,31 @@ class DetailScanFragment : Fragment() {
         binding: FragmentDetailScanBinding
     ) {
 
-        val dataList = arrayListOf<Warehouse>()
-        val warehousesList = viewModel.getAllWarehousesList()
-        warehousesList.forEach { warehouse -> dataList.add(warehouse) }
-        progressDialog?.dismiss()
-        val adapter = DynamicListAdapter<Warehouse>(
-            requireContext(),
-            R.layout.dynamic_prefs_layout,
-            dataList
-        )
-        binding.warehouseTextView.setAdapter(adapter)
+//        val dataList = arrayListOf<Warehouse>()
+//        val warehousesList = viewModel.getAllWarehousesList()
+//        warehousesList.forEach { warehouse -> dataList.add(warehouse) }
+//        progressDialog?.dismiss()
+//        val adapter = DynamicListAdapter<Warehouse>(
+//            requireContext(),
+//            R.layout.dynamic_prefs_layout,
+//            dataList
+//        )
+//        binding.warehouseTextView.setAdapter(adapter)
 
     }
 
     private fun getAllWarehousesList(binding: FragmentDetailScanBinding) {
-        val dbWarehouses = viewModel.getAllWarehousesList()
-        if (dbWarehouses.isEmpty()) {
-            retrofitViewModel.getAllWarehouses()
-        } else {
-            setWarehousesAdapter(binding)
-        }
+//        val dbWarehouses = viewModel.getAllWarehousesList()
+//        if (dbWarehouses.isEmpty()) {
+//            retrofitViewModel.getAllWarehouses()
+//        } else {
+//            setWarehousesAdapter(binding)
+//        }
     }
 
 
     private fun getPhysicalPersonList() {
-        retrofitViewModel.getPhysicalPersonList()
+        //retrofitViewModel.getPhysicalPersonList()
     }
 
     override fun onStop() {

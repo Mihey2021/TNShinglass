@@ -8,7 +8,8 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Filter
 import ru.tn.shinglass.databinding.DynamicPrefsLayoutBinding
-import ru.tn.shinglass.models.PhisicalPerson
+import ru.tn.shinglass.models.Division
+import ru.tn.shinglass.models.PhysicalPerson
 import ru.tn.shinglass.models.Warehouse
 import java.util.*
 import kotlin.collections.ArrayList
@@ -22,7 +23,7 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
 
     //private val listData: ArrayList<T> = arrayListOf<T>()
     val tempItems: ArrayList<T> = arrayListOf()
-    private val suggestions: ArrayList<T> = arrayListOf<T>()
+    private val suggestions: ArrayList<T> = arrayListOf()
 
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
@@ -39,7 +40,8 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
 
             when(item) {
                 is Warehouse -> itemListTextView.text = item.title
-                is PhisicalPerson -> itemListTextView.text = item.fio
+                is Division -> itemListTextView.text = item.title
+                is PhysicalPerson -> itemListTextView.text = item.fio
                 else -> itemListTextView.text = ""
             }
         }
@@ -53,7 +55,7 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
                 return if (constraint != null) {
                     suggestions.clear()
                     for (item in tempItems) {
-                        if (item is PhisicalPerson) {
+                        if (item is PhysicalPerson) {
                             if (item.fio.lowercase(Locale.ROOT)
                                     .contains(constraint.toString().lowercase(Locale.ROOT))
                             ) {
@@ -61,6 +63,13 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
                             }
                         }
                         if (item is Warehouse) {
+                            if (item.title.lowercase(Locale.ROOT)
+                                    .contains(constraint.toString().lowercase(Locale.ROOT))
+                            ) {
+                                suggestions.add(item)
+                            }
+                        }
+                        if (item is Division) {
                             if (item.title.lowercase(Locale.ROOT)
                                     .contains(constraint.toString().lowercase(Locale.ROOT))
                             ) {
@@ -89,13 +98,12 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
             }
 
             override fun convertResultToString(resultValue: Any?): CharSequence {
-                return if(resultValue is PhisicalPerson) {
-                    (resultValue as PhisicalPerson).fio
-                } else {
-                    (resultValue as Warehouse).title
-                }
+                if(resultValue is PhysicalPerson)
+                    return resultValue.fio
+                return if(resultValue is Warehouse)
+                    resultValue.title
+                else (resultValue as Division).title
             }
-
         }
     }
 }

@@ -97,10 +97,14 @@ class TableScanFragment : Fragment() {
 
         binding.list.adapter = adapter
 
+        //getAllWarehousesList()
+        getPhysicalPersonList()
+
+
         binding.completeAndSendBtn.setOnTouchListener { _, motionEvent ->
             when (motionEvent.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    if (selectedOption.type == OptionType.INVENTORY.title) {
+                    if (selectedOption.option == OptionType.INVENTORY) {
                         retrofitViewModel.createInventoryOfGoods(itemList) //primary = Первичная инвент. (поиск в ТЧ 1С идет без учета ячейки, т.к. в ячейках там еще ничего нет)
                         progressDialog =
                             DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
@@ -206,28 +210,68 @@ class TableScanFragment : Fragment() {
             }
         }
 
-        retrofitViewModel.listDataPhisicalPersons.observe(viewLifecycleOwner) {
+//        retrofitViewModel.listDataWarehouses.observe(viewLifecycleOwner) {
+//            if (it.isEmpty()) return@observe
+//
+//            viewModel.saveWarehouses(it)
+//            setWarehousesAdapter(dlgBinding)
+//        }
 
+        viewModel.dataState.observe(viewLifecycleOwner) {
+            if (it.loading)
+                progressDialog = DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+            else
+                progressDialog?.dismiss()
+
+            if (it.error) {
+                //DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR, title = it.errorMessage)
+                progressDialog?.dismiss()
+                DialogScreen.getDialog(
+                    requireContext(),
+                    DialogScreen.IDD_ERROR,
+                    it.errorMessage,
+                    onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                        override fun onPositiveClickButton() {
+                            when (it.requestName) {
+                                "getPhysicalPersonList" -> {
+                                    progressDialog?.show()
+                                    getPhysicalPersonList()
+                                }
+                                "getAllWarehousesList" -> {
+                                    progressDialog?.show()
+                                    LayoutInflater.from(requireContext())//.inflate(R.layout.inventory_init_dialog, null)
+                                    dlgBinding = InventoryInitDialogBinding.inflate(layoutInflater)
+                                    getAllWarehousesList(dlgBinding)
+                                }
+
+                            }
+                        }
+                    })
+            }
+        }
+
+        viewModel.warehousesList.observe(viewLifecycleOwner) {
             if (it.isEmpty()) return@observe
 
-            val dataList = arrayListOf<PhisicalPerson>()
-            it.forEach { person -> dataList.add(person) }
+            viewModel.saveWarehouses(it)
+            setWarehousesAdapter(dlgBinding)
+        }
+
+        viewModel.physicalPersons.observe(viewLifecycleOwner) {
+            if (it.isEmpty()) return@observe
+
+            val dataList = arrayListOf<PhysicalPerson>()
+            it.forEach { person ->
+                dataList.add(person)
+            }
             progressDialog?.dismiss()
-            val adapter = DynamicListAdapter<PhisicalPerson>(
+            val adapter = DynamicListAdapter<PhysicalPerson>(
                 requireContext(),
                 R.layout.dynamic_prefs_layout,
                 dataList
             )
 
             dlgBinding.phisicalPersonTextView.setAdapter(adapter)
-            //binding.phisicalPersonTextView.callOnClick()
-        }
-
-        retrofitViewModel.listDataWarehouses.observe(viewLifecycleOwner) {
-            if (it.isEmpty()) return@observe
-
-            viewModel.saveWarehouses(it)
-            setWarehousesAdapter(dlgBinding)
         }
 
         return binding.root
@@ -263,6 +307,9 @@ class TableScanFragment : Fragment() {
             warehouseTextView.setOnItemClickListener { adapterView, _, position, _ ->
                 val warehouseItem = adapterView.getItemAtPosition(position) as Warehouse
                 DocumentHeaders.setWarehouse(warehouseItem)
+                if (phisicalPersonTextView.text.isNullOrBlank()) {
+                    phisicalPersonTextView.setText(warehouseItem.responsibleGuid)
+                }
                 warehouseTextView.setText(warehouseItem?.title)
                 warehouseTextInputLayout.error = null
             }
@@ -279,7 +326,7 @@ class TableScanFragment : Fragment() {
                 }
             }
             phisicalPersonTextView.setOnItemClickListener { adapterView, _, position, _ ->
-                val physicalPerson = adapterView.getItemAtPosition(position) as PhisicalPerson
+                val physicalPerson = adapterView.getItemAtPosition(position) as PhysicalPerson
                 DocumentHeaders.setPhysicalPerson(physicalPerson)
                 phisicalPersonTextView.setText(physicalPerson?.fio)
                 phisicalPersonTextInputLayout.error = null
@@ -334,12 +381,13 @@ class TableScanFragment : Fragment() {
     }
 
     private fun getAllWarehousesList(binding: InventoryInitDialogBinding) {
-        val dbWarehouses = viewModel.getAllWarehousesList()
-        if (dbWarehouses.isEmpty()) {
-            retrofitViewModel.getAllWarehouses()
-        } else {
-            setWarehousesAdapter(binding)
-        }
+        viewModel.getAllWarehousesList()
+    //        val dbWarehouses = viewModel.getAllWarehousesList()
+//        if (dbWarehouses.isEmpty()) {
+//            retrofitViewModel.getAllWarehouses()
+//        } else {
+//            setWarehousesAdapter(binding)
+//        }
     }
 
     private fun setWarehousesAdapter(
@@ -347,8 +395,9 @@ class TableScanFragment : Fragment() {
     ) {
 
         val dataList = arrayListOf<Warehouse>()
-        val warehousesList = viewModel.getAllWarehousesList()
-        warehousesList.forEach { warehouse -> dataList.add(warehouse) }
+        //val warehousesList = viewModel.getAllWarehousesList()
+        val warehousesList = viewModel.warehousesList.value
+        warehousesList?.forEach { warehouse -> dataList.add(warehouse) }
         progressDialog?.dismiss()
         val adapter = DynamicListAdapter<Warehouse>(
             requireContext(),
@@ -360,7 +409,8 @@ class TableScanFragment : Fragment() {
     }
 
     private fun getPhysicalPersonList() {
-        retrofitViewModel.getPhysicalPersonList()
+        //retrofitViewModel.getPhysicalPersonList()
+        viewModel.getAllPhysicalPerson()
     }
 
     override fun onResume() {

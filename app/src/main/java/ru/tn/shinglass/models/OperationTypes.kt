@@ -1,11 +1,11 @@
 package ru.tn.shinglass.models
 
-enum class DocType(val type: OptionType, val title: String, val description: String) {
-    REQUIREMENT_INVOICE(OptionType.ACCEPTANCE,SubOptionType.INVOICE_REQUIREMENT.title, SubOptionType.INVOICE_REQUIREMENT.description),
-    WORKWEAR_TOOLS(OptionType.ACCEPTANCE,SubOptionType.OVERALLS_TOOLS.title, SubOptionType.OVERALLS_TOOLS.description),
-    DISPOSABLE_PPE(OptionType.ACCEPTANCE,SubOptionType.DISPOSABLE_PPE.title, SubOptionType.DISPOSABLE_PPE.description),
-    STANDARD_ACCEPTANCE(OptionType.SELECTION, SubOptionType.STANDARD_ACCEPTANCE.title, SubOptionType.STANDARD_ACCEPTANCE.description),
-    INVENTORY_IN_CELLS(OptionType.INVENTORY,SubOptionType.INVENTORY_IN_CELLS.title, SubOptionType.INVENTORY_IN_CELLS.description),
+enum class DocType(val type: OptionType, val subType: SubOptionType, val title: String, val description: String) {
+    REQUIREMENT_INVOICE(OptionType.ACCEPTANCE, SubOptionType.INVOICE_REQUIREMENT, SubOptionType.INVOICE_REQUIREMENT.title, SubOptionType.INVOICE_REQUIREMENT.description),
+    WORKWEAR_TOOLS(OptionType.ACCEPTANCE, SubOptionType.OVERALLS_TOOLS, SubOptionType.OVERALLS_TOOLS.title, SubOptionType.OVERALLS_TOOLS.description),
+    DISPOSABLE_PPE(OptionType.ACCEPTANCE, SubOptionType.DISPOSABLE_PPE, SubOptionType.DISPOSABLE_PPE.title, SubOptionType.DISPOSABLE_PPE.description),
+    STANDARD_ACCEPTANCE(OptionType.SELECTION, SubOptionType.STANDARD_ACCEPTANCE, SubOptionType.STANDARD_ACCEPTANCE.title, SubOptionType.STANDARD_ACCEPTANCE.description),
+    INVENTORY_IN_CELLS(OptionType.INVENTORY, SubOptionType.INVENTORY_IN_CELLS, SubOptionType.INVENTORY_IN_CELLS.title, SubOptionType.INVENTORY_IN_CELLS.description),
 }
 
 enum class OptionType(val id: Int, val title: String) {
