@@ -78,4 +78,6 @@
     <string name="info_table_scan_continue_text">To continue, scan the cell or item.\nCurrent cell:</string>
     <string name="division_list_description">Select division</string>
     <string name="not_chosen_text">[Not chosen]</string>
+    <string name="incoming_number_text">In. number</string>
+    <string name="incoming_date_text">In. date</string>
 </resources>

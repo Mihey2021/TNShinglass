@@ -65,22 +65,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         divisionListPreference.icon =
             resources.getDrawable(R.drawable.ic_baseline_division_24, requireContext().theme)
         divisionListPreference.setDialogTitle(getString(R.string.division_list_description))
-        divisionListPreference.onPreferenceClickListener = object :
-            Preference.OnPreferenceClickListener {
-            override fun onPreferenceClick(preference: Preference): Boolean {
-                if (divisionListPreference.getDataListArray().isEmpty()) {
-                    setDivisionDataList(divisionListPreference)
-                    return true
-                }
-                return false
-            }
-        }
 
         //Заполним список подразделений сразу при открытии
         if (divisionListPreference.getDataListArray().isEmpty()) {
-            setDivisionDataList(divisionListPreference, showSelectionList = false)
+            settingsViewModel.getAllDivisions()
         }
-//
+
         categoryDocSettings.addPreference(divisionListPreference)
 
         val warehouseListPreference = ExtendListPreference<Warehouse>(requireContext())
@@ -155,6 +145,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val warehouseListPreference =
             preferenceManager.preferenceScreen.findPreference<ListPreference>("warehouse_guid") as ExtendListPreference<Warehouse>
 
+        val divisionListPreference =
+            preferenceManager.preferenceScreen.findPreference<ListPreference>("division_guid") as ExtendListPreference<Division>
+
+
         settingsViewModel.warehousesList.observe(viewLifecycleOwner) {
             if (it.isEmpty()) return@observe
 
@@ -169,6 +163,20 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 warehouseListPreference.setDataListArray(dataList)
         }
 
+        settingsViewModel.divisionsList.observe(viewLifecycleOwner) {
+            if (it.isEmpty()) return@observe
+
+            val dataList = ArrayList<Division>()
+            dataList.add(Division(-1, getString(R.string.not_chosen_text), "", ""))
+            it.forEach { division ->
+                dataList.add(division)
+            }
+
+            if (divisionListPreference.getDataListArray().isEmpty())
+                divisionListPreference.setDataListArray(dataList)
+        }
+
+
         settingsViewModel.dataState.observe(viewLifecycleOwner) {
             if (it.loading) {
                 if (progressDialog?.isShowing == false || progressDialog == null)
@@ -181,91 +189,18 @@ class SettingsFragment : PreferenceFragmentCompat() {
                 DialogScreen.getDialog(
                     requireContext(),
                     DialogScreen.IDD_ERROR,
-                    title = it.errorMessage
+                    message = it.errorMessage,
+                    onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                        override fun onPositiveClickButton() {
+                            when (it.requestName) {
+                                "getAllWarehousesList" -> settingsViewModel.getAllWarehouses()
+                                "getAllDivisions" -> settingsViewModel.getAllDivisions()
+                            }
+
+                        }
+                    }
                 )
         }
-    }
-
-    private fun setDivisionDataList(
-        divisionListPreference: ExtendListPreference<Division>,
-        showSelectionList: Boolean = true
-    ) {
-
-        //val progressDialog = DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
-
-        val arrayListDivision = ArrayList<Division>()
-        val divisionListFromDb = getAllDivisionsFromDb()
-        if (divisionListFromDb.isNotEmpty()) {
-            arrayListDivision.add(Division(-1, getString(R.string.not_chosen_text), "", ""))
-            divisionListFromDb.forEach { arrayListDivision.add(it) }
-            divisionListPreference.setDataListArray(arrayListDivision)
-            //progressDialog.cancel()
-            if (showSelectionList)
-                divisionListPreference.showDialog()
-        } else {
-            apiService?.getAllDivisionsList()?.enqueue(object : Callback<List<Division>> {
-                override fun onResponse(
-                    call: Call<List<Division>>,
-                    response: Response<List<Division>>
-                ) {
-                    //progressDialog.cancel()
-                    if (!response.isSuccessful) {
-                        //TODO: Обработка не 2хх кода ответа
-                        return
-                    }
-
-                    val divisionsList = response.body()
-                    if (divisionsList == null) {
-                        //TODO: Обработка пустого ответа
-                        return
-                    }
-                    //Сохраним полученные подразделения в базу данных
-                    settingsViewModel.saveDivisions(divisionsList)
-                    arrayListDivision.add(
-                        Division(
-                            -1,
-                            getString(R.string.not_chosen_text),
-                            "",
-                            ""
-                        )
-                    )
-                    //Прочитаем из БД
-                    getAllDivisionsFromDb().forEach { arrayListDivision.add(it) }
-                    //Установим список
-                    divisionListPreference.setDataListArray(arrayListDivision)
-                    //Покажем диалог выбора склада
-                    if (showSelectionList)
-                        divisionListPreference.showDialog()
-                    return
-                }
-
-                override fun onFailure(call: Call<List<Division>>, t: Throwable) {
-                    //progressDialog.cancel()
-                    DialogScreen.getDialog(
-                        requireContext(),
-                        DialogScreen.IDD_ERROR,
-                        t.message.toString(),
-                        onDialogsInteractionListener = object : OnDialogsInteractionListener {
-                            override fun onPositiveClickButton() {
-                                setDivisionDataList(divisionListPreference)
-                            }
-                        })
-                    return
-                }
-
-            })
-        }
-
-        divisionListPreference.setDataListArray(arrayListDivision)
-    }
-
-
-    private fun getAllWarehouses() {
-        settingsViewModel.getAllWarehouses()
-    }
-
-    private fun getAllDivisionsFromDb(): List<Division> {
-        return settingsViewModel.getAllDivisions()
     }
 
     override fun onResume() {

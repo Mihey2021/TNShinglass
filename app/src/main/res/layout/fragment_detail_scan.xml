@@ -28,7 +28,10 @@
         android:id="@+id/headerLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/operationTitleTextView"
@@ -178,7 +181,7 @@
             <!--                tools:text="Физическое лицо" />-->
 
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/phisicalPersonTextInputLayout"
+                android:id="@+id/physicalPersonTextInputLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -190,7 +193,7 @@
                 app:startIconDrawable="@drawable/ic_baseline_account_circle_24">
 
                 <AutoCompleteTextView
-                    android:id="@+id/phisicalPersonTextView"
+                    android:id="@+id/physicalPersonTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:imeOptions="actionDone"

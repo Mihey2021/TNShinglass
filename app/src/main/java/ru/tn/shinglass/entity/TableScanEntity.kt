@@ -2,6 +2,7 @@ package ru.tn.shinglass.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import ru.tn.shinglass.models.Division
 import ru.tn.shinglass.models.Option
 import ru.tn.shinglass.models.TableScan
 
@@ -31,6 +32,8 @@ data class TableScanEntity(
     val PhysicalPersonTitle: String,
     val PhysicalPersonGUID: String,
     val OwnerGuid: String,
+    val uploaded: Boolean = false,
+    val docNameIn1C: String = "",
 ) {
     fun toDto() =
         TableScan(
@@ -57,6 +60,7 @@ data class TableScanEntity(
             PhysicalPersonTitle = PhysicalPersonTitle,
             PhysicalPersonGUID = PhysicalPersonGUID,
             OwnerGuid = OwnerGuid,
+            uploaded = uploaded,
         )
 
     companion object {
@@ -85,6 +89,10 @@ data class TableScanEntity(
                 PhysicalPersonTitle = dto.PhysicalPersonTitle,
                 PhysicalPersonGUID = dto.PhysicalPersonGUID,
                 OwnerGuid = dto.OwnerGuid,
+                uploaded = dto.uploaded,
             )
     }
 }
+
+fun List<TableScanEntity>.toDto(): List<TableScan> = map(TableScanEntity::toDto)
+fun List<TableScan>.toEntity(): List<TableScanEntity> = map(TableScanEntity::fromDto)

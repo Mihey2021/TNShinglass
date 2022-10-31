@@ -67,4 +67,6 @@
     <string name="info_table_scan_continue_text">Чтобы продолжить, отсканируйте ячейку или номенклатуру.\nТекущая ячейка:</string>
     <string name="division_list_description">Выберите подразделение</string>
     <string name="not_chosen_text">[Не выбрано]</string>
+    <string name="incoming_number_text">Вх. номер</string>
+    <string name="incoming_date_text">Вх. дата</string>
 </resources>

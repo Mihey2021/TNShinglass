@@ -1,21 +1,54 @@
 package ru.tn.shinglass.dto.repository
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
+import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.dao.room.DivisionsDao
 import ru.tn.shinglass.domain.repository.DivisionRepository
 import ru.tn.shinglass.entity.DivisionsEntity
+import ru.tn.shinglass.entity.toDto
+import ru.tn.shinglass.entity.toEntity
+import ru.tn.shinglass.error.*
 import ru.tn.shinglass.models.Division
+import java.io.IOException
 
 class DivisionRepositoryImpl(private val dao: DivisionsDao) : DivisionRepository {
-    override fun getAllDivisions(): List<Division> =
-        dao.getAllDivisions().map { divisionsEntity ->
-            divisionsEntity.toDto()
+
+    private val apiService = ApiUtils.getApiService()
+
+    override var divisionsList: LiveData<List<Division>> = dao.getAllDivisions().map(List<DivisionsEntity>::toDto)
+
+
+//    override fun getAllDivisions(): List<Division> =
+//        dao.getAllDivisions().map { divisionsEntity ->
+//            divisionsEntity.toDto()
+//        }
+
+    override suspend fun getAllDivisions() {
+        try {
+            if (apiService != null) {
+                val response = apiService.getAllDivisionsList()
+                if (!response.isSuccessful) {
+                    throw ApiError(response.code(), response.message())
+                }
+                val body = response.body() ?: throw ApiError(response.code(), response.message())
+                dao.saveDivisions(body.toEntity())
+            } else {
+                throw ApiServiceError()
+            }
+        } catch (e: IOException) {
+            //throw NetworkError
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
         }
+    }
 
     override fun getDivisionByGuid(guid: String): Division? {
         return dao.getDivisionByGuid(guid)?.toDto()
     }
 
     override fun saveDivisions(divisions: List<Division>) {
-        divisions.forEach { division -> dao.save(DivisionsEntity.fromDto(division)) }
+        //divisions.forEach { division -> dao.save(DivisionsEntity.fromDto(division)) }
     }
 }

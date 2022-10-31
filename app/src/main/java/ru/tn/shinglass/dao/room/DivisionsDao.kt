@@ -1,5 +1,6 @@
 package ru.tn.shinglass.dao.room
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -10,15 +11,15 @@ import ru.tn.shinglass.entity.OptionsEntity
 @Dao
 interface DivisionsDao {
     @Query("SELECT * FROM DivisionsEntity")
-    fun getAllDivisions(): List<DivisionsEntity>
+    fun getAllDivisions(): LiveData<List<DivisionsEntity>>
 
     @Query("SELECT * FROM DivisionsEntity WHERE guid = :guid")
     fun getDivisionByGuid(guid: String): DivisionsEntity?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insert(division: DivisionsEntity)
+    fun insert(divisions: List<DivisionsEntity>)
 
-    fun save(division: DivisionsEntity) {
-        insert(division)
+    fun saveDivisions(divisions: List<DivisionsEntity>) {
+        insert(divisions)
     }
 }

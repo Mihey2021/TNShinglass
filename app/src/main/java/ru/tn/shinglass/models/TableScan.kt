@@ -27,4 +27,5 @@ data class TableScan (
     val PhysicalPersonTitle: String = "",
     val PhysicalPersonGUID: String = "",
     val OwnerGuid: String,
+    val uploaded: Boolean = false,
 ) : Serializable

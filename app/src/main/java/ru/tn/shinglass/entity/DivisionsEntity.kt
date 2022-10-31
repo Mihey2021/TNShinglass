@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import ru.tn.shinglass.models.Division
 import ru.tn.shinglass.models.Option
+import ru.tn.shinglass.models.Warehouse
 
 @Entity
 data class DivisionsEntity (
@@ -28,3 +29,6 @@ data class DivisionsEntity (
             )
     }
 }
+
+fun List<DivisionsEntity>.toDto(): List<Division> = map(DivisionsEntity::toDto)
+fun List<Division>.toEntity(): List<DivisionsEntity> = map(DivisionsEntity::fromDto)

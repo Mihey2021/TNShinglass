@@ -6,7 +6,7 @@ import retrofit2.Response
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.domain.repository.RetrofitRepository
 import ru.tn.shinglass.dto.models.CreatedDocumentDetails
-import ru.tn.shinglass.dto.models.InventoryOfGoods
+import ru.tn.shinglass.dto.models.DocumentToUploaded
 import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.entity.Nomenclature
@@ -38,16 +38,16 @@ class RetrofitRepositoryImpl : RetrofitRepository {
         apiService?.getItemByBarcode(barcode)?.enqueue(getCallbackHandler(callback))
     }
 
-    override fun createInventoryOfGoods(
-        scanRecords: List<TableScan>,
-        callback: RetrofitRepository.Callback<CreatedDocumentDetails>
-    ) {
-        apiService?.createInventoryOfGoods(InventoryOfGoods(records = scanRecords))?.enqueue(getCallbackHandler(callback))
-    }
+//    override fun createInventoryOfGoods(
+//        scanRecords: List<TableScan>,
+//        callback: RetrofitRepository.Callback<CreatedDocumentDetails>
+//    ) {
+//        apiService?.createInventoryOfGoods(DocumentToUploaded(records = scanRecords))?.enqueue(getCallbackHandler(callback))
+//    }
 
-    override fun getAllDivisionsList(callback: RetrofitRepository.Callback<List<Division>>) {
-        apiService?.getAllDivisionsList()?.enqueue(getCallbackHandler(callback))
-    }
+//    override fun getAllDivisionsList(callback: RetrofitRepository.Callback<List<Division>>) {
+//        apiService?.getAllDivisionsList()?.enqueue(getCallbackHandler(callback))
+//    }
 
     private fun <T> getCallbackHandler(callback: RetrofitRepository.Callback<T>): Callback<T> {
         return object : Callback<T> {

@@ -17,13 +17,14 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 import ru.tn.shinglass.R
+import ru.tn.shinglass.activity.utilites.AndroidUtils
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.data.api.ApiService
 import ru.tn.shinglass.databinding.FragmentAuthBinding
-import ru.tn.shinglass.databinding.InventoryInitDialogBinding
+import ru.tn.shinglass.databinding.DocumentsHeadersInitDialogBinding
 import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.viewmodel.RetrofitViewModel
@@ -229,6 +230,7 @@ class AuthFragment : Fragment() {
                         val args = Bundle()
                         args.putSerializable("userData", user1C)
                         //findNavController().navigate(R.id.action_authFragment_to_desktopFragment, Bundle().apply { userData = user1C })
+                        AndroidUtils.hideKeyboard(requireView())
                         findNavController().navigate(
                             R.id.action_authFragment_to_desktopFragment,
                             args

@@ -33,9 +33,9 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
     val itemData: LiveData<Nomenclature>
         get() = _itemData
 
-    private val _docCreated: MutableLiveData<CreatedDocumentDetails?> = MutableLiveData(null)
-    val docCreated: LiveData<CreatedDocumentDetails?>
-        get() = _docCreated
+//    private val _docCreated: MutableLiveData<CreatedDocumentDetails?> = MutableLiveData(null)
+//    val docCreated: LiveData<CreatedDocumentDetails?>
+//        get() = _docCreated
 
     private val _requestError: MutableLiveData<RequestError?> = MutableLiveData(null)
     val requestError: LiveData<RequestError?>
@@ -84,23 +84,19 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
         })
     }
 
-    fun createInventoryOfGoods(scanRecords: List<TableScan>){
-        repository.createInventoryOfGoods(scanRecords, object : RetrofitRepository.Callback<CreatedDocumentDetails> {
-            override fun onSuccess(receivedData: CreatedDocumentDetails) {
-                _docCreated.value = receivedData
-                _requestError.value = null
-            }
-
-            override fun onError(e: Exception) {
-                _requestError.value = RequestError(e.message.toString(), "createInventoryOfGoods")
-            }
-        })
-
-    }
-
-    fun resetTheDocumentCreatedFlag() {
-        _docCreated.value = null
-    }
+//    fun createInventoryOfGoods(scanRecords: List<TableScan>){
+//        repository.createInventoryOfGoods(scanRecords, object : RetrofitRepository.Callback<CreatedDocumentDetails> {
+//            override fun onSuccess(receivedData: CreatedDocumentDetails) {
+//                _docCreated.value = receivedData
+//                _requestError.value = null
+//            }
+//
+//            override fun onError(e: Exception) {
+//                _requestError.value = RequestError(e.message.toString(), "createInventoryOfGoods")
+//            }
+//        })
+//
+//    }
 
     fun getItemByBarcode(barcode: String) {
         repository.getItemByBarcode(barcode, object : RetrofitRepository.Callback<Nomenclature> {

@@ -1,5 +1,6 @@
 package ru.tn.shinglass.dao.room
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -38,7 +39,9 @@ interface TableScanDao {
                 "PurposeOfUse =:PurposeOfUse, " +
                 "PhysicalPersonTitle =:PhysicalPersonTitle, " +
                 "PhysicalPersonGUID =:PhysicalPersonGUID, " +
-                "OwnerGuid =:OwnerGuid" +
+                "OwnerGuid =:OwnerGuid, " +
+                "uploaded =:uploaded, " +
+                "docNameIn1C =:docNameIn1C " +
                 " WHERE id = :id"
     )
     fun updateRecord(
@@ -64,7 +67,9 @@ interface TableScanDao {
         PurposeOfUse: String,
         PhysicalPersonTitle: String,
         PhysicalPersonGUID: String,
-        OwnerGuid: String
+        OwnerGuid: String,
+        uploaded: Boolean,
+        docNameIn1C: String,
     )
 
     fun save(record: TableScanEntity) {
@@ -92,14 +97,16 @@ interface TableScanDao {
             PurposeOfUse = record.PurposeOfUse,
             PhysicalPersonTitle = record.PhysicalPersonTitle,
             PhysicalPersonGUID = record.PhysicalPersonGUID,
-            OwnerGuid = record.OwnerGuid
+            OwnerGuid = record.OwnerGuid,
+            uploaded = record.uploaded,
+            docNameIn1C =  record.docNameIn1C,
         )
     }
 
     @Query("SELECT * FROM TableScanEntity WHERE id =:id")
     fun getScanRecordById(id: Long): TableScanEntity?
 
-    @Query("SELECT * FROM TableScanEntity WHERE OwnerGuid =:ownerGuid AND OperationId =:operationId ORDER BY id DESC")
+    @Query("SELECT * FROM TableScanEntity WHERE OwnerGuid =:ownerGuid AND OperationId =:operationId AND uploaded = 0 ORDER BY id DESC")
     fun getAllScanRecordsByOwner(ownerGuid: String, operationId: Long): List<TableScanEntity>
 
     @Query(
@@ -113,7 +120,8 @@ interface TableScanDao {
                 "AND workwearDisposable =:workwearDisposable " +
                 "AND warehouseGuid =:warehouseGuid " +
                 "AND purposeOfUse =:purposeOfUse " +
-                "AND physicalPersonGUID =:physicalPersonGUID"
+                "AND physicalPersonGUID =:physicalPersonGUID " +
+                "AND uploaded = 0 "
     )
     fun getExistingRecord(
         operationId: Long,
@@ -128,7 +136,7 @@ interface TableScanDao {
         ownerGuid: String,
     ) : TableScanEntity?
 
-    @Query("DELETE FROM TableScanEntity WHERE id =:id")
+    @Query("DELETE FROM TableScanEntity WHERE id =:id AND uploaded = 0")
     fun deleteRecordById(id: Long)
 
     @Query("DELETE FROM TableScanEntity WHERE OwnerGuid =:ownerGuid AND OperationId =:operationId")

@@ -7,12 +7,15 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AutoCompleteTextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import ru.tn.shinglass.R
+import ru.tn.shinglass.activity.utilites.AndroidUtils
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.databinding.FragmentTableScanBinding
@@ -20,13 +23,14 @@ import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.adapters.OnTableScanItemInteractionListener
 import ru.tn.shinglass.adapters.TableScanAdapter
-import ru.tn.shinglass.databinding.InventoryInitDialogBinding
+import ru.tn.shinglass.databinding.DocumentsHeadersInitDialogBinding
 import ru.tn.shinglass.dto.models.DocumentHeaders
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.models.*
 import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
 import ru.tn.shinglass.viewmodel.TableScanFragmentViewModel
+import java.util.ArrayList
 
 class TableScanFragment : Fragment() {
 
@@ -34,11 +38,15 @@ class TableScanFragment : Fragment() {
     private val retrofitViewModel: RetrofitViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
 
+    private val dataListWarehouses: ArrayList<Warehouse> = arrayListOf()
+    private val dataListPhysicalPersons: ArrayList<PhysicalPerson> = arrayListOf()
+    private val dataListDivisions: ArrayList<Division> = arrayListOf()
+
     private lateinit var selectedOption: Option
     private lateinit var user1C: User1C
 
     //private lateinit var itemList: List<TableScan>
-    private lateinit var dlgBinding: InventoryInitDialogBinding
+    private lateinit var dlgBinding: DocumentsHeadersInitDialogBinding
     private var dlg: AlertDialog? = null
 
     private var itemList: List<TableScan> = listOf()
@@ -64,6 +72,9 @@ class TableScanFragment : Fragment() {
         setFragmentResult("requestUserData", bundleOf("userData" to user1C))
 
         binding.infoTextView.text = getString(R.string.info_table_scan_start_text)
+        binding.infoTextView.setOnClickListener {
+            dlg = getDocumentHeadersDialog(forceOpen = true, tableIsEmpty = itemList.isEmpty())
+        }
 
         val adapter = TableScanAdapter(object : OnTableScanItemInteractionListener {
             override fun selectItem(item: TableScan) {
@@ -98,16 +109,21 @@ class TableScanFragment : Fragment() {
         binding.list.adapter = adapter
 
         //getAllWarehousesList()
-        getPhysicalPersonList()
+        //getPhysicalPersonList()
 
+        if (DocumentHeaders.getWarehouse() == null)
+            viewModel.getAllWarehousesList()
+        if (DocumentHeaders.getPhysicalPerson() == null)
+            viewModel.getAllPhysicalPerson()
 
         binding.completeAndSendBtn.setOnTouchListener { _, motionEvent ->
             when (motionEvent.action) {
                 MotionEvent.ACTION_DOWN -> {
                     if (selectedOption.option == OptionType.INVENTORY) {
-                        retrofitViewModel.createInventoryOfGoods(itemList) //primary = Первичная инвент. (поиск в ТЧ 1С идет без учета ячейки, т.к. в ячейках там еще ничего нет)
-                        progressDialog =
-                            DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+                        createDocumentIn1C()
+//                        retrofitViewModel.createInventoryOfGoods(itemList) //primary = Первичная инвент. (поиск в ТЧ 1С идет без учета ячейки, т.к. в ячейках там еще ничего нет)
+//                        progressDialog =
+//                            DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
                     }
                     false
                 }
@@ -118,9 +134,9 @@ class TableScanFragment : Fragment() {
 
         viewModel.refreshTableScan(user1C.getUserGUID(), selectedOption.id)
 
-        retrofitViewModel.docCreated.observe(viewLifecycleOwner) {
+        viewModel.docCreated.observe(viewLifecycleOwner) {
             if (it == null) return@observe
-            progressDialog?.dismiss()
+            //progressDialog?.dismiss()
             //Toast.makeText(requireContext(),"Документ отправлен!", Toast.LENGTH_LONG).show()
             DialogScreen.getDialog(
                 requireContext(),
@@ -128,8 +144,10 @@ class TableScanFragment : Fragment() {
                 "Документ в 1С успешно создан.\nНомер: ${it.docNumber}\nДетали:${if (it.details.isNotEmpty()) "\n${it.details}" else "[нет]"}",
                 it.docTitle
             )
-            retrofitViewModel.resetTheDocumentCreatedFlag()
-            viewModel.deleteRecordsByOwnerAndOperationId(user1C.getUserGUID(), selectedOption.id)
+            viewModel.resetTheDocumentCreatedFlag()
+            //viewModel.deleteRecordsByOwnerAndOperationId(user1C.getUserGUID(), selectedOption.id)
+            //viewModel.updateRecordUpload(user1C.getUserGUID(), selectedOption.id)
+            viewModel.refreshTableScan(user1C.getUserGUID(), selectedOption.id)
         }
 
         viewModel.data.observe(viewLifecycleOwner) {
@@ -144,6 +162,8 @@ class TableScanFragment : Fragment() {
                 binding.infoTextView.text = getString(R.string.info_table_scan_start_text)
             }
         }
+
+
 
         retrofitViewModel.requestError.observe(viewLifecycleOwner) { error ->
 
@@ -188,7 +208,7 @@ class TableScanFragment : Fragment() {
                         dlg = getDocumentHeadersDialog(args)
                     }
                 }
-                openDetailScanFragment(args, dlg)
+                openDetailScanFragment(args)
             } else {
                 //val lastIndex = itemList.count() - 1
                 //binding.infoTextView.text = "Чтобы начать, отсканируйте ячейку или номенклатуру.\nТекущая ячейка: ${itemList[lastIndex].cellTitle}"
@@ -218,9 +238,11 @@ class TableScanFragment : Fragment() {
 //        }
 
         viewModel.dataState.observe(viewLifecycleOwner) {
-            if (it.loading)
-                progressDialog = DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
-            else
+            if (it.loading) {
+                if (progressDialog?.isShowing == false || progressDialog == null)
+                    progressDialog =
+                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+            } else
                 progressDialog?.dismiss()
 
             if (it.error) {
@@ -233,107 +255,202 @@ class TableScanFragment : Fragment() {
                     onDialogsInteractionListener = object : OnDialogsInteractionListener {
                         override fun onPositiveClickButton() {
                             when (it.requestName) {
-                                "getPhysicalPersonList" -> {
-                                    progressDialog?.show()
-                                    getPhysicalPersonList()
-                                }
                                 "getAllWarehousesList" -> {
-                                    progressDialog?.show()
-                                    LayoutInflater.from(requireContext())//.inflate(R.layout.inventory_init_dialog, null)
-                                    dlgBinding = InventoryInitDialogBinding.inflate(layoutInflater)
-                                    getAllWarehousesList(dlgBinding)
+                                    viewModel.getAllWarehousesList()
                                 }
-
+                                "getAllPhysicalPerson" -> {
+                                    viewModel.getAllPhysicalPerson()
+                                }
+                                "createDocumentIn1C" ->
+                                    createDocumentIn1C()
                             }
                         }
                     })
             }
         }
 
+        viewModel.divisionsList.observe(viewLifecycleOwner) {
+            if (it.isEmpty()) return@observe
+
+            it.forEach { division ->
+                dataListDivisions.add(division)
+            }
+        }
+
         viewModel.warehousesList.observe(viewLifecycleOwner) {
             if (it.isEmpty()) return@observe
 
-            viewModel.saveWarehouses(it)
-            setWarehousesAdapter(dlgBinding)
+            it.forEach { warehouse ->
+                dataListWarehouses.add(warehouse)
+            }
         }
 
         viewModel.physicalPersons.observe(viewLifecycleOwner) {
             if (it.isEmpty()) return@observe
 
-            val dataList = arrayListOf<PhysicalPerson>()
             it.forEach { person ->
-                dataList.add(person)
+                dataListPhysicalPersons.add(person)
             }
-            progressDialog?.dismiss()
-            val adapter = DynamicListAdapter<PhysicalPerson>(
-                requireContext(),
-                R.layout.dynamic_prefs_layout,
-                dataList
-            )
-
-            dlgBinding.phisicalPersonTextView.setAdapter(adapter)
         }
 
         return binding.root
     }
 
+    private fun createDocumentIn1C() {
+        viewModel.createDocumentIn1C(itemList, selectedOption.docType!!)
+    }
+
     private fun getDocumentHeadersDialog(
         args: Bundle? = null,
-        cancellable: Boolean = true
+        cancellable: Boolean = true,
+        forceOpen: Boolean = false,
+        tableIsEmpty: Boolean = false,
     ): AlertDialog? {
         val layoutInflater =
             LayoutInflater.from(requireContext())//.inflate(R.layout.inventory_init_dialog, null)
-        dlgBinding = InventoryInitDialogBinding.inflate(layoutInflater)
+        dlgBinding = DocumentsHeadersInitDialogBinding.inflate(layoutInflater)
+
+
+        val docHeadersView = selectedOption.subOption?.viewNames
+        if (docHeadersView?.isEmpty() == true) return null
 
         with(dlgBinding) {
-            val warehouseGuidByPrefs =
-                settingsViewModel.getPreferenceByKey("warehouse_guid")
-            if (warehouseGuidByPrefs.isNullOrBlank())
-                warehouseTextInputLayout.error = "Склад не задан в настройках!".toString()
 
-            val warehouse = settingsViewModel.getWarehouseByGuid(warehouseGuidByPrefs ?: "")
-            if (DocumentHeaders.getWarehouse() == null)
-                DocumentHeaders.setWarehouse(warehouse)
-            warehouseTextView.setText(DocumentHeaders.getWarehouse()?.title)
-            warehouseTextInputLayout.error = null
+            if (docHeadersView?.contains(divisionTextInputLayout.id) == true) {
+                val divisionGuidByPrefs =
+                    settingsViewModel.getPreferenceByKey("division_guid")
+                if (divisionGuidByPrefs.isNullOrBlank())
+                    divisionTextInputLayout.error = "Подразделение не задано в настройках!"
 
-            warehouseTextView.setOnClickListener {
-                if (warehouseTextView.adapter == null) {
-                    progressDialog =
-                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
-                    getAllWarehousesList(dlgBinding)
+                val divisionAdapter = DynamicListAdapter<Division>(
+                    requireContext(),
+                    R.layout.dynamic_prefs_layout,
+                    dataListDivisions
+                )
+
+                divisionTextView.isEnabled = tableIsEmpty
+                divisionTextView.setAdapter(divisionAdapter)
+
+                val division = settingsViewModel.getDivisionByGuid(divisionGuidByPrefs ?: "")
+                if (DocumentHeaders.getDivision() == null)
+                    DocumentHeaders.setDivision(division)
+                divisionTextView.setText(DocumentHeaders.getDivision()?.title)
+                divisionTextInputLayout.error = null
+
+                divisionTextView.setOnClickListener {
+                    if (divisionTextView.adapter == null) {
+                        viewModel.getAllDivisions()
+                    }
                 }
+
+                divisionTextView.setOnItemClickListener { adapterView, _, position, _ ->
+                    val divisionItem = adapterView.getItemAtPosition(position) as Division
+                    DocumentHeaders.setDivision(divisionItem)
+//                    fillResponsible(
+//                        DocumentHeaders.getDivision()?.responsibleGuid ?: "",
+//                        dlgBinding.physicalPersonTextView
+//                    )
+                    divisionTextView.setText(divisionItem?.title)
+                    divisionTextInputLayout.error = null
+                    AndroidUtils.hideKeyboard(dlgBinding.root)
+                }
+            } else {
+                divisionTextInputLayout.isVisible = false
             }
-            warehouseTextView.setOnItemClickListener { adapterView, _, position, _ ->
-                val warehouseItem = adapterView.getItemAtPosition(position) as Warehouse
-                DocumentHeaders.setWarehouse(warehouseItem)
-                if (phisicalPersonTextView.text.isNullOrBlank()) {
-                    phisicalPersonTextView.setText(warehouseItem.responsibleGuid)
-                }
-                warehouseTextView.setText(warehouseItem?.title)
+
+            if (docHeadersView?.contains(warehouseTextInputLayout.id) == true) {
+                val warehouseGuidByPrefs =
+                    settingsViewModel.getPreferenceByKey("warehouse_guid")
+                if (warehouseGuidByPrefs.isNullOrBlank())
+                    warehouseTextInputLayout.error = "Склад не задан в настройках!".toString()
+
+                val warehousesAdapter = DynamicListAdapter<Warehouse>(
+                    requireContext(),
+                    R.layout.dynamic_prefs_layout,
+                    dataListWarehouses
+                )
+
+                warehouseTextView.isEnabled = tableIsEmpty
+                warehouseTextView.setAdapter(warehousesAdapter)
+
+                val warehouse = settingsViewModel.getWarehouseByGuid(warehouseGuidByPrefs ?: "")
+                if (DocumentHeaders.getWarehouse() == null)
+                    DocumentHeaders.setWarehouse(warehouse)
+                warehouseTextView.setText(DocumentHeaders.getWarehouse()?.title)
                 warehouseTextInputLayout.error = null
-            }
 
-
-            phisicalPersonTextInputLayout.hint = "МОЛ"
-            if (DocumentHeaders.getPhysicalPerson() != null)
-                phisicalPersonTextView.setText(DocumentHeaders.getPhysicalPerson()?.fio)
-            phisicalPersonTextView.setOnClickListener {
-                if (phisicalPersonTextView.adapter == null) {
-                    getPhysicalPersonList()
-                    progressDialog =
-                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+                warehouseTextView.setOnClickListener {
+                    if (warehouseTextView.adapter == null) {
+                        viewModel.getAllWarehousesList()
+                    }
                 }
+
+                warehouseTextView.setOnItemClickListener { adapterView, _, position, _ ->
+                    val warehouseItem = adapterView.getItemAtPosition(position) as Warehouse
+                    DocumentHeaders.setWarehouse(warehouseItem)
+                    //if (physicalPersonTextView.text.isNullOrBlank()) {
+                    fillResponsible(
+                        DocumentHeaders.getWarehouse()?.responsibleGuid ?: "",
+                        dlgBinding.physicalPersonTextView
+                    )
+                    //}
+                    warehouseTextView.setText(warehouseItem?.title)
+                    warehouseTextInputLayout.error = null
+                    AndroidUtils.hideKeyboard(dlgBinding.root)
+                }
+            } else {
+                warehouseTextInputLayout.isVisible = false
             }
-            phisicalPersonTextView.setOnItemClickListener { adapterView, _, position, _ ->
-                val physicalPerson = adapterView.getItemAtPosition(position) as PhysicalPerson
-                DocumentHeaders.setPhysicalPerson(physicalPerson)
-                phisicalPersonTextView.setText(physicalPerson?.fio)
-                phisicalPersonTextInputLayout.error = null
+
+            if (docHeadersView?.contains(physicalPersonTextInputLayout.id) == true) {
+                val physicalPersonAdapter = DynamicListAdapter<PhysicalPerson>(
+                    requireContext(),
+                    R.layout.dynamic_prefs_layout,
+                    dataListPhysicalPersons
+                )
+
+                physicalPersonTextView.isEnabled = tableIsEmpty
+                physicalPersonTextView.setAdapter(physicalPersonAdapter)
+
+                physicalPersonTextInputLayout.hint = "МОЛ"
+                if (DocumentHeaders.getPhysicalPerson() != null)
+                    physicalPersonTextView.setText(DocumentHeaders.getPhysicalPerson()?.fio)
+                physicalPersonTextView.setOnClickListener {
+                    if (physicalPersonTextView.adapter == null) {
+                        //getPhysicalPersonList()
+                        viewModel.getAllPhysicalPerson()
+//                    progressDialog =
+//                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+                    }
+                }
+                physicalPersonTextView.setOnItemClickListener { adapterView, _, position, _ ->
+                    val physicalPerson = adapterView.getItemAtPosition(position) as PhysicalPerson
+                    DocumentHeaders.setPhysicalPerson(physicalPerson)
+                    physicalPersonTextView.setText(physicalPerson?.fio)
+                    physicalPersonTextInputLayout.error = null
+                    AndroidUtils.hideKeyboard(dlgBinding.root)
+                }
+
+                fillResponsible(
+                    DocumentHeaders.getWarehouse()?.responsibleGuid ?: "",
+                    dlgBinding.physicalPersonTextView
+                )
+            } else {
+                physicalPersonTextInputLayout.isVisible = false
             }
+
+            if (docHeadersView?.contains(incomingDateTextInputLayout.id) == false) {
+                incomingDateTextInputLayout.isVisible = false
+            }
+
+            if (docHeadersView?.contains(incomingNumberTextInputLayout.id) == false) {
+                incomingNumberTextInputLayout.isVisible = false
+            }
+
         }
 
-        if (DocumentHeaders.getWarehouse() == null || DocumentHeaders.getPhysicalPerson() == null) {
+
+        if (DocumentHeaders.getWarehouse() == null || DocumentHeaders.getPhysicalPerson() == null || forceOpen) {
             dlg = DialogScreen.getDialog(
                 requireContext(),
                 DialogScreen.IDD_INPUT,
@@ -344,10 +461,10 @@ class TableScanFragment : Fragment() {
                         if (DocumentHeaders.getWarehouse() == null)
                             dlgBinding.warehouseTextInputLayout.error = "Склад не заполнен!"
                         if (DocumentHeaders.getPhysicalPerson() == null)
-                            dlgBinding.phisicalPersonTextInputLayout.error = "МОЛ не указан!"
+                            dlgBinding.physicalPersonTextInputLayout.error = "МОЛ не указан!"
                         if (DocumentHeaders.getWarehouse() != null && DocumentHeaders.getPhysicalPerson() != null)
                             if (args != null)
-                                openDetailScanFragment(args, dlg!!)
+                                openDetailScanFragment(args)
                     }
                 }
             )
@@ -356,7 +473,17 @@ class TableScanFragment : Fragment() {
         return dlg
     }
 
-    private fun openDetailScanFragment(args: Bundle, dlg: AlertDialog?) {
+    private fun fillResponsible(
+        responsibleGuid: String,
+        physicalPersonTextView: AutoCompleteTextView
+    ) {
+        val physicalPerson = viewModel.getPhysicalPersonByGuid(responsibleGuid)
+        DocumentHeaders.setPhysicalPerson(physicalPerson)
+        physicalPersonTextView.setText(physicalPerson?.fio ?: "")
+    }
+
+
+    private fun openDetailScanFragment(args: Bundle) {
         if (DocumentHeaders.getWarehouse() != null && DocumentHeaders.getPhysicalPerson() != null) {
             val warehouseGuid = DocumentHeaders.getWarehouse()?.guid.toString()
             val physicalPersonGuid =
@@ -380,38 +507,38 @@ class TableScanFragment : Fragment() {
         }
     }
 
-    private fun getAllWarehousesList(binding: InventoryInitDialogBinding) {
-        viewModel.getAllWarehousesList()
-    //        val dbWarehouses = viewModel.getAllWarehousesList()
-//        if (dbWarehouses.isEmpty()) {
-//            retrofitViewModel.getAllWarehouses()
-//        } else {
-//            setWarehousesAdapter(binding)
-//        }
-    }
+//    private fun getAllWarehousesList(binding: InventoryInitDialogBinding) {
+//        viewModel.getAllWarehousesList()
+//    //        val dbWarehouses = viewModel.getAllWarehousesList()
+////        if (dbWarehouses.isEmpty()) {
+////            retrofitViewModel.getAllWarehouses()
+////        } else {
+////            setWarehousesAdapter(binding)
+////        }
+//    }
 
-    private fun setWarehousesAdapter(
-        binding: InventoryInitDialogBinding
-    ) {
+//    private fun setWarehousesAdapter(
+//        binding: InventoryInitDialogBinding
+//    ) {
+//
+//        val dataList = arrayListOf<Warehouse>()
+//        //val warehousesList = viewModel.getAllWarehousesList()
+//        val warehousesList = viewModel.warehousesList.value
+//        warehousesList?.forEach { warehouse -> dataList.add(warehouse) }
+//        progressDialog?.dismiss()
+//        val adapter = DynamicListAdapter<Warehouse>(
+//            requireContext(),
+//            R.layout.dynamic_prefs_layout,
+//            dataList
+//        )
+//        binding.warehouseTextView.setAdapter(adapter)
+//
+//    }
 
-        val dataList = arrayListOf<Warehouse>()
-        //val warehousesList = viewModel.getAllWarehousesList()
-        val warehousesList = viewModel.warehousesList.value
-        warehousesList?.forEach { warehouse -> dataList.add(warehouse) }
-        progressDialog?.dismiss()
-        val adapter = DynamicListAdapter<Warehouse>(
-            requireContext(),
-            R.layout.dynamic_prefs_layout,
-            dataList
-        )
-        binding.warehouseTextView.setAdapter(adapter)
-
-    }
-
-    private fun getPhysicalPersonList() {
-        //retrofitViewModel.getPhysicalPersonList()
-        viewModel.getAllPhysicalPerson()
-    }
+//    private fun getPhysicalPersonList() {
+//        //retrofitViewModel.getPhysicalPersonList()
+//        viewModel.getAllPhysicalPerson()
+//    }
 
     override fun onResume() {
         viewModel.refreshTableScan(user1C.getUserGUID(), selectedOption.id)

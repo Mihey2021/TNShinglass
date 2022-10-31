@@ -4,7 +4,7 @@ import retrofit2.Call
 import retrofit2.Response
 import retrofit2.http.*
 import ru.tn.shinglass.dto.models.CreatedDocumentDetails
-import ru.tn.shinglass.dto.models.InventoryOfGoods
+import ru.tn.shinglass.dto.models.DocumentToUploaded
 import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.entity.Nomenclature
@@ -37,8 +37,8 @@ interface ApiService {
     fun getItemByBarcode(@Query("barcode") barcode: String): Call<Nomenclature>
 
     @POST("createInventoryOfGoods")
-    fun createInventoryOfGoods(@Body scanRecords: InventoryOfGoods): Call<CreatedDocumentDetails>
+    suspend fun createInventoryOfGoods(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>
 
     @GET("getDivisionsList")
-    fun getAllDivisionsList(): Call<List<Division>>
+    suspend fun getAllDivisionsList(): Response<List<Division>>
 }

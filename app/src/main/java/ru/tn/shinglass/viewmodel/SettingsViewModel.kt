@@ -27,11 +27,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     private val repositoryWarehouses: WarehousesRepository =
         WarehousesRepositoryRoomImpl(AppDb.getInstance(context = application).warehousesDao())
-
     val warehousesList: LiveData<List<Warehouse>> = repositoryWarehouses.warehousesList
 
     private val repositoryDivisions: DivisionRepository =
         DivisionRepositoryImpl(AppDb.getInstance(context = application).divisionsDao())
+    val divisionsList: LiveData<List<Division>> = repositoryDivisions.divisionsList
 
     private val _basicPrefs: MutableLiveData<SharedPreferences?> = MutableLiveData(null)
     val basicPrefs: LiveData<SharedPreferences?>
@@ -76,7 +76,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun getWarehouseByGuid(guid: String) = repositoryWarehouses.getWarehouseByGuid(guid)
 
     fun getDivisionByGuid(guid: String) = repositoryDivisions.getDivisionByGuid(guid)
-    fun getAllDivisions() = repositoryDivisions.getAllDivisions()
+
+    fun getAllDivisions(){
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                repositoryDivisions.getAllDivisions()
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(error = true, errorMessage = e.message.toString(), requestName = "getAllDivisions")
+            }
+        }
+    }
 
     fun getAllWarehousesByDivision(divisionGuid: String) = repositoryWarehouses.getAllWarehousesByDivision(divisionGuid)
     fun getWarehousesCountRecords() = repositoryWarehouses.getWarehousesCountRecords()

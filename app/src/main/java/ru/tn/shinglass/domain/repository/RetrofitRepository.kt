@@ -14,8 +14,8 @@ interface RetrofitRepository {
     //fun getAllWarehousesList(callback: Callback<List<Warehouse>>)
     fun getCellByBarcode(barcode: String, callback: Callback<Cells>)
     fun getItemByBarcode(barcode: String, callback: Callback<Nomenclature>)
-    fun createInventoryOfGoods(scanRecords: List<TableScan>, callback: Callback<CreatedDocumentDetails>)
-    fun getAllDivisionsList(callback: Callback<List<Division>>)
+    //fun createInventoryOfGoods(scanRecords: List<TableScan>, callback: Callback<CreatedDocumentDetails>)
+    //fun getAllDivisionsList(callback: Callback<List<Division>>)
 
     interface Callback<T> {
         fun onSuccess(receivedData: T) {}

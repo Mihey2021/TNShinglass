@@ -7,22 +7,26 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import ru.tn.shinglass.db.room.AppDb
+import ru.tn.shinglass.domain.repository.DivisionRepository
 import ru.tn.shinglass.domain.repository.PhysicalPersonRepository
 import ru.tn.shinglass.domain.repository.TableScanRepository
 import ru.tn.shinglass.domain.repository.WarehousesRepository
+import ru.tn.shinglass.dto.models.CreatedDocumentDetails
+import ru.tn.shinglass.dto.repository.DivisionRepositoryImpl
 import ru.tn.shinglass.dto.repository.PhysicalPersonRepositoryImpl
 import ru.tn.shinglass.dto.repository.TableScanRepositoryImpl
 import ru.tn.shinglass.dto.repository.WarehousesRepositoryRoomImpl
-import ru.tn.shinglass.models.ModelState
-import ru.tn.shinglass.models.PhysicalPerson
-import ru.tn.shinglass.models.TableScan
-import ru.tn.shinglass.models.Warehouse
+import ru.tn.shinglass.models.*
 import java.lang.Exception
 
 class TableScanFragmentViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repositoryTableScan: TableScanRepository =
         TableScanRepositoryImpl(AppDb.getInstance(context = application).tableScanDao())
+
+    private val repositoryDivisions: DivisionRepository =
+        DivisionRepositoryImpl(AppDb.getInstance(context = application).divisionsDao())
+    val divisionsList: LiveData<List<Division>> = repositoryDivisions.divisionsList
 
     private val repositoryWarehouses: WarehousesRepository =
         WarehousesRepositoryRoomImpl(AppDb.getInstance(context = application).warehousesDao())
@@ -41,6 +45,23 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
     val dataState: LiveData<ModelState>
         get() = _dataState
 
+    private val _docCreated: MutableLiveData<CreatedDocumentDetails?> = MutableLiveData(null)
+    val docCreated: LiveData<CreatedDocumentDetails?>
+        get() = _docCreated
+
+
+    fun getAllDivisions(){
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                repositoryDivisions.getAllDivisions()
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(error = true, errorMessage = e.message.toString(), requestName = "getAllDivisions")
+            }
+        }
+    }
+
 
     fun getAllWarehousesList() {
         viewModelScope.launch {
@@ -52,6 +73,22 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
                 _dataState.value = ModelState(error = true, errorMessage = e.message.toString(), requestName = "getAllWarehousesList")
             }
         }
+    }
+
+    fun createDocumentIn1C(scanRecords: List<TableScan>, docType: DocType) {
+        try {
+            viewModelScope.launch {
+                _dataState.value = ModelState(loading = true)
+                _docCreated.value = repositoryTableScan.createDocumentIn1C(scanRecords, docType)
+                _dataState.value = ModelState()
+            }
+        } catch(e: Exception) {
+            _dataState.value = ModelState(error = true, errorMessage = e.message.toString(), requestName = "createDocumentIn1C")
+        }
+    }
+
+    fun resetTheDocumentCreatedFlag() {
+        _docCreated.value = null
     }
 
     fun saveWarehouses(warehouses: List<Warehouse>) =
@@ -74,6 +111,8 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
     fun savePhysicalPerson(physicalPersons: List<PhysicalPerson>) =
         repositoryPhysicalPerson.savePhysicalPerson(physicalPersons)
 
+    fun updateRecordUpload(ownerGuid: String, operationId: Long) = repositoryTableScan.updateRecordUpload(ownerGuid, operationId)
+
     fun getAllPhysicalPerson() {
         viewModelScope.launch {
             try {
@@ -81,7 +120,7 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
                 repositoryPhysicalPerson.getPhysicalPersonList()
                 _dataState.value = ModelState()
             } catch (e: Exception) {
-                _dataState.value = ModelState(error = true, errorMessage = e.message.toString(), requestName = "getPhysicalPersonList")
+                _dataState.value = ModelState(error = true, errorMessage = e.message.toString(), requestName = "getAllPhysicalPerson")
             }
 
         }

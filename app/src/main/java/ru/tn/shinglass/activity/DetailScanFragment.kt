@@ -139,25 +139,25 @@ class DetailScanFragment : Fragment() {
                 Toast.makeText(requireContext(), "Клик по ссылке", Toast.LENGTH_SHORT).show()
             }
 
-            //phisicalPersonTextView.setText("Выбранное физическое лицо")
+            //physicalPersonTextView.setText("Выбранное физическое лицо")
 
-            phisicalPersonTextInputLayout.hint = "МОЛ"
-            phisicalPersonTextInputLayout.isEnabled = editRecord.id == 0L && editRecord.PhysicalPersonGUID.isNullOrBlank()
-            //phisicalPersonTextInputLayout.visibility = if (isNextRecordInSession) View.GONE else View.VISIBLE
-            phisicalPersonTextInputLayout.visibility = View.GONE
-            //phisicalPersonTextView.inputType = if (editRecord.PhysicalPersonGUID.isNullOrBlank()) InputType.TYPE_NULL else InputType.TYPE_CLASS_TEXT
-            phisicalPersonTextView.setText(editRecord.PhysicalPersonTitle)
-            phisicalPersonTextView.setOnClickListener {
-                if (phisicalPersonTextView.adapter == null) {
+            physicalPersonTextInputLayout.hint = "МОЛ"
+            physicalPersonTextInputLayout.isEnabled = editRecord.id == 0L && editRecord.PhysicalPersonGUID.isNullOrBlank()
+            //physicalPersonTextInputLayout.visibility = if (isNextRecordInSession) View.GONE else View.VISIBLE
+            physicalPersonTextInputLayout.visibility = View.GONE
+            //physicalPersonTextView.inputType = if (editRecord.PhysicalPersonGUID.isNullOrBlank()) InputType.TYPE_NULL else InputType.TYPE_CLASS_TEXT
+            physicalPersonTextView.setText(editRecord.PhysicalPersonTitle)
+            physicalPersonTextView.setOnClickListener {
+                if (physicalPersonTextView.adapter == null) {
                     getPhysicalPersonList()
                     progressDialog =
                         DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
                 }
             }
-            phisicalPersonTextView.setOnItemClickListener { adapterView, _, position, _ ->
+            physicalPersonTextView.setOnItemClickListener { adapterView, _, position, _ ->
                 val physivalPeron = adapterView.getItemAtPosition(position) as PhysicalPerson
-                phisicalPersonTextView.setText(physivalPeron.fio)
-                phisicalPersonTextInputLayout.error = null
+                physicalPersonTextView.setText(physivalPeron.fio)
+                physicalPersonTextInputLayout.error = null
                 tempScanRecord.PhysicalPersonGUID = physivalPeron.guid
                 tempScanRecord.PhysicalPersonTitle = physivalPeron.fio
             }
@@ -209,13 +209,17 @@ class DetailScanFragment : Fragment() {
                 }
                 retrofitViewModel.getItemByBarcode(dataScanBarcode)
 
-                var newCount = try {
-                    (binding.countEditText.text.toString()).toDouble() + (if(editRecord.coefficient != 0.0) editRecord.coefficient else 1.0)
+//                var newCount = try {
+//                    (binding.countEditText.text.toString()).toDouble() + (if(editRecord.coefficient != 0.0) editRecord.coefficient else 1.0)
+//                } catch(e:Exception) {
+//                    editRecord.Count + 1
+//                }
+                //var newCount:Double =+ editRecord.Count + 1.0
+                var newCount =try {
+                    (binding.countEditText.text.toString()).toDouble() + 1.0
                 } catch(e:Exception) {
-                    editRecord.Count + 1
+                    1
                 }
-//                var newCount =
-//                    if (binding.countEditText.text.isNullOrBlank()) 0.0 else editRecord.Count + 1
                 binding.countEditText.setText(newCount.toString())
 
                 binding.itemTextInputLayout.error = null
@@ -270,8 +274,8 @@ class DetailScanFragment : Fragment() {
                 R.layout.dynamic_prefs_layout,
                 dataList
             )
-            binding.phisicalPersonTextView.setAdapter(adapter)
-            //binding.phisicalPersonTextView.callOnClick()
+            binding.physicalPersonTextView.setAdapter(adapter)
+            //binding.physicalPersonTextView.callOnClick()
         }
 
         retrofitViewModel.listDataWarehouses.observe(viewLifecycleOwner) {
@@ -323,8 +327,8 @@ class DetailScanFragment : Fragment() {
                 warehouseTextInputLayout.error = "Укажите склад!"
                 isError = true
             }
-            if (binding.phisicalPersonTextView.text.isNullOrBlank()) {
-                phisicalPersonTextInputLayout.error = "Укажите МОЛ!"
+            if (binding.physicalPersonTextView.text.isNullOrBlank()) {
+                physicalPersonTextInputLayout.error = "Укажите МОЛ!"
                 isError = true
             }
             if (binding.cellTextView.text.isNullOrBlank()) {

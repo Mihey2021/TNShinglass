@@ -36,12 +36,13 @@ class WarehousesRepositoryRoomImpl(private val dao: WarehousesDao) : WarehousesR
                 val body = response.body() ?: throw ApiError(response.code(), response.message())
                 dao.saveWarehouses(body.toEntity())
             } else {
-                throw ApiServiceError
+                throw ApiServiceError()
             }
         } catch (e: IOException) {
-            throw NetworkError
+            //throw NetworkError
+            throw ApiServiceError(e.message.toString())
         } catch (e: Exception) {
-            throw UnknownError
+            throw ApiServiceError(e.message.toString())
         }
     }
 

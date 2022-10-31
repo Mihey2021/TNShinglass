@@ -31,12 +31,14 @@ class PhysicalPersonRepositoryImpl(private val dao: PhysicalPersonDao) : Physica
                 val body = response.body() ?: throw ApiError(response.code(), response.message())
                 dao.savePhysicalPerson(body.toEntity())
             } else {
-                throw ApiServiceError
+                throw ApiServiceError()
             }
         } catch (e: IOException) {
-            throw NetworkError
+            //throw NetworkError
+            throw ApiServiceError(e.message.toString())
         } catch (e: Exception) {
-            throw UnknownError
+            //throw UnknownError
+            throw ApiServiceError(e.message.toString())
         }
     }
 
