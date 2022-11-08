@@ -69,4 +69,14 @@
     <string name="not_chosen_text">[Не выбрано]</string>
     <string name="incoming_number_text">Вх. номер</string>
     <string name="incoming_date_text">Вх. дата</string>
+    <string name="counterparty_or_inn_text">Контрагент/ИНН</string>
+    <string name="nothing_found_text">Ничего не найдено :(</string>
+    <string name="specify_name_or_inn_text">Пожалуйста, уточните наименование или ИНН</string>
+    <string name="find_text">Найти</string>
+    <string name="clear_text">Очистить</string>
+    <string name="save_text">Сохранить</string>
+    <string name="nomenclature_not_found_text">Номенклатура не найдена</string>
+    <string name="check_label_scan_again_text">Проверьте этикетку и отсканируйте штрихкод снова</string>
+    <string name="document_details_text">Реквизиты документа</string>
+    <string name="field_must_be_filled_text">*поле должно быть заполнено</string>
 </resources>

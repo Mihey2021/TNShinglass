@@ -9,7 +9,7 @@ import ru.tn.shinglass.models.Warehouse
 @Entity
 data class WarehousesEntity(
     //@PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    //val id: Long = 0,
     val title: String,
     @PrimaryKey(autoGenerate = false)
     val guid: String,
@@ -19,16 +19,16 @@ data class WarehousesEntity(
 ) {
 
     fun toDto() =
-        Warehouse(id = id, title = title, guid = guid, divisionGuid = divisionGuid, responsibleGuid = responsibleGuid)
+        Warehouse(warehouseTitle = title, warehouseGuid = guid, warehouseDivisionGuid = divisionGuid, warehouseResponsibleGuid =  responsibleGuid)
 
     companion object {
         fun fromDto(dto: Warehouse) =
             WarehousesEntity(
-                id = dto.id,
-                title = dto.title,
-                guid = dto.guid,
-                divisionGuid = dto.divisionGuid,
-                responsibleGuid = dto.responsibleGuid
+                //id = dto.id,
+                title = dto.warehouseTitle,
+                guid = dto.warehouseGuid,
+                divisionGuid = dto.warehouseDivisionGuid,
+                responsibleGuid = dto.warehouseResponsibleGuid
             )
 
     }

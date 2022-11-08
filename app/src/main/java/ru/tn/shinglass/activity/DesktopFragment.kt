@@ -11,6 +11,7 @@ import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import ru.tn.shinglass.R
+import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.OnOptionsInteractionListener
 import ru.tn.shinglass.adapters.OptionsMenuExpListAdapter
 import ru.tn.shinglass.databinding.FragmentDesktopBinding
@@ -75,6 +76,7 @@ class DesktopFragment : Fragment() {
                         val args = Bundle()
                         args.putSerializable("userData", user1C)
                         args.putSerializable("selectedOption", option)
+                        BarcodeScannerReceiver.clearData()
                         findNavController().navigate(
                             R.id.action_desktopFragment_to_tableScanFragment,
                             args

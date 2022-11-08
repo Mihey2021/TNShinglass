@@ -80,4 +80,14 @@
     <string name="not_chosen_text">[Not chosen]</string>
     <string name="incoming_number_text">In. number</string>
     <string name="incoming_date_text">In. date</string>
+    <string name="counterparty_or_inn_text">Counterparty/TIN</string>
+    <string name="nothing_found_text">Nothing was found :(</string>
+    <string name="specify_name_or_inn_text">Please specify the name or TIN</string>
+    <string name="find_text">Find</string>
+    <string name="clear_text">Clear</string>
+    <string name="save_text">Save</string>
+    <string name="nomenclature_not_found_text">The nomenclature was not found</string>
+    <string name="check_label_scan_again_text">Check the label and scan the barcode again</string>
+    <string name="document_details_text">Document details</string>
+    <string name="field_must_be_filled_text">*the field must be filled in</string>
 </resources>

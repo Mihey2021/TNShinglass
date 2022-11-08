@@ -4,10 +4,13 @@ import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 data class Warehouse(
-    val id: Long = 0,
-    val title: String,
-    val guid: String,
+
+    @SerializedName("title")
+    val warehouseTitle: String,
+    @SerializedName("guid")
+    val warehouseGuid: String,
     @SerializedName("division_guid")
-    val divisionGuid: String,
-    val responsibleGuid: String,
+    val warehouseDivisionGuid: String,
+    @SerializedName("responsibleGuid")
+    val warehouseResponsibleGuid: String,
 ) :Serializable

@@ -1,6 +1,7 @@
 package ru.tn.shinglass.activity.utilites.dialogs
 
 import android.content.Context
+import android.content.DialogInterface
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -24,6 +25,7 @@ object DialogScreen {
         onDialogsInteractionListener: OnDialogsInteractionListener? = null,
         customView: View? = null,
         isCancelable: Boolean = false,
+        titleIcon: Int = R.drawable.ic_baseline_check_24,
     ): AlertDialog {
         val alertDialog = MaterialAlertDialogBuilder(context)
         when (ID) {
@@ -98,7 +100,7 @@ object DialogScreen {
                     setCancelable(isCancelable)
                     setIcon(
                         context.resources.getDrawable(
-                            R.drawable.ic_baseline_check_24,
+                            titleIcon,
                             context.theme
                         )
                     )
@@ -118,10 +120,9 @@ object DialogScreen {
                         setView(customView)
                     setTitle(message)
                     setCancelable(isCancelable)
-                    setPositiveButton(
-                        positiveButtonTitle
-                            ?: context.resources.getString(R.string.ok_text)
-                    ) { _, _ ->
+                    setPositiveButton(positiveButtonTitle ?: context.resources.getString(R.string.ok_text)
+                    )
+                    { _, _ ->
                         onDialogsInteractionListener?.onPositiveClickButton()
                         //dialog.dismiss()
                     }

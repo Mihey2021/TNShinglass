@@ -1,5 +1,7 @@
 package ru.tn.shinglass.models
 
+import androidx.room.Embedded
+import ru.tn.shinglass.dto.models.DocumentHeaders
 import ru.tn.shinglass.dto.models.User1C
 import java.io.Serializable
 
@@ -19,13 +21,15 @@ data class TableScan (
     val qualityTitle: String = "",
     val WorkwearOrdinary: Boolean = false,
     val WorkwearDisposable: Boolean = false,
-    val DivisionId: Long = 0L,
-    val DivisionOrganization: Long = 0L,
-    val warehouseGuid: String = "",
+//    val DivisionId: Long = 0L,
+//    val DivisionOrganization: Long = 0L,
+//    val warehouseGuid: String = "",
     val PurposeOfUseTitle: String = "",
     val PurposeOfUse: String = "",
-    val PhysicalPersonTitle: String = "",
-    val PhysicalPersonGUID: String = "",
+//    val PhysicalPersonTitle: String = "",
+//    val PhysicalPersonGUID: String = "",
+    @Embedded
+    val docHeaders: DocumentHeaders,
     val OwnerGuid: String,
     val uploaded: Boolean = false,
 ) : Serializable

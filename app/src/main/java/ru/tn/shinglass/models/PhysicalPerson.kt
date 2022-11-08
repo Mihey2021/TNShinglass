@@ -1,9 +1,11 @@
 package ru.tn.shinglass.models
 
+import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 class PhysicalPerson(
-    val id: Long = 0L,
-    val fio: String,
-    val guid: String,
+    @SerializedName("fio")
+    val physicalPersonFio: String,
+    @SerializedName("guid")
+    val physicalPersonGuid: String,
 ) : Serializable

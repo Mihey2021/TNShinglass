@@ -12,19 +12,19 @@ interface WarehousesDao {
     @Query("SELECT * FROM WarehousesEntity")
     fun getAllWarehouses(): LiveData<List<WarehousesEntity>>
 
-    @Query("SELECT id, title, guid, divisionGuid, responsibleGuid FROM WarehousesEntity WHERE divisionGuid=:divisionGuid")
+    @Query("SELECT title, guid, divisionGuid, responsibleGuid FROM WarehousesEntity WHERE divisionGuid=:divisionGuid")
     fun getAllWarehousesByDivision(divisionGuid: String): List<WarehousesEntity>
 
-    @Query("SELECT id, title, guid, divisionGuid, responsibleGuid FROM WarehousesEntity WHERE guid=:guid")
+    @Query("SELECT title, guid, divisionGuid, responsibleGuid FROM WarehousesEntity WHERE guid=:guid")
     fun getWarehouseByGuid(guid: String): WarehousesEntity?
 
-    @Query("SELECT id, title, guid, divisionGuid, responsibleGuid FROM WarehousesEntity WHERE id=:id")
-    fun getWarehouseById(id: Long): WarehousesEntity?
+//    @Query("SELECT title, guid, divisionGuid, responsibleGuid FROM WarehousesEntity WHERE id=:id")
+//    fun getWarehouseById(id: Long): WarehousesEntity?
 
-    @Query("SELECT COUNT(id) FROM WarehousesEntity")
+    @Query("SELECT COUNT(guid) FROM WarehousesEntity")
     fun getCountAllRecords(): Long
 
-    @Query("SELECT COUNT(id) FROM WarehousesEntity WHERE divisionGuid=:divisionGuid")
+    @Query("SELECT COUNT(guid) FROM WarehousesEntity WHERE divisionGuid=:divisionGuid")
     fun getCountRecordsByDivision(divisionGuid: String): Long
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)

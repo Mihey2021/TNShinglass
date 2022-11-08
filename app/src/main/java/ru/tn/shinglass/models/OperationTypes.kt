@@ -1,6 +1,7 @@
 package ru.tn.shinglass.models
 
 import ru.tn.shinglass.R
+import ru.tn.shinglass.dto.models.HeaderFields
 
 enum class DocType(
     val type: OptionType,
@@ -50,7 +51,7 @@ enum class SubOptionType(
     val id: Int,
     val title: String,
     val description: String,
-    val viewNames: Array<Int> = arrayOf()
+    val headerFields: Array<HeaderFields> = arrayOf()
 ) {
     INVOICE_REQUIREMENT(0, "Требование накладная", "Создание документа Требование-накладная"),
     OVERALLS_TOOLS(
@@ -61,17 +62,19 @@ enum class SubOptionType(
     DISPOSABLE_PPE(2, "Одноразовые СИЗ", "Создание документа Перемещение (виртаульная ячейка)"),
     STANDARD_ACCEPTANCE(3, "Стандартная приемка", "Создание документа Приходный ордер на товары",
     arrayOf(
-        R.id.divisionTextInputLayout,
-        R.id.warehouseTextInputLayout,
-        R.id.incomingDateTextInputLayout,
-        R.id.incomingNumberTextInputLayout
+        HeaderFields.DIVISION,
+        HeaderFields.WAREHOUSE,
+        HeaderFields.COUNTERPARTY,
+        HeaderFields.INCOMING_DATE,
+        HeaderFields.INCOMING_NUMBER,
     )),
     INVENTORY_IN_CELLS(
         4,
         "Инвентаризация в ячейках",
         "Создание документа Инвентаризация товаров на складе",
         arrayOf(
-            R.id.warehouseTextInputLayout, R.id.physicalPersonTextInputLayout
+            HeaderFields.WAREHOUSE,
+            HeaderFields.PHYSICAL_PERSON,
         )
     ),
 }

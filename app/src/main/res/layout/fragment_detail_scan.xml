@@ -93,9 +93,11 @@
                     android:id="@+id/divisionTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:editable="false"
                     android:imeOptions="actionDone"
                     android:inputType="none"
-                    android:maxLines="1" />
+                    android:maxLines="1"
+                    android:textStyle="bold" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -130,8 +132,10 @@
                     android:id="@+id/warehouseTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:editable="false"
                     android:imeOptions="actionDone"
-                    android:inputType="text" />
+                    android:inputType="none"
+                    android:textStyle="bold" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!--            <TextView-->
@@ -145,27 +149,6 @@
             <!--                android:textSize="16sp"-->
             <!--                app:drawableRightCompat="@drawable/ic_baseline_manage_search_24"-->
             <!--                tools:text="Назначение использования" />-->
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/purposeOfUseTextInputLayout"
-                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginRight="8dp"
-                android:hint="@string/purpose_of_use_title"
-                app:errorEnabled="true">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/purposeOfUseTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:enabled="false"
-                    android:imeOptions="actionDone"
-                    android:inputType="text"
-                    android:maxLines="1" />
-            </com.google.android.material.textfield.TextInputLayout>
 
 
             <!--            <TextView-->
@@ -196,8 +179,10 @@
                     android:id="@+id/physicalPersonTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:editable="false"
                     android:imeOptions="actionDone"
-                    android:inputType="text" />
+                    android:inputType="none"
+                    android:textStyle="bold" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -228,10 +213,12 @@
                     android:id="@+id/cellTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:enabled="false"
+                    android:editable="false"
+                    android:enabled="true"
                     android:imeOptions="actionDone"
-                    android:inputType="text"
-                    android:maxLines="1" />
+                    android:inputType="none"
+                    android:maxLines="1"
+                    android:textStyle="bold" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -249,10 +236,11 @@
                     android:id="@+id/itemTextView"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:enabled="false"
+                    android:enabled="true"
                     android:imeOptions="actionDone"
-                    android:inputType="text"
-                    android:maxLines="1" />
+                    android:editable="false"
+                    android:inputType="none"
+                    android:textStyle="bold" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <!--            <androidx.constraintlayout.widget.ConstraintLayout-->
@@ -309,7 +297,9 @@
                     android:enabled="true"
                     android:imeOptions="actionDone"
                     android:inputType="numberDecimal"
-                    android:maxLines="1" />
+                    android:maxLines="1"
+                    android:numeric="decimal"
+                    android:textStyle="bold" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -327,10 +317,35 @@
                     android:id="@+id/qualityEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:enabled="false"
+                    android:editable="false"
+                    android:enabled="true"
                     android:imeOptions="actionDone"
-                    android:inputType="text"
-                    android:maxLines="1" />
+                    android:inputType="none"
+                    android:maxLines="1"
+                    android:textStyle="bold" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/purposeOfUseTextInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="8dp"
+                android:hint="@string/purpose_of_use_title"
+                app:errorEnabled="true">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/purposeOfUseTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:editable="false"
+                    android:enabled="true"
+                    android:imeOptions="actionDone"
+                    android:inputType="none"
+                    android:maxLines="1"
+                    android:textStyle="bold" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <CheckBox
@@ -338,14 +353,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:enabled="false"
-                android:text="@string/workwear_ordinary_title" />
+                android:text="@string/workwear_ordinary_title"
+                android:textStyle="bold" />
 
             <CheckBox
                 android:id="@+id/workwearDisposableCheckBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:enabled="false"
-                android:text="@string/workwear_disposable_title" />
+                android:text="@string/workwear_disposable_title"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/ownerTextView"

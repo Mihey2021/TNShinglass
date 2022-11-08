@@ -49,15 +49,23 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
     val docCreated: LiveData<CreatedDocumentDetails?>
         get() = _docCreated
 
+    private val _counterpartiesList: MutableLiveData<List<Counterparty>> = MutableLiveData(listOf())
+    val counterpartiesList: LiveData<List<Counterparty>>
+        get() = _counterpartiesList
 
-    fun getAllDivisions(){
+
+    fun getAllDivisions() {
         viewModelScope.launch {
             try {
                 _dataState.value = ModelState(loading = true)
                 repositoryDivisions.getAllDivisions()
                 _dataState.value = ModelState()
             } catch (e: Exception) {
-                _dataState.value = ModelState(error = true, errorMessage = e.message.toString(), requestName = "getAllDivisions")
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getAllDivisions"
+                )
             }
         }
     }
@@ -70,7 +78,11 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
                 repositoryWarehouses.getAllWarehousesList()
                 _dataState.value = ModelState()
             } catch (e: Exception) {
-                _dataState.value = ModelState(error = true, errorMessage = e.message.toString(), requestName = "getAllWarehousesList")
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getAllWarehousesList"
+                )
             }
         }
     }
@@ -82,8 +94,12 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
                 _docCreated.value = repositoryTableScan.createDocumentIn1C(scanRecords, docType)
                 _dataState.value = ModelState()
             }
-        } catch(e: Exception) {
-            _dataState.value = ModelState(error = true, errorMessage = e.message.toString(), requestName = "createDocumentIn1C")
+        } catch (e: Exception) {
+            _dataState.value = ModelState(
+                error = true,
+                errorMessage = e.message.toString(),
+                requestName = "createDocumentIn1C"
+            )
         }
     }
 
@@ -111,7 +127,8 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
     fun savePhysicalPerson(physicalPersons: List<PhysicalPerson>) =
         repositoryPhysicalPerson.savePhysicalPerson(physicalPersons)
 
-    fun updateRecordUpload(ownerGuid: String, operationId: Long) = repositoryTableScan.updateRecordUpload(ownerGuid, operationId)
+    fun updateRecordUpload(ownerGuid: String, operationId: Long) =
+        repositoryTableScan.updateRecordUpload(ownerGuid, operationId)
 
     fun getAllPhysicalPerson() {
         viewModelScope.launch {
@@ -120,9 +137,28 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
                 repositoryPhysicalPerson.getPhysicalPersonList()
                 _dataState.value = ModelState()
             } catch (e: Exception) {
-                _dataState.value = ModelState(error = true, errorMessage = e.message.toString(), requestName = "getAllPhysicalPerson")
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getAllPhysicalPerson"
+                )
             }
+        }
+    }
 
+    fun getCounterpartiesList(title: String) {
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                _counterpartiesList.value = repositoryTableScan.getCounterpartiesList(title)
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getCounterpartiesList"
+                )
+            }
         }
     }
 

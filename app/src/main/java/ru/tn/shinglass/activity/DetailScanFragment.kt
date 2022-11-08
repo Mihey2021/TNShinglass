@@ -1,6 +1,7 @@
 package ru.tn.shinglass.activity
 
 import android.os.Bundle
+import android.text.InputType
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MotionEvent
@@ -16,6 +17,8 @@ import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.databinding.FragmentDetailScanBinding
+import ru.tn.shinglass.dto.models.DocumentHeaders
+import ru.tn.shinglass.dto.models.HeaderFields
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.models.*
 import ru.tn.shinglass.viewmodel.DetailScanViewModel
@@ -46,6 +49,7 @@ class DetailScanFragment : Fragment() {
         val selectedOption = arguments?.getSerializable("selectedOption") as Option
         val user1C = arguments?.getSerializable("userData") as User1C
         var barcode = arguments?.getString("barcode")
+        var barcodeType = arguments?.getString("barcodeType")
         var editRecord = arguments?.getSerializable("editRecord") as TableScan
 
         forceOverwrite = editRecord.id != 0L
@@ -60,59 +64,65 @@ class DetailScanFragment : Fragment() {
             operationTitleTextView.text = selectedOption.docType?.title ?: ""
             //divisionTextView.setText("Подразделение из настроек")
 
-            if (selectedOption.docType == DocType.INVENTORY_IN_CELLS) {
-                divisionTextInputLayout.visibility = View.GONE
-                purposeOfUseTextInputLayout.visibility = View.GONE
-                workwearDisposableCheckBox.visibility = View.GONE
-                workwearOrdinaryCheckBox.visibility = View.GONE
-            } else {
-                divisionTextInputLayout.visibility = View.VISIBLE
+            divisionTextInputLayout.visibility = View.GONE
+            warehouseTextInputLayout.visibility = View.GONE
+            physicalPersonTextInputLayout.visibility = View.GONE
+            qualityTextInputLayout.visibility = View.GONE
+            purposeOfUseTextInputLayout.visibility = View.GONE
+            workwearDisposableCheckBox.visibility = View.GONE
+            workwearOrdinaryCheckBox.visibility = View.GONE
+
+//            if (selectedOption.docType == DocType.INVENTORY_IN_CELLS) {
+//
+//            }
+            if (selectedOption.docType == DocType.STANDARD_ACCEPTANCE) {
                 purposeOfUseTextInputLayout.visibility = View.VISIBLE
                 workwearDisposableCheckBox.visibility = View.VISIBLE
                 workwearOrdinaryCheckBox.visibility = View.VISIBLE
             }
-            divisionTextInputLayout.error = "Укажите подразделение!".toString()
+            //divisionTextInputLayout.error = "Укажите подразделение!".toString()
 
             val isNextRecordInSession = editRecord.id == 0L && !editRecord.cellGuid.isNullOrBlank()
 
-
-            val warehouseGuidByPrefs = viewModel.getPreferenceByKey("warehouse_guid")
-
-            warehouseTextInputLayout.isEnabled = editRecord.id == 0L && editRecord.warehouseGuid.isNullOrBlank()
-            //warehouseTextInputLayout.visibility = if (isNextRecordInSession) View.GONE else View.VISIBLE
-            warehouseTextInputLayout.visibility = View.GONE
-
-            if (warehouseGuidByPrefs.isNullOrBlank()) {
-                warehouseTextInputLayout.error = "Склад не задан в настройках!".toString()
-            }
-
-            val warehouseGuid = if (editRecord?.warehouseGuid.isNullOrBlank()) warehouseGuidByPrefs else editRecord?.warehouseGuid
-            val warehouse = viewModel.getWarehouseByGuid(warehouseGuid ?: "")
-
-            warehouseTextView.setText(warehouse?.title)
-            tempScanRecord.warehouseGuid = warehouse?.guid.toString()
-            warehouseTextInputLayout.error = null
-
-            warehouseTextView.setOnClickListener {
-                if (warehouseTextView.adapter == null) {
-                    progressDialog =
-                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
-                    getAllWarehousesList(binding)
-                }
-            }
-            warehouseTextView.setOnItemClickListener { adapterView, _, position, _ ->
-                val warehouseItem = adapterView.getItemAtPosition(position) as Warehouse
-                warehouseTextView.setText(warehouseItem.title)
-                warehouseTextInputLayout.error = null
-                tempScanRecord.warehouseGuid = warehouseItem.guid
-            }
-//            warehouseTextInputLayout.setEndIconOnClickListener {
+//            val warehouseGuidByPrefs = viewModel.getPreferenceByKey("warehouse_guid")
+//
+//            warehouseTextInputLayout.isEnabled =
+//                editRecord.id == 0L && editRecord.docHeaders?.getWarehouse()?.warehouseGuid.isNullOrBlank()
+//            warehouseTextInputLayout.visibility = View.GONE
+//            warehouseTextView.inputType = InputType.TYPE_NULL
+//
+//            if (warehouseGuidByPrefs.isNullOrBlank()) {
+//                warehouseTextInputLayout.error = "Склад не задан в настройках!".toString()
+//            }
+//
+//            val warehouseGuid =
+//                if (editRecord.docHeaders.getWarehouse()?.warehouseGuid.isNullOrBlank()) warehouseGuidByPrefs else editRecord.docHeaders.getWarehouse()?.warehouseGuid
+//            val warehouse = viewModel.getWarehouseByGuid(warehouseGuid ?: "")
+//
+//            warehouseTextView.setText(warehouse?.warehouseTitle)
+//            tempScanRecord.docHeaders.setWarehouse(warehouse)
+//            warehouseTextInputLayout.error = null
+//
+//            warehouseTextView.setOnClickListener {
 //                if (warehouseTextView.adapter == null) {
 //                    progressDialog =
 //                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
 //                    getAllWarehousesList(binding)
 //                }
 //            }
+//            warehouseTextView.setOnItemClickListener { adapterView, _, position, _ ->
+//                val warehouseItem = adapterView.getItemAtPosition(position) as Warehouse
+//                warehouseTextView.setText(warehouseItem.warehouseTitle)
+//                warehouseTextInputLayout.error = null
+//                tempScanRecord.docHeaders.setWarehouse(warehouseItem)
+//            }
+////            warehouseTextInputLayout.setEndIconOnClickListener {
+////                if (warehouseTextView.adapter == null) {
+////                    progressDialog =
+////                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+////                    getAllWarehousesList(binding)
+////                }
+////            }
 
             //itemTextView.setText(barcode)
             countEditText.setText(editRecord.Count.toString())
@@ -139,28 +149,29 @@ class DetailScanFragment : Fragment() {
                 Toast.makeText(requireContext(), "Клик по ссылке", Toast.LENGTH_SHORT).show()
             }
 
-            //physicalPersonTextView.setText("Выбранное физическое лицо")
-
-            physicalPersonTextInputLayout.hint = "МОЛ"
-            physicalPersonTextInputLayout.isEnabled = editRecord.id == 0L && editRecord.PhysicalPersonGUID.isNullOrBlank()
-            //physicalPersonTextInputLayout.visibility = if (isNextRecordInSession) View.GONE else View.VISIBLE
-            physicalPersonTextInputLayout.visibility = View.GONE
-            //physicalPersonTextView.inputType = if (editRecord.PhysicalPersonGUID.isNullOrBlank()) InputType.TYPE_NULL else InputType.TYPE_CLASS_TEXT
-            physicalPersonTextView.setText(editRecord.PhysicalPersonTitle)
-            physicalPersonTextView.setOnClickListener {
-                if (physicalPersonTextView.adapter == null) {
-                    getPhysicalPersonList()
-                    progressDialog =
-                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
-                }
-            }
-            physicalPersonTextView.setOnItemClickListener { adapterView, _, position, _ ->
-                val physivalPeron = adapterView.getItemAtPosition(position) as PhysicalPerson
-                physicalPersonTextView.setText(physivalPeron.fio)
-                physicalPersonTextInputLayout.error = null
-                tempScanRecord.PhysicalPersonGUID = physivalPeron.guid
-                tempScanRecord.PhysicalPersonTitle = physivalPeron.fio
-            }
+//            //physicalPersonTextView.setText("Выбранное физическое лицо")
+//
+//            physicalPersonTextInputLayout.hint = "МОЛ"
+//            physicalPersonTextInputLayout.isEnabled =
+//                editRecord.id == 0L && editRecord.docHeaders.getPhysicalPerson()?.physicalPersonGuid.isNullOrBlank()
+//            //physicalPersonTextInputLayout.visibility = if (isNextRecordInSession) View.GONE else View.VISIBLE
+//            physicalPersonTextInputLayout.visibility = View.GONE
+//            //physicalPersonTextView.inputType = if (editRecord.PhysicalPersonGUID.isNullOrBlank()) InputType.TYPE_NULL else InputType.TYPE_CLASS_TEXT
+//            physicalPersonTextView.setText(editRecord.docHeaders.getPhysicalPerson()?.physicalPersonFio)
+//            physicalPersonTextView.setOnClickListener {
+//                if (physicalPersonTextView.adapter == null) {
+//                    getPhysicalPersonList()
+//                    progressDialog =
+//                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+//                }
+//            }
+//            physicalPersonTextView.setOnItemClickListener { adapterView, _, position, _ ->
+//                val physivalPeron = adapterView.getItemAtPosition(position) as PhysicalPerson
+//                physicalPersonTextView.setText(physivalPeron.physicalPersonFio)
+//                physicalPersonTextInputLayout.error = null
+//                tempScanRecord.docHeaders.setPhysicalPerson(physivalPeron)
+//                //tempScanRecord.PhysicalPersonTitle = physivalPeron.physicalPersonFio
+//            }
 
             binding.cellTextView.setText(editRecord.cellTitle)
             binding.itemTextView.setText(editRecord.ItemTitle)
@@ -168,7 +179,7 @@ class DetailScanFragment : Fragment() {
             ownerTextView.setText("${getString(R.string.owner_title)} ${user1C.getUser1C()}")
             tempScanRecord.OwnerGuid = user1C.getUserGUID()
 
-            buttonApply.setOnTouchListener{_, motionEvent ->
+            buttonApply.setOnTouchListener { _, motionEvent ->
                 when (motionEvent.action) {
                     MotionEvent.ACTION_DOWN -> {
                         сheckFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
@@ -184,17 +195,21 @@ class DetailScanFragment : Fragment() {
             }
         }
 
-        BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) {
+        BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) { dataScanPair ->
 
             binding.buttonApply.clearFocus()
 
-            val dataScanPair = BarcodeScannerReceiver.dataScan.value
-            val dataScanBarcodeFromScaner = dataScanPair?.first ?: ""
+            //val dataScanPair = BarcodeScannerReceiver.dataScan.value
+            val dataScanBarcodeFromScanner = dataScanPair.first
             val dataScanBarcode =
-                if (dataScanBarcodeFromScaner == "") barcode ?: "" else dataScanBarcodeFromScaner
+                if (dataScanBarcodeFromScanner == "") barcode ?: "" else dataScanBarcodeFromScanner
             barcode = ""
 
-            val dataScanBarcodeType = dataScanPair?.second ?: ""
+            val dataScanBarcodeTypeFromScanner = dataScanPair.second
+            val dataScanBarcodeType = if (dataScanBarcodeTypeFromScanner == "") barcodeType
+                ?: "" else dataScanBarcodeTypeFromScanner
+            barcodeType = ""
+
 
             if (dataScanBarcode == "") return@observe
 
@@ -202,6 +217,7 @@ class DetailScanFragment : Fragment() {
             if (dataScanBarcodeType == "Code 128") {
                 retrofitViewModel.getCellByBarcode(dataScanBarcode)
                 binding.cellTextInputLayout.error = null
+                return@observe
             } else {
                 if (binding.cellTextView.text.isNullOrBlank()) {
                     binding.cellTextInputLayout.error = "Отсканируйте ячейку!"
@@ -215,9 +231,9 @@ class DetailScanFragment : Fragment() {
 //                    editRecord.Count + 1
 //                }
                 //var newCount:Double =+ editRecord.Count + 1.0
-                var newCount =try {
+                var newCount = try {
                     (binding.countEditText.text.toString()).toDouble() + 1.0
-                } catch(e:Exception) {
+                } catch (e: Exception) {
                     1
                 }
                 binding.countEditText.setText(newCount.toString())
@@ -230,7 +246,12 @@ class DetailScanFragment : Fragment() {
 
             if (it == null) return@observe
             if (it.guid.isNullOrBlank()) {
-                DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR_SINGLE_BUTTON, "Ячейка не найдена!", "Ok")
+                DialogScreen.getDialog(
+                    requireContext(),
+                    DialogScreen.IDD_ERROR_SINGLE_BUTTON,
+                    "Ячейка не найдена!",
+                    "Ok"
+                )
                 return@observe
             }
             progressDialog?.dismiss()
@@ -245,7 +266,13 @@ class DetailScanFragment : Fragment() {
 
             if (it == null) return@observe
             if (it.itemGuid.isNullOrBlank()) {
-                DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR_SINGLE_BUTTON, "Номенклатура не найдена!", "Ok")
+                DialogScreen.getDialog(
+                    requireContext(),
+                    DialogScreen.IDD_ERROR_SINGLE_BUTTON,
+                    title = getString(R.string.nomenclature_not_found_text),
+                    message = getString(R.string.check_label_scan_again_text),
+                    positiveButtonTitle = "Ok"
+                )
                 return@observe
             }
             progressDialog?.dismiss()
@@ -322,15 +349,66 @@ class DetailScanFragment : Fragment() {
 
         var isError = false
 
+//        with(binding) {
+//            if (binding.warehouseTextView.text.isNullOrBlank()) {
+//                warehouseTextInputLayout.error = "Укажите склад!"
+//                isError = true
+//            }
+//            if (binding.physicalPersonTextView.text.isNullOrBlank()) {
+//                physicalPersonTextInputLayout.error = "Укажите МОЛ!"
+//                isError = true
+//            }
+//            if (binding.cellTextView.text.isNullOrBlank()) {
+//                cellTextInputLayout.error = "Ячейка не отсканирована!"
+//                isError = true
+//            }
+//            if (binding.itemTextView.text.isNullOrBlank()) {
+//                itemTextInputLayout.error = "Номенклатура не отсканирована!"
+//                isError = true
+//            }
+//            if (binding.countEditText.text.toString().isBlank())
+//                tempScanRecord.Count = 0.0
+//            else
+//                tempScanRecord.Count = binding.countEditText.text.toString().toDouble()
+//
+//            if (binding.countEditText.text.isNullOrBlank() || tempScanRecord.Count == 0.0) {
+//                countTextInputLayout.error = "Количество не может быть нулевым!"
+//                isError = true
+//            }
+//        }
+        val docHeadersFields = selectedOption.subOption?.headerFields
+        if (docHeadersFields?.isEmpty() == true)
+            isError = true
+
+        docHeadersFields?.forEach {
+            if (it == HeaderFields.DIVISION) {
+                isError = DocumentHeaders.getDivision() == null
+                if (isError)
+                    return@forEach
+            }
+            if (it == HeaderFields.WAREHOUSE) {
+                isError = DocumentHeaders.getWarehouse() == null
+                if (isError)
+                    return@forEach
+            }
+            if (it == HeaderFields.PHYSICAL_PERSON) {
+                isError = DocumentHeaders.getPhysicalPerson() == null
+                if (isError)
+                    return@forEach
+            }
+            if (it == HeaderFields.COUNTERPARTY) {
+                isError = DocumentHeaders.getCounterparty() == null
+                if (isError)
+                    return@forEach
+            }
+            if (it == HeaderFields.WAREHOUSE) {
+                isError = DocumentHeaders.getWarehouse() == null
+                if (isError)
+                    return@forEach
+            }
+        }
+
         with(binding) {
-            if (binding.warehouseTextView.text.isNullOrBlank()) {
-                warehouseTextInputLayout.error = "Укажите склад!"
-                isError = true
-            }
-            if (binding.physicalPersonTextView.text.isNullOrBlank()) {
-                physicalPersonTextInputLayout.error = "Укажите МОЛ!"
-                isError = true
-            }
             if (binding.cellTextView.text.isNullOrBlank()) {
                 cellTextInputLayout.error = "Ячейка не отсканирована!"
                 isError = true
@@ -415,13 +493,16 @@ class TempScanRecord {
     var qualityTitle: String = ""
     var WorkwearOrdinary: Boolean = false
     var WorkwearDisposable: Boolean = false
-    var DivisionId: Long = 0L
-    var DivisionOrganization: Long = 0L
-    var warehouseGuid: String = ""
+
+    //    var DivisionId: Long = 0L
+//    var DivisionOrganization: Long = 0L
+//    var warehouseGuid: String = ""
     var PurposeOfUseTitle: String = ""
     var PurposeOfUse: String = ""
-    var PhysicalPersonTitle: String = ""
-    var PhysicalPersonGUID: String = ""
+
+    //    var PhysicalPersonTitle: String = ""
+//    var PhysicalPersonGUID: String = ""
+    var docHeaders: DocumentHeaders = DocumentHeaders
     var OwnerGuid: String = ""
 
     constructor(scanRecord: TableScan) {
@@ -440,13 +521,14 @@ class TempScanRecord {
         qualityTitle = scanRecord.qualityTitle
         WorkwearOrdinary = scanRecord.WorkwearOrdinary
         WorkwearDisposable = scanRecord.WorkwearDisposable
-        DivisionId = scanRecord.DivisionId
-        DivisionOrganization = scanRecord.DivisionOrganization
-        warehouseGuid = scanRecord.warehouseGuid
+//        DivisionId = scanRecord.DivisionId
+//        DivisionOrganization = scanRecord.DivisionOrganization
+//        warehouseGuid = scanRecord.warehouseGuid
         PurposeOfUseTitle = scanRecord.PurposeOfUseTitle
         PurposeOfUse = scanRecord.PurposeOfUse
-        PhysicalPersonTitle = scanRecord.PhysicalPersonTitle
-        PhysicalPersonGUID = scanRecord.PhysicalPersonGUID
+//        PhysicalPersonTitle = scanRecord.PhysicalPersonTitle
+//        PhysicalPersonGUID = scanRecord.PhysicalPersonGUID
+        docHeaders = scanRecord.docHeaders
         OwnerGuid = scanRecord.OwnerGuid
     }
 
@@ -467,13 +549,14 @@ class TempScanRecord {
             qualityTitle = qualityTitle,
             WorkwearOrdinary = WorkwearOrdinary,
             WorkwearDisposable = WorkwearDisposable,
-            DivisionId = DivisionId,
-            DivisionOrganization = DivisionOrganization,
-            warehouseGuid = warehouseGuid,
+//            DivisionId = DivisionId,
+//            DivisionOrganization = DivisionOrganization,
+//            warehouseGuid = warehouseGuid,
             PurposeOfUseTitle = PurposeOfUseTitle,
             PurposeOfUse = PurposeOfUse,
-            PhysicalPersonTitle = PhysicalPersonTitle,
-            PhysicalPersonGUID = PhysicalPersonGUID,
+//            PhysicalPersonTitle = PhysicalPersonTitle,
+//            PhysicalPersonGUID = PhysicalPersonGUID,
+            docHeaders = DocumentHeaders,
             OwnerGuid = OwnerGuid
         )
     }

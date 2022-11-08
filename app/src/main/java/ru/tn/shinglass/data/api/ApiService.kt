@@ -8,10 +8,7 @@ import ru.tn.shinglass.dto.models.DocumentToUploaded
 import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.entity.Nomenclature
-import ru.tn.shinglass.models.Cells
-import ru.tn.shinglass.models.Division
-import ru.tn.shinglass.models.PhysicalPerson
-import ru.tn.shinglass.models.Warehouse
+import ru.tn.shinglass.models.*
 
 interface ApiService {
     @POST("validationAuth")
@@ -41,4 +38,11 @@ interface ApiService {
 
     @GET("getDivisionsList")
     suspend fun getAllDivisionsList(): Response<List<Division>>
+
+    @GET("getCounterpartiesList")
+    suspend fun getCounterpartiesList(@Query("part_name_inn") searchParam: String = ""): Response<List<Counterparty>>
+
+    @POST("createGoodsReceiptOrder")
+    suspend fun createGoodsReceiptOrder(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>
+
 }

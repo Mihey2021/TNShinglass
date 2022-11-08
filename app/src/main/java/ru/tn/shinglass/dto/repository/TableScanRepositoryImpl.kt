@@ -3,17 +3,21 @@ package ru.tn.shinglass.dto.repository
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.map
+import retrofit2.Response
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.dao.room.TableScanDao
 import ru.tn.shinglass.dao.room.WarehousesDao
 import ru.tn.shinglass.domain.repository.TableScanRepository
 import ru.tn.shinglass.dto.models.CreatedDocumentDetails
+import ru.tn.shinglass.dto.models.DocHeaders
+import ru.tn.shinglass.dto.models.DocumentHeaders
 import ru.tn.shinglass.dto.models.DocumentToUploaded
 import ru.tn.shinglass.entity.TableScanEntity
 import ru.tn.shinglass.entity.toDto
 import ru.tn.shinglass.entity.toEntity
 import ru.tn.shinglass.error.ApiError
 import ru.tn.shinglass.error.ApiServiceError
+import ru.tn.shinglass.models.Counterparty
 import ru.tn.shinglass.models.DocType
 import ru.tn.shinglass.models.TableScan
 import java.io.IOException
@@ -30,9 +34,11 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
             record.ItemMeasureOfUnitGUID,
             record.WorkwearOrdinary,
             record.WorkwearDisposable,
-            record.warehouseGuid,
+            //record.warehouseGuid,
+            record.docHeaders.getWarehouse()?.warehouseGuid ?: "",
             record.PurposeOfUse,
-            record.PhysicalPersonGUID,
+            //record.PhysicalPersonGUID,
+            record.docHeaders.getPhysicalPerson()?.physicalPersonGuid ?: "",
             record.OwnerGuid
         )
 
@@ -52,8 +58,29 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
     override suspend fun createDocumentIn1C(scanRecords: List<TableScan>, docType: DocType): CreatedDocumentDetails {
         try {
             if (apiService != null) {
-                val response =
-                    apiService.createInventoryOfGoods(DocumentToUploaded(docType, scanRecords))
+                val headers = if (scanRecords.isEmpty()) DocHeaders(DocumentHeaders) else  DocHeaders(scanRecords[0].docHeaders)
+                var response: Response<CreatedDocumentDetails>
+                if(docType == DocType.INVENTORY_IN_CELLS) {
+                    response =
+                        apiService.createInventoryOfGoods(
+                            DocumentToUploaded(
+                                docType,
+                                headers,
+                                scanRecords
+                            )
+                        )
+                }
+                //if(docType == DocType.STANDARD_ACCEPTANCE) {
+                else {
+                    response =
+                        apiService.createGoodsReceiptOrder(
+                            DocumentToUploaded(
+                                docType,
+                                headers,
+                                scanRecords
+                            )
+                        )
+                }
                 if (!response.isSuccessful) {
                     throw ApiError(response.code(), response.message())
                 }
@@ -66,6 +93,26 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     )
                 }
                 return body
+            } else {
+                throw ApiServiceError()
+            }
+        } catch (e: IOException) {
+            //throw NetworkError
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
+        }
+    }
+
+    override suspend fun getCounterpartiesList(title: String): List<Counterparty> {
+        try {
+            if (apiService != null) {
+                val response =
+                    apiService.getCounterpartiesList(title)
+                if (!response.isSuccessful) {
+                    throw ApiError(response.code(), response.message())
+                }
+                return response.body() ?: throw ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError()
             }

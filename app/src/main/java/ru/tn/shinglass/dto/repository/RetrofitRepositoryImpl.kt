@@ -5,12 +5,12 @@ import retrofit2.Callback
 import retrofit2.Response
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.domain.repository.RetrofitRepository
-import ru.tn.shinglass.dto.models.CreatedDocumentDetails
-import ru.tn.shinglass.dto.models.DocumentToUploaded
-import ru.tn.shinglass.dto.models.RequestLogin
-import ru.tn.shinglass.dto.models.User1C
+import ru.tn.shinglass.dto.models.*
 import ru.tn.shinglass.entity.Nomenclature
+import ru.tn.shinglass.error.ApiError
+import ru.tn.shinglass.error.ApiServiceError
 import ru.tn.shinglass.models.*
+import java.io.IOException
 
 class RetrofitRepositoryImpl : RetrofitRepository {
 

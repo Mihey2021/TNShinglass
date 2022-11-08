@@ -1,5 +1,7 @@
 package ru.tn.shinglass.domain.repository
 
+import retrofit2.Response
+import retrofit2.http.Query
 import ru.tn.shinglass.dto.models.CreatedDocumentDetails
 import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C

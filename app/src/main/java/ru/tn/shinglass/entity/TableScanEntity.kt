@@ -1,10 +1,10 @@
 package ru.tn.shinglass.entity
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import ru.tn.shinglass.models.Division
-import ru.tn.shinglass.models.Option
-import ru.tn.shinglass.models.TableScan
+import ru.tn.shinglass.dto.models.DocumentHeaders
+import ru.tn.shinglass.models.*
 
 @Entity
 data class TableScanEntity(
@@ -24,13 +24,15 @@ data class TableScanEntity(
     val qualityTitle: String,
     val WorkwearOrdinary: Boolean = false,
     val WorkwearDisposable: Boolean = false,
-    val DivisionId: Long,
-    val DivisionOrganization: Long,
-    val warehouseGuid: String,
+//    val DivisionId: Long,
+//    val DivisionOrganization: Long,
+//    val warehouseGuid: String,
     val PurposeOfUseTitle: String,
     val PurposeOfUse: String,
-    val PhysicalPersonTitle: String,
-    val PhysicalPersonGUID: String,
+//    val PhysicalPersonTitle: String,
+//    val PhysicalPersonGUID: String,
+    @Embedded
+    val docHeaders: DocHeadersEmbeddable,
     val OwnerGuid: String,
     val uploaded: Boolean = false,
     val docNameIn1C: String = "",
@@ -52,13 +54,14 @@ data class TableScanEntity(
             qualityTitle = qualityTitle,
             WorkwearOrdinary = WorkwearOrdinary,
             WorkwearDisposable = WorkwearDisposable,
-            DivisionId = DivisionId,
-            DivisionOrganization = DivisionOrganization,
-            warehouseGuid = warehouseGuid,
+//            DivisionId = DivisionId,
+//            DivisionOrganization = DivisionOrganization,
+//            warehouseGuid = warehouseGuid,
             PurposeOfUseTitle = PurposeOfUseTitle,
             PurposeOfUse = PurposeOfUse,
-            PhysicalPersonTitle = PhysicalPersonTitle,
-            PhysicalPersonGUID = PhysicalPersonGUID,
+//            PhysicalPersonTitle = PhysicalPersonTitle,
+//            PhysicalPersonGUID = PhysicalPersonGUID,
+            docHeaders = docHeaders?.toDto(),
             OwnerGuid = OwnerGuid,
             uploaded = uploaded,
         )
@@ -81,16 +84,53 @@ data class TableScanEntity(
                 qualityTitle = dto.qualityTitle,
                 WorkwearOrdinary = dto.WorkwearOrdinary,
                 WorkwearDisposable = dto.WorkwearDisposable,
-                DivisionId = dto.DivisionId,
-                DivisionOrganization = dto.DivisionOrganization,
-                warehouseGuid = dto.warehouseGuid,
+//                DivisionId = dto.DivisionId,
+//                DivisionOrganization = dto.DivisionOrganization,
+//                warehouseGuid = dto.warehouseGuid,
                 PurposeOfUseTitle = dto.PurposeOfUseTitle,
                 PurposeOfUse = dto.PurposeOfUse,
-                PhysicalPersonTitle = dto.PhysicalPersonTitle,
-                PhysicalPersonGUID = dto.PhysicalPersonGUID,
+//                PhysicalPersonTitle = dto.PhysicalPersonTitle,
+//                PhysicalPersonGUID = dto.PhysicalPersonGUID,
+                docHeaders = DocHeadersEmbeddable.fromDto(dto.docHeaders),
                 OwnerGuid = dto.OwnerGuid,
                 uploaded = dto.uploaded,
             )
+    }
+}
+
+data class DocHeadersEmbeddable(
+    @Embedded
+    val warehouse: Warehouse? = null,
+    @Embedded
+    val physicalPerson: PhysicalPerson? = null,
+    @Embedded
+    val division: Division? = null,
+    @Embedded
+    val counterparty: Counterparty? = null,
+    val incomingDate: Long? = null,
+    val incomingNumber: String = "",
+) {
+    fun toDto(): DocumentHeaders {
+        DocumentHeaders.setWarehouse(warehouse)
+        DocumentHeaders.setPhysicalPerson(physicalPerson)
+        DocumentHeaders.setDivision(division)
+        DocumentHeaders.setCounterparty(counterparty)
+        DocumentHeaders.setIncomingDate(incomingDate)
+        DocumentHeaders.setIncomingNumber(incomingNumber)
+        return DocumentHeaders
+    }
+
+    companion object {
+        fun fromDto(dto: DocumentHeaders) = dto?.let {
+            DocHeadersEmbeddable(
+                warehouse = it.getWarehouse(),
+                physicalPerson = it.getPhysicalPerson(),
+                division = it.getDivision(),
+                counterparty = it.getCounterparty(),
+                incomingDate = it.getIncomingDate(),
+                incomingNumber = it.getIncomingNumber()
+            )
+        }
     }
 }
 

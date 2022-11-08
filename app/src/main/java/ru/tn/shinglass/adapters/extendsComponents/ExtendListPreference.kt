@@ -33,12 +33,12 @@ class ExtendListPreference<T>(context: Context, attrs: AttributeSet? = null) :
             val selectedData = dataList[which]
 
             if (selectedData is Warehouse) {
-                summary = selectedData.title
-                value = selectedData.guid
+                summary = selectedData.warehouseTitle
+                value = selectedData.warehouseGuid
             }
             if (selectedData is Division) {
-                summary = selectedData.title
-                value = selectedData.guid
+                summary = selectedData.divisionTitle
+                value = selectedData.divisionGuid
             }
             alertDialog.cancel()
         }

@@ -109,13 +109,13 @@ class AuthFragment : Fragment() {
             }
         }
 
-        BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) {
+        BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) {dataScanPair ->
 
             clearForm()
 
-            val dataScanPair = BarcodeScannerReceiver.dataScan.value
-            val dataScanBarcode = dataScanPair?.first ?: ""
-            val dataScanBarcodeType = dataScanPair?.second ?: ""
+            //val dataScanPair = BarcodeScannerReceiver.dataScan.value
+            val dataScanBarcode = dataScanPair.first
+            val dataScanBarcodeType = dataScanPair.second
 
             if (dataScanBarcode == "") return@observe
 

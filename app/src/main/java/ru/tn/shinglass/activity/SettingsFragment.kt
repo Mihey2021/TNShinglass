@@ -61,7 +61,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         )
 
         divisionListPreference.summary =
-            savedDivision?.title ?: getString(R.string.division_list_description)
+            savedDivision?.divisionTitle ?: getString(R.string.division_list_description)
         divisionListPreference.icon =
             resources.getDrawable(R.drawable.ic_baseline_division_24, requireContext().theme)
         divisionListPreference.setDialogTitle(getString(R.string.division_list_description))
@@ -86,7 +86,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         )
 
         warehouseListPreference.summary =
-            savedWarehouse?.title ?: getString(R.string.warehouse_list_description)
+            savedWarehouse?.warehouseTitle ?: getString(R.string.warehouse_list_description)
         warehouseListPreference.icon =
             resources.getDrawable(R.drawable.ic_baseline_warehouse_24, requireContext().theme)
         warehouseListPreference.setDialogTitle(getString(R.string.warehouse_list_description))
@@ -109,11 +109,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
                                         "warehouse_guid",
                                         ""
                                     ).toString()
-                                )?.divisionGuid ?: ""
+                                )?.warehouseDivisionGuid ?: ""
                             )
                             if (division != null) {
-                                divisionListPreference.value = division.guid
-                                divisionListPreference.summary = division.title
+                                divisionListPreference.value = division.divisionGuid
+                                divisionListPreference.summary = division.divisionTitle
                             }
                         }
                     }
@@ -126,11 +126,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
                                             "division_guid",
                                             ""
                                         ).toString()
-                                    )?.defaultWarehouseGuid ?: ""
+                                    )?.divisionDefaultWarehouseGuid ?: ""
                                 )
                             if (warehouse != null) {
-                                warehouseListPreference.value = warehouse.guid
-                                warehouseListPreference.summary = warehouse.title
+                                warehouseListPreference.value = warehouse.warehouseGuid
+                                warehouseListPreference.summary = warehouse.warehouseTitle
                             }
                         }
                     }
@@ -153,7 +153,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             if (it.isEmpty()) return@observe
 
             val dataList = ArrayList<Warehouse>()
-            dataList.add(Warehouse(-1, getString(R.string.not_chosen_text), "", "", ""))
+            dataList.add(Warehouse(getString(R.string.not_chosen_text), "", "", ""))
             it.forEach { warehouse ->
                 dataList.add(warehouse)
             }
@@ -167,7 +167,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             if (it.isEmpty()) return@observe
 
             val dataList = ArrayList<Division>()
-            dataList.add(Division(-1, getString(R.string.not_chosen_text), "", ""))
+            dataList.add(Division(getString(R.string.not_chosen_text), "", ""))
             it.forEach { division ->
                 dataList.add(division)
             }

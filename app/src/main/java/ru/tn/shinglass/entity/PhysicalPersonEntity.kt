@@ -8,20 +8,19 @@ import ru.tn.shinglass.models.PhysicalPerson
 @Entity
 data class PhysicalPersonEntity(
 //    @PrimaryKey(autoGenerate = true)
-    val id: Long,
+    //val id: Long,
     val fio: String,
     @PrimaryKey(autoGenerate = false)
     val guid: String,
 ) {
     fun toDto() =
-        PhysicalPerson(id = id, fio = fio, guid = guid)
+        PhysicalPerson(physicalPersonFio = fio, physicalPersonGuid = guid)
 
     companion object {
         fun fromDto(dto: PhysicalPerson) =
             PhysicalPersonEntity(
-                id = dto.id,
-                fio = dto.fio,
-                guid = dto.guid,
+                fio = dto.physicalPersonFio,
+                guid = dto.physicalPersonGuid,
             )
     }
 }
