@@ -11,7 +11,11 @@ class User1C(
 
     @SerializedName("User_GUID")
     @Expose
-    private var userGUID: String
+    private var userGUID: String,
+
+    @SerializedName("default_division_GUID")
+    @Expose
+    private var defaultDivisionGUID: String
 ) : Serializable {
 
     fun getUser1C(): String {
@@ -28,6 +32,14 @@ class User1C(
 
     fun setUserGUID(userGUID: String) {
         this.userGUID = userGUID
+    }
+
+    fun getDefaultDivisionGUID(): String {
+        return defaultDivisionGUID
+    }
+
+    fun setDefaultDivisionGUID(defaultDivisionGUID: String) {
+        this.defaultDivisionGUID = defaultDivisionGUID
     }
 }
 

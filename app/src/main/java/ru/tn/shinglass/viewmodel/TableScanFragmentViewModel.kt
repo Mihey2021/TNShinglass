@@ -70,6 +70,24 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
         }
     }
 
+    fun getInternalOrderList() {
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                repositoryTableScan.getInternalOrderList()
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getAllDivisions"
+                )
+            }
+        }
+    }
+
+    fun saveRecord(record: TableScan, forceOverwrite: Boolean) =
+        repositoryTableScan.saveScanRecord(record, forceOverwrite)
 
     fun getAllWarehousesList() {
         viewModelScope.launch {
@@ -88,18 +106,18 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
     }
 
     fun createDocumentIn1C(scanRecords: List<TableScan>, docType: DocType) {
-        try {
-            viewModelScope.launch {
+        viewModelScope.launch {
+            try {
                 _dataState.value = ModelState(loading = true)
                 _docCreated.value = repositoryTableScan.createDocumentIn1C(scanRecords, docType)
                 _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "createDocumentIn1C"
+                )
             }
-        } catch (e: Exception) {
-            _dataState.value = ModelState(
-                error = true,
-                errorMessage = e.message.toString(),
-                requestName = "createDocumentIn1C"
-            )
         }
     }
 
@@ -114,6 +132,9 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
         _data.value = repositoryTableScan.getAllScanRecordsByOwner(ownerGuid, operationId)
     }
 
+    fun getAllScanRecordsByOwner(ownerGuid: String, operationId: Long) =
+        repositoryTableScan.getAllScanRecordsByOwner(ownerGuid, operationId)
+
     fun deleteRecordById(record: TableScan) {
         repositoryTableScan.deleteRecordById(record.id)
         refreshTableScan(record.OwnerGuid, record.OperationId)
@@ -123,6 +144,8 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
         repositoryTableScan.deleteRecordsByOwnerAndOperationId(ownerGuid, operationId)
         refreshTableScan(ownerGuid, operationId)
     }
+
+    fun getScanRecordById(id: Long) = repositoryTableScan.getScanRecordById(id)
 
     fun savePhysicalPerson(physicalPersons: List<PhysicalPerson>) =
         repositoryPhysicalPerson.savePhysicalPerson(physicalPersons)
@@ -164,5 +187,10 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
 
     fun getPhysicalPersonByGuid(guid: String) =
         repositoryPhysicalPerson.getPhysicalPersonByGuid(guid)
+
+    fun getDivisionByGuid(guid: String) =
+        repositoryDivisions.getDivisionByGuid(guid)
+
+    fun getExistingRecordCountSum(record: TableScan?) = repositoryTableScan.getExistingRecordCountSum(record)
 
 }

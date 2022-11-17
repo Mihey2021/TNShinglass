@@ -1,10 +1,6 @@
 package ru.tn.shinglass.dto.models
 
-import ru.tn.shinglass.R
-import ru.tn.shinglass.models.Counterparty
-import ru.tn.shinglass.models.Division
-import ru.tn.shinglass.models.PhysicalPerson
-import ru.tn.shinglass.models.Warehouse
+import ru.tn.shinglass.models.*
 
 object DocumentHeaders{
     private var warehouse: Warehouse? = null
@@ -13,6 +9,7 @@ object DocumentHeaders{
     private var incomingDate: Long? = null
     private var incomingNumber: String = ""
     private var counterparty: Counterparty? = null
+    private var externalDocumentSelected: Boolean = false
 
     fun getWarehouse(): Warehouse? = warehouse
     fun setWarehouse(warehouse: Warehouse?){
@@ -43,13 +40,9 @@ object DocumentHeaders{
     fun setCounterparty(counterparty: Counterparty?) {
         this.counterparty = counterparty
     }
-}
 
-enum class HeaderFields(val viewId: Int) {
-    WAREHOUSE(R.id.warehouseTextInputLayout),
-    PHYSICAL_PERSON(R.id.physicalPersonTextInputLayout),
-    DIVISION(R.id.divisionTextInputLayout),
-    COUNTERPARTY(R.id.counterpartyTextInputLayout),
-    INCOMING_DATE(R.id.incomingDateTextInputLayout),
-    INCOMING_NUMBER(R.id.incomingNumberTextInputLayout),
+    fun getExternalDocumentSelected() = externalDocumentSelected
+    fun setExternalDocumentSelected(externalDocumentSelected: Boolean) {
+        this.externalDocumentSelected = externalDocumentSelected
+    }
 }

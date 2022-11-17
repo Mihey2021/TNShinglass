@@ -63,7 +63,7 @@
     <string name="delete_text">Удалить</string>
     <string name="edit_record_text">Изменить</string>
     <string name="document_init_dialog_title">Реквизиты</string>
-    <string name="info_table_scan_start_text">Чтобы начать, отсканируйте ячейку</string>
+    <string name="info_table_scan_start_text">Чтобы начать,\nотсканируйте ячейку</string>
     <string name="info_table_scan_continue_text">Чтобы продолжить, отсканируйте ячейку или номенклатуру.\nТекущая ячейка:</string>
     <string name="division_list_description">Выберите подразделение</string>
     <string name="not_chosen_text">[Не выбрано]</string>
@@ -77,6 +77,17 @@
     <string name="save_text">Сохранить</string>
     <string name="nomenclature_not_found_text">Номенклатура не найдена</string>
     <string name="check_label_scan_again_text">Проверьте этикетку и отсканируйте штрихкод снова</string>
+    <string name="check_nomenclature_and_measure_of_unit_scan_again_text">Удостоверьтесь, что номенклатура и единица измерения в отсканированном ШК совпадают с данными в документе 1С.</string>
     <string name="document_details_text">Реквизиты документа</string>
     <string name="field_must_be_filled_text">*поле должно быть заполнено</string>
+    <string name="select_document_text">Выберите документ</string>
+    <string name="document_1c_text">Документ 1С</string>
+    <string name="back_text">&lt;&lt; Назад</string>
+    <string name="select_document">Выбрать документ</string>
+    <string name="show_selected_text">Показать выбранный</string>
+    <string name="choose_another_text">Выбрать другой</string>
+    <string name="changing_an_entry_text">Изменение записи</string>
+    <string name="nomenclature_substitution_text">В режиме редактирования записи подмена номенклатуры недопустима.</string>
+    <string name="not_correct_cell">Ячейка в документе не совпадает с отсканированной или текущей</string>
+    <string name="cell_text">Ячейка</string>
 </resources>

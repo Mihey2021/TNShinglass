@@ -26,6 +26,31 @@ interface TableScanDao {
     fun getAllScanRecordsByOwner(ownerGuid: String, operationId: Long): List<TableScanEntity>
 
     @Query(
+        "SELECT SUM(Count) FROM TableScanEntity WHERE " +
+                "OwnerGuid =:ownerGuid " +
+                "AND OperationId =:operationId " +
+                "AND itemGUID =:itemGUID " +
+                "AND itemMeasureOfUnitGUID =:itemMeasureOfUnitGUID " +
+                "AND workwearOrdinary =:workwearOrdinary " +
+                "AND workwearDisposable =:workwearDisposable " +
+                "AND warehouseGuid =:warehouseGuid " +
+                "AND purposeOfUse =:purposeOfUse " +
+                "AND physicalPersonGUID =:physicalPersonGUID " +
+                "AND uploaded = 0 "
+    )
+    fun getExistingRecordCountSum(
+        operationId: Long,
+        itemGUID: String,
+        itemMeasureOfUnitGUID: String,
+        workwearOrdinary: Boolean,
+        workwearDisposable: Boolean,
+        warehouseGuid: String,
+        purposeOfUse: String,
+        physicalPersonGUID: String,
+        ownerGuid: String,
+    ) : Double
+
+    @Query(
         "SELECT * FROM TableScanEntity WHERE " +
                 "OwnerGuid =:ownerGuid " +
                 "AND OperationId =:operationId " +
@@ -52,11 +77,39 @@ interface TableScanDao {
         ownerGuid: String,
     ) : TableScanEntity?
 
+    @Query(
+        "SELECT * FROM TableScanEntity WHERE " +
+                "OwnerGuid =:ownerGuid " +
+                "AND OperationId =:operationId " +
+                "AND itemGUID =:itemGUID " +
+                "AND itemMeasureOfUnitGUID =:itemMeasureOfUnitGUID " +
+                "AND workwearOrdinary =:workwearOrdinary " +
+                "AND workwearDisposable =:workwearDisposable " +
+                "AND warehouseGuid =:warehouseGuid " +
+                "AND purposeOfUse =:purposeOfUse " +
+                "AND physicalPersonGUID =:physicalPersonGUID " +
+                "AND uploaded = 0 "
+    )
+    fun getExistingRecordWithoutCell(
+        operationId: Long,
+        itemGUID: String,
+        itemMeasureOfUnitGUID: String,
+        workwearOrdinary: Boolean,
+        workwearDisposable: Boolean,
+        warehouseGuid: String,
+        purposeOfUse: String,
+        physicalPersonGUID: String,
+        ownerGuid: String,
+    ) : TableScanEntity?
+
     @Query("DELETE FROM TableScanEntity WHERE id =:id AND uploaded = 0")
     fun deleteRecordById(id: Long)
 
     @Query("DELETE FROM TableScanEntity WHERE OwnerGuid =:ownerGuid AND OperationId =:operationId")
     fun deleteRecordsByOwnerAndOperationId(ownerGuid: String, operationId: Long)
+
+//    @Query("SELECT * FROM TableScanEntity WHERE OwnerGuid =:ownerGuid AND OperationId =:operationId AND docGuid = :docGuid AND uploaded = 0 ORDER BY id DESC")
+//    fun getDoc1CRecords(operationId: Long, ownerGuid: String, docGuid: String): List<TableScanEntity>
 
 }
 

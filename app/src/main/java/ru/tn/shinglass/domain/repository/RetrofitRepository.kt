@@ -14,7 +14,8 @@ interface RetrofitRepository {
     fun authorization(user: RequestLogin, callback:Callback<User1C>)
     //suspend fun getPhysicalPersonList()
     //fun getAllWarehousesList(callback: Callback<List<Warehouse>>)
-    fun getCellByBarcode(barcode: String, callback: Callback<Cells>)
+    //fun getCellByBarcode(barcode: String, callback: Callback<Cells>)
+    suspend fun getCellByBarcode(barcode: String, warehouseGuid: String): Cells
     fun getItemByBarcode(barcode: String, callback: Callback<Nomenclature>)
     //fun createInventoryOfGoods(scanRecords: List<TableScan>, callback: Callback<CreatedDocumentDetails>)
     //fun getAllDivisionsList(callback: Callback<List<Division>>)

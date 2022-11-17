@@ -7,34 +7,32 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
 import android.widget.Filter
-import android.widget.TextView
-import ru.tn.shinglass.R
 import ru.tn.shinglass.databinding.DynamicPrefsLayoutBinding
-import ru.tn.shinglass.models.Counterparty
-import ru.tn.shinglass.models.Division
-import ru.tn.shinglass.models.PhysicalPerson
-import ru.tn.shinglass.models.Warehouse
+import ru.tn.shinglass.models.*
+import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
 
 class DynamicListAdapter<T> : ArrayAdapter<T> {
     constructor(context: Context, layout: Int) : super(context, layout)
-    constructor(context: Context, layout: Int, listData: List<T>) : super(
+    constructor(context: Context, layout: Int, listData: List<T>, filterOff: Boolean = true) : super(
         context,
         layout,
         listData
     ) {
         listData.forEach { tempItems.add(it) }
         //this.layout = layout
+        this.filterOff = filterOff
     }
 
     //private val listData: ArrayList<T> = arrayListOf<T>()
     //private var layout: Int = 0
+    private val sdf = SimpleDateFormat("dd.MM.yyyy")
     val tempItems: ArrayList<T> = arrayListOf()
     private val suggestions: ArrayList<T> = arrayListOf()
+    private var filterOff: Boolean = true
 
     //private fun getLayout() = this.layout
 
@@ -72,6 +70,10 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
                    //itemListDescriptionTextView?.text = "ИНН: ${item.inn}"
                    //itemListDescription2TextView?.text = "КПП: ${item.kpp}"
                }
+               is ExternalDocument -> {
+                   itemListTextView?.text = "${item.externalOrderDocumentTitle} ${item.externalOrderNumber}"
+                   itemListDescriptionTextView.text = "Дата документа: ${if(item.externalOrderDate == 0L) "<нет>" else sdf.format(item.externalOrderDate)}"
+               }
                else -> itemListTextView?.text = ""
            }
        }
@@ -83,7 +85,8 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
     override fun getFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence?): FilterResults {
-                return if (constraint != null) {
+                return if (constraint != null && !filterOff){
+                //return if (constraint != null) {
                     suggestions.clear()
                     for (item in tempItems) {
                         if (item is PhysicalPerson) {
@@ -140,8 +143,11 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
                     return resultValue.physicalPersonFio
                 if (resultValue is Warehouse)
                     return resultValue.warehouseTitle
-                return if (resultValue is Division)
-                    resultValue.divisionTitle
+                if (resultValue is Division)
+                    return resultValue.divisionTitle
+                return if (resultValue is ExternalDocument)
+                    "${resultValue.externalOrderDocumentTitle} ${resultValue.externalOrderNumber} " +
+                            if(resultValue.externalOrderDate == 0L) "" else " от" + sdf.format(resultValue.externalOrderDate)
                 else (resultValue as Counterparty).title
             }
         }

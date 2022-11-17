@@ -1,6 +1,7 @@
 package ru.tn.shinglass.models
 
 import androidx.room.Embedded
+import com.google.gson.annotations.SerializedName
 import ru.tn.shinglass.dto.models.DocumentHeaders
 import ru.tn.shinglass.dto.models.User1C
 import java.io.Serializable
@@ -16,6 +17,9 @@ data class TableScan (
     val ItemMeasureOfUnitTitle: String = "",
     val ItemMeasureOfUnitGUID: String = "",
     val Count: Double = 0.0,
+    val docCount: Double = 0.0,
+    val docTitle: String = "",
+    val docGuid: String = "",
     val coefficient: Double = 0.0,
     val qualityGuid: String = "",
     val qualityTitle: String = "",

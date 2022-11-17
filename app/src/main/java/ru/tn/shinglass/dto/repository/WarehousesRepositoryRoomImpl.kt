@@ -36,7 +36,7 @@ class WarehousesRepositoryRoomImpl(private val dao: WarehousesDao) : WarehousesR
                 val body = response.body() ?: throw ApiError(response.code(), response.message())
                 dao.saveWarehouses(body.toEntity())
             } else {
-                throw ApiServiceError()
+                throw ApiServiceError("API service not ready")
             }
         } catch (e: IOException) {
             //throw NetworkError

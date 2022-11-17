@@ -74,7 +74,7 @@
     <string name="delete_text">Delete</string>
     <string name="edit_record_text">Edit</string>
     <string name="document_init_dialog_title">Requisites</string>
-    <string name="info_table_scan_start_text">To get started, scan the cell</string>
+    <string name="info_table_scan_start_text">To get started,\nscan the cell</string>
     <string name="info_table_scan_continue_text">To continue, scan the cell or item.\nCurrent cell:</string>
     <string name="division_list_description">Select division</string>
     <string name="not_chosen_text">[Not chosen]</string>
@@ -88,6 +88,17 @@
     <string name="save_text">Save</string>
     <string name="nomenclature_not_found_text">The nomenclature was not found</string>
     <string name="check_label_scan_again_text">Check the label and scan the barcode again</string>
+    <string name="check_nomenclature_and_measure_of_unit_scan_again_text">Check the label and scan the barcode again</string>
     <string name="document_details_text">Document details</string>
     <string name="field_must_be_filled_text">*the field must be filled in</string>
+    <string name="select_document_text">Select document</string>
+    <string name="document_1c_text">Document 1C</string>
+    <string name="back_text">&lt;&lt; Back</string>
+    <string name="select_document">Select Document</string>
+    <string name="show_selected_text">Show  selected</string>
+    <string name="choose_another_text">Choose another</string>
+    <string name="changing_an_entry_text">Changing an entry</string>
+    <string name="nomenclature_substitution_text">In record editing mode, nomenclature substitution is not allowed.</string>
+    <string name="not_correct_cell">Cell in document does not match scanned or current</string>
+    <string name="cell_text">Cell</string>
 </resources>

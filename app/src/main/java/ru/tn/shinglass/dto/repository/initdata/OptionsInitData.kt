@@ -11,6 +11,7 @@ class OptionsInitData {
         Option(option = OptionType.ACCEPTANCE),
         Option(option = OptionType.INVENTORY),
         Option(option = OptionType.SELECTION, subOption = DocType.REQUIREMENT_INVOICE.subType, docType = DocType.REQUIREMENT_INVOICE),
+        Option(option = OptionType.SELECTION, subOption = DocType.TOIR_REQUIREMENT_INVOICE.subType, docType = DocType.TOIR_REQUIREMENT_INVOICE),
         Option(option = OptionType.SELECTION, subOption = DocType.WORKWEAR_TOOLS.subType, docType = DocType.WORKWEAR_TOOLS),
         Option(option = OptionType.SELECTION, subOption = DocType.DISPOSABLE_PPE.subType, docType = DocType.DISPOSABLE_PPE),
         Option(option = OptionType.ACCEPTANCE, subOption = DocType.STANDARD_ACCEPTANCE.subType, docType = DocType.STANDARD_ACCEPTANCE),

@@ -28,13 +28,10 @@ interface ApiService {
     suspend fun getPhysicalPersonList(): Response<List<PhysicalPerson>>
 
     @GET("getCellByBarcode")
-    fun getCellByBarcode(@Query("barcode") barcode: String): Call<Cells>
+    suspend fun getCellByBarcode(@Query("barcode") barcode: String, @Query("warehouseGuid") warehouseGuid: String): Response<Cells>
 
     @GET("getItemByBarcode")
     fun getItemByBarcode(@Query("barcode") barcode: String): Call<Nomenclature>
-
-    @POST("createInventoryOfGoods")
-    suspend fun createInventoryOfGoods(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>
 
     @GET("getDivisionsList")
     suspend fun getAllDivisionsList(): Response<List<Division>>
@@ -42,7 +39,15 @@ interface ApiService {
     @GET("getCounterpartiesList")
     suspend fun getCounterpartiesList(@Query("part_name_inn") searchParam: String = ""): Response<List<Counterparty>>
 
+    @GET("getInternalOrderList")
+    suspend fun getInternalOrderList(): Response<List<ExternalDocument>>
+
+    @POST("createInventoryOfGoods")
+    suspend fun createInventoryOfGoods(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>
+
     @POST("createGoodsReceiptOrder")
     suspend fun createGoodsReceiptOrder(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>
 
+    @POST("createRequirementInvoice")
+    suspend fun createRequirementInvoice(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>
 }

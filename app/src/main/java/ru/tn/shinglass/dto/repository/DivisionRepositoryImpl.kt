@@ -34,7 +34,7 @@ class DivisionRepositoryImpl(private val dao: DivisionsDao) : DivisionRepository
                 val body = response.body() ?: throw ApiError(response.code(), response.message())
                 dao.saveDivisions(body.toEntity())
             } else {
-                throw ApiServiceError()
+                throw ApiServiceError("API service not ready")
             }
         } catch (e: IOException) {
             //throw NetworkError

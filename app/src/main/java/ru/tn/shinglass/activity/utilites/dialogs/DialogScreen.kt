@@ -31,7 +31,7 @@ object DialogScreen {
         when (ID) {
             1, 2 -> {
                 with(alertDialog) {
-                    setTitle(context.resources.getString(R.string.err_an_error_has_occured))
+                    setTitle(if(title == "") context.resources.getString(R.string.err_an_error_has_occured) else title)
                     setMessage(message)
                     setCancelable(isCancelable)
                     setIcon(
@@ -68,7 +68,8 @@ object DialogScreen {
             }
             4 -> {
                 with(alertDialog) {
-                    setTitle(message)
+                    setTitle(if(title == "") message else title)
+                    setMessage(message)
                     setCancelable(isCancelable)
                     setIcon(
                         context.resources.getDrawable(

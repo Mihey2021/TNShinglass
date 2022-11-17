@@ -27,8 +27,28 @@ class RetrofitRepositoryImpl : RetrofitRepository {
 //        apiService?.getAllWarehousesList()?.enqueue(getCallbackHandler(callback))
 //    }
 
-    override fun getCellByBarcode(barcode: String, callback: RetrofitRepository.Callback<Cells>) {
-        apiService?.getCellByBarcode(barcode)?.enqueue(getCallbackHandler(callback))
+//    override fun getCellByBarcode(barcode: String, callback: RetrofitRepository.Callback<Cells>) {
+//        apiService?.getCellByBarcode(barcode)?.enqueue(getCallbackHandler(callback))
+//    }
+
+    override suspend fun getCellByBarcode(barcode: String, warehouseGuid: String): Cells {
+        try {
+            if (apiService != null) {
+                val response =
+                    apiService.getCellByBarcode(barcode, warehouseGuid)
+                if (!response.isSuccessful) {
+                    throw ApiError(response.code(), response.message())
+                }
+                return response.body() ?: throw ApiError(response.code(), response.message())
+            } else {
+                throw ApiServiceError("API service not ready")
+            }
+        } catch (e: IOException) {
+            //throw NetworkError
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
+        }
     }
 
     override fun getItemByBarcode(

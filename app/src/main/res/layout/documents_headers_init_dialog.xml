@@ -14,7 +14,7 @@
         android:gravity="center"
         android:text="@string/document_init_dialog_title"
         android:textColor="@color/black"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:textStyle="bold"
         android:typeface="monospace" />
 
@@ -53,10 +53,11 @@
                     android:id="@+id/counterpartyTextEdit"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:ellipsize="end"
                     android:imeOptions="actionDone"
-                    tools:text = "@tools:sample/lorem[20]"
-                    android:inputType="text" >
-                </AutoCompleteTextView>
+                    android:inputType="text"
+                    android:textSize="14sp"
+                    tools:text="@tools:sample/lorem[20]" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -76,7 +77,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:imeOptions="actionDone"
-                    android:inputType="text" />
+                    android:inputType="none"
+                    android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -85,7 +87,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/warehouse_title"
                 app:errorEnabled="true"
@@ -96,7 +98,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:imeOptions="actionDone"
-                    android:inputType="text" />
+                    android:inputType="none"
+                    android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -105,7 +108,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/physical_person_title"
                 app:errorEnabled="true"
@@ -116,7 +119,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:imeOptions="actionDone"
-                    android:inputType="text" />
+                    android:inputType="none"
+                    android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -125,7 +129,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/incoming_number_text"
                 app:errorEnabled="true">
@@ -136,7 +140,8 @@
                     android:layout_height="wrap_content"
                     android:imeOptions="actionDone"
                     android:inputType="text"
-                    android:maxLines="1" />
+                    android:maxLines="1"
+                    android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
@@ -145,7 +150,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/incoming_date_text"
                 app:endIconMode="custom"
@@ -157,10 +162,11 @@
                     android:id="@+id/incomingDateEditText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:imeOptions="actionDone"
                     android:editable="false"
+                    android:imeOptions="actionDone"
                     android:inputType="none"
-                    android:maxLines="1" />
+                    android:maxLines="1"
+                    android:textSize="14sp" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
     </ScrollView>

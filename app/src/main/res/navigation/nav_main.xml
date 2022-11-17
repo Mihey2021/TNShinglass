@@ -42,10 +42,18 @@
             app:popEnterAnim="@android:anim/slide_in_left"
             app:popExitAnim="@android:anim/slide_out_right"
             app:popUpTo="@id/tableScanFragment" />
+        <action
+            android:id="@+id/action_tableScanFragment_to_documentSelectFragment"
+            app:destination="@id/documentSelectFragment" />
     </fragment>
     <fragment
         android:id="@+id/detailScanFragment"
         android:name="ru.tn.shinglass.activity.DetailScanFragment"
         android:label="fragment_detail_scan"
         tools:layout="@layout/fragment_detail_scan" />
+    <fragment
+        android:id="@+id/documentSelectFragment"
+        android:name="ru.tn.shinglass.activity.DocumentSelectFragment"
+        android:label="fragment_document_select"
+        tools:layout="@layout/fragment_document_select" />
 </navigation>

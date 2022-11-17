@@ -4,6 +4,8 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.launch
 import ru.tn.shinglass.domain.repository.RetrofitRepository
 import ru.tn.shinglass.dto.models.CreatedDocumentDetails
 import ru.tn.shinglass.dto.repository.RetrofitRepositoryImpl
@@ -41,6 +43,10 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
     val requestError: LiveData<RequestError?>
         get() = _requestError
 
+    private val _dataState = MutableLiveData<ModelState>()
+    val dataState: LiveData<ModelState>
+        get() = _dataState
+
 //    fun getPhysicalPersonList() {
 //        repository.getPhysicalPersonList(object :
 //            RetrofitRepository.Callback<List<PhysicalPerson>> {
@@ -70,18 +76,37 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
 //        })
 //    }
 
-    fun getCellByBarcode(barcode: String) {
-        repository.getCellByBarcode(barcode, object : RetrofitRepository.Callback<Cells> {
-            override fun onSuccess(receivedData: Cells) {
-                _cellData.value = receivedData
-                _requestError.value = null
+//    fun getCellByBarcode(barcode: String) {
+//        repository.getCellByBarcode(barcode, object : RetrofitRepository.Callback<Cells> {
+//            override fun onSuccess(receivedData: Cells) {
+//                _cellData.value = receivedData
+//                _requestError.value = null
+//            }
+//
+//            override fun onError(e: Exception) {
+//                _requestError.value = RequestError(e.message.toString(), "getCellByBarcode")
+//                //super.onError(e)
+//            }
+//        })
+//    }
+
+    fun getCellByBarcode(barcode: String, warehouseGuid: String) {
+        try {
+            viewModelScope.launch {
+                _dataState.value = ModelState(loading = true)
+                _cellData.value = repository.getCellByBarcode(barcode, warehouseGuid)
+                //_requestError.value = null
+                _dataState.value = ModelState()
             }
 
-            override fun onError(e: Exception) {
-                _requestError.value = RequestError(e.message.toString(), "getCellByBarcode")
-                //super.onError(e)
-            }
-        })
+        } catch (e: Exception) {
+            //_requestError.value = RequestError(e.message.toString(), "getCellByBarcode")
+            _dataState.value = ModelState(
+                error = true,
+                errorMessage = e.message.toString(),
+                requestName = "getCellByBarcode"
+            )
+        }
     }
 
 //    fun createInventoryOfGoods(scanRecords: List<TableScan>){

@@ -19,6 +19,9 @@ data class TableScanEntity(
     val ItemMeasureOfUnitTitle: String,
     val ItemMeasureOfUnitGUID: String,
     val Count: Double,
+    val docCount: Double,
+    val docTitle: String,
+    val docGuid: String,
     val coefficient: Double,
     val qualityGuid: String,
     val qualityTitle: String,
@@ -49,6 +52,9 @@ data class TableScanEntity(
             ItemMeasureOfUnitTitle = ItemMeasureOfUnitTitle,
             ItemMeasureOfUnitGUID = ItemMeasureOfUnitGUID,
             Count = Count,
+            docCount = docCount,
+            docTitle = docTitle,
+            docGuid = docGuid,
             coefficient = coefficient,
             qualityGuid = qualityGuid,
             qualityTitle = qualityTitle,
@@ -79,6 +85,9 @@ data class TableScanEntity(
                 ItemMeasureOfUnitTitle = dto.ItemMeasureOfUnitTitle,
                 ItemMeasureOfUnitGUID = dto.ItemMeasureOfUnitGUID,
                 Count = dto.Count,
+                docCount = dto.docCount,
+                docTitle = dto.docTitle,
+                docGuid = dto.docGuid,
                 coefficient = dto.coefficient,
                 qualityGuid = dto.qualityGuid,
                 qualityTitle = dto.qualityTitle,
@@ -109,6 +118,7 @@ data class DocHeadersEmbeddable(
     val counterparty: Counterparty? = null,
     val incomingDate: Long? = null,
     val incomingNumber: String = "",
+    val externalDocumentSelected: Boolean = false,
 ) {
     fun toDto(): DocumentHeaders {
         DocumentHeaders.setWarehouse(warehouse)
@@ -117,6 +127,7 @@ data class DocHeadersEmbeddable(
         DocumentHeaders.setCounterparty(counterparty)
         DocumentHeaders.setIncomingDate(incomingDate)
         DocumentHeaders.setIncomingNumber(incomingNumber)
+        DocumentHeaders.setExternalDocumentSelected(externalDocumentSelected)
         return DocumentHeaders
     }
 
@@ -128,7 +139,8 @@ data class DocHeadersEmbeddable(
                 division = it.getDivision(),
                 counterparty = it.getCounterparty(),
                 incomingDate = it.getIncomingDate(),
-                incomingNumber = it.getIncomingNumber()
+                incomingNumber = it.getIncomingNumber(),
+                externalDocumentSelected = it.getExternalDocumentSelected(),
             )
         }
     }
