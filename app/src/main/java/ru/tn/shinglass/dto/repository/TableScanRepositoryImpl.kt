@@ -214,4 +214,11 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                 ownerGuid = record.OwnerGuid
             )
 
+    override fun getTotalCount(
+        ownerGuid: String,
+        operationId: Long,
+        itemGUID: String,
+        itemMeasureOfUnitGUID: String
+    ) = dao.getTotalCount(ownerGuid, operationId, itemGUID, itemMeasureOfUnitGUID)
+
 }

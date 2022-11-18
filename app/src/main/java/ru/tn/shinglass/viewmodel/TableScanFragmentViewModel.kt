@@ -193,4 +193,10 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
 
     fun getExistingRecordCountSum(record: TableScan?) = repositoryTableScan.getExistingRecordCountSum(record)
 
+    fun getTotalCount(
+        ownerGuid: String,
+        operationId: Long,
+        itemGUID: String,
+        itemMeasureOfUnitGUID: String
+    ) = repositoryTableScan.getTotalCount(ownerGuid, operationId, itemGUID, itemMeasureOfUnitGUID)
 }

@@ -22,7 +22,34 @@ interface TableScanDao {
     @Query("SELECT * FROM TableScanEntity WHERE id =:id")
     fun getScanRecordById(id: Long): TableScanEntity?
 
-    @Query("SELECT * FROM TableScanEntity WHERE OwnerGuid =:ownerGuid AND OperationId =:operationId AND uploaded = 0 ORDER BY id DESC")
+//    @Query("SELECT * FROM TableScanEntity WHERE OwnerGuid =:ownerGuid AND OperationId =:operationId AND uploaded = 0 ORDER BY id DESC")
+//    fun getAllScanRecordsByOwner(ownerGuid: String, operationId: Long): List<TableScanEntity>
+
+    @Query("SELECT SUM(Count) FROM TableScanEntity " +
+            "WHERE OwnerGuid =:ownerGuid AND OperationId =:operationId AND ItemGUID = :itemGUID AND ItemMeasureOfUnitGUID = :itemMeasureOfUnitGUID AND uploaded = 0 " +
+            "GROUP BY OperationId, OwnerGuid, uploaded, divisionGuid, warehouseGuid, ItemGUID, ItemMeasureOfUnitGUID, docGuid")
+    fun getTotalCount(
+        ownerGuid: String,
+        operationId: Long,
+        itemGUID: String,
+        itemMeasureOfUnitGUID: String
+    ): Double
+
+   // @Query("SELECT TableTotalCount.TotalCount AS totalCount, * FROM TableScanEntity " +
+    @Query("SELECT TableTotalCount.TotalCount AS totalCount, " +
+            "id, OperationId, OperationTitle, cellTitle, cellGuid, ItemTitle, ItemGUID, ItemMeasureOfUnitTitle, " +
+            "ItemMeasureOfUnitGUID, Count, docCount, docTitle, docGuid, coefficient, qualityGuid, qualityTitle, " +
+            "WorkwearOrdinary, WorkwearDisposable, PurposeOfUseTitle, PurposeOfUse, " +
+            "OwnerGuid, uploaded, docNameIn1C, incomingDate, incomingNumber , externalDocumentSelected, " +
+            "warehouseTitle, warehouseGuid, warehouseDivisionGuid, warehouseResponsibleGuid, physicalPersonFio, " +
+            "physicalPersonGuid, divisionTitle, divisionGuid, divisionDefaultWarehouseGuid, counterpartyTitle, " +
+            "counterpartyGuid, counterpartyInn, counterpartyKpp " +
+            "FROM TableScanEntity " +
+            "LEFT JOIN (" +
+            "SELECT id AS tc_id, SUM(Count) AS TotalCount FROM TableScanEntity " +
+            "GROUP BY OperationId, OwnerGuid, uploaded, divisionGuid, warehouseGuid, ItemGUID, ItemMeasureOfUnitGUID, docGuid)  AS TableTotalCount ON TableScanEntity.id = TableTotalCount.tc_id " +
+            "WHERE TableScanEntity.OwnerGuid =:ownerGuid AND TableScanEntity.OperationId =:operationId AND TableScanEntity.uploaded = 0 " +
+            "ORDER BY ItemTitle ASC, id DESC")
     fun getAllScanRecordsByOwner(ownerGuid: String, operationId: Long): List<TableScanEntity>
 
     @Query(
@@ -48,7 +75,7 @@ interface TableScanDao {
         purposeOfUse: String,
         physicalPersonGUID: String,
         ownerGuid: String,
-    ) : Double
+    ): Double
 
     @Query(
         "SELECT * FROM TableScanEntity WHERE " +
@@ -75,7 +102,7 @@ interface TableScanDao {
         purposeOfUse: String,
         physicalPersonGUID: String,
         ownerGuid: String,
-    ) : TableScanEntity?
+    ): TableScanEntity?
 
     @Query(
         "SELECT * FROM TableScanEntity WHERE " +
@@ -100,7 +127,7 @@ interface TableScanDao {
         purposeOfUse: String,
         physicalPersonGUID: String,
         ownerGuid: String,
-    ) : TableScanEntity?
+    ): TableScanEntity?
 
     @Query("DELETE FROM TableScanEntity WHERE id =:id AND uploaded = 0")
     fun deleteRecordById(id: Long)

@@ -199,7 +199,22 @@ class TableScanFragment : Fragment() {
             } else {
                 binding.completeAndSendBtn.isEnabled = it.isNotEmpty()
             }
-            adapter.submitList(it)
+
+            val list = it.map { record ->
+                record.copy(
+                    totalCount =
+                    viewModel.getTotalCount(
+                        ownerGuid = record.OwnerGuid,
+                        operationId = record.OperationId,
+                        itemGUID = record.ItemGUID,
+                        itemMeasureOfUnitGUID = record.ItemMeasureOfUnitGUID
+                    )
+                )
+            }
+
+
+            adapter.submitList(list)
+            //adapter.submitList(it)
             itemList = it
 
             if (itemList.isNotEmpty()) {

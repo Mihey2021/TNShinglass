@@ -17,4 +17,10 @@ interface TableScanRepository {
     suspend fun getCounterpartiesList(searchParam: String): List<Counterparty>
     suspend fun getInternalOrderList(): List<ExternalDocument>
     fun getExistingRecordCountSum(record: TableScan?): Double
+    fun getTotalCount(
+        ownerGuid: String,
+        operationId: Long,
+        itemGUID: String,
+        itemMeasureOfUnitGUID: String
+    ): Double
 }
