@@ -101,4 +101,7 @@
     <string name="nomenclature_substitution_text">In record editing mode, nomenclature substitution is not allowed.</string>
     <string name="not_correct_cell">Cell in document does not match scanned or current</string>
     <string name="cell_text">Cell</string>
+    <string name="total_text">Total</string>
+    <string name="selected_and_by_document_text">selected / in document</string>
+    <string name="not_scanned_yet">[Not scanned yet]</string>
 </resources>

@@ -20,6 +20,18 @@
             android:layout_height="0dp">
 
             <TextView
+                android:id="@+id/itemCountTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/my_border"
+                android:gravity="center"
+                android:text="TextView"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <TextView
                 android:id="@+id/titleTextView"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -33,7 +45,7 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintHorizontal_weight="1"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/itemCountTextView"
                 tools:text="@tools:sample/lorem[100]" />
 
             <TextView
@@ -50,7 +62,7 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintHorizontal_weight="0.3"
                 app:layout_constraintStart_toEndOf="@+id/titleTextView"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/itemCountTextView"
                 tools:layout_constraintTop_toTopOf="@id/titleTextView"
                 tools:text="1.0" />
 
@@ -68,7 +80,7 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintHorizontal_weight="0.3"
                 app:layout_constraintStart_toEndOf="@+id/countTextView"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/itemCountTextView"
                 tools:layout_constraintTop_toTopOf="@id/titleTextView"
                 tools:text="ед. изм" />
 
@@ -86,7 +98,7 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintHorizontal_weight="0.5"
                 app:layout_constraintStart_toEndOf="@+id/unitOfMeasureTextView"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/itemCountTextView"
                 tools:layout_constraintTop_toTopOf="@id/titleTextView"
                 tools:text="SH1-007-1-B-3-0015" />
 

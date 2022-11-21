@@ -158,7 +158,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tableItemScanLayout"
         tools:itemCount="10"
-        tools:listitem="@layout/table_scan_item_layout">
+        tools:listitem="@layout/table_scan_group_item_layout">
 
     </androidx.recyclerview.widget.RecyclerView>
 
@@ -177,84 +177,104 @@
             android:id="@+id/headerTitleTextView"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:background="@drawable/table_header"
             android:fontFamily="sans-serif-light"
             android:gravity="center"
             android:paddingStart="2dp"
             android:paddingEnd="2dp"
             android:text="@string/header_nomenclature"
             android:textAlignment="center"
+            android:textAllCaps="true"
+            android:textSize="10sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/headerCountTextView"
+            app:layout_constraintBottom_toTopOf="@id/headerCellTextView"
+            app:layout_constraintEnd_toStartOf="@id/headerTotalCount"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintHorizontal_weight="0.7"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_weight="1" />
 
         <TextView
-            android:id="@+id/headerCountTextView"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:background="@drawable/table_header"
-            android:fontFamily="sans-serif-light"
-            android:gravity="center"
-            android:paddingStart="2dp"
-            android:paddingEnd="2dp"
-            android:text="@string/header_quantity"
-            android:textAlignment="center"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/headerUnitOfMeasureTextView"
-            app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintHorizontal_weight="0.3"
-            app:layout_constraintStart_toEndOf="@+id/headerTitleTextView"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_weight="1"
-            tools:layout_constraintTop_toTopOf="@id/titleTextView" />
-
-        <TextView
-            android:id="@+id/headerUnitOfMeasureTextView"
+            android:id="@+id/headerTotalCount"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:background="@drawable/table_header"
             android:fontFamily="sans-serif-light"
             android:gravity="center"
             android:paddingStart="2dp"
             android:paddingEnd="2dp"
-            android:text="@string/header_unit_of_measurement"
+            android:text="@string/total_text"
             android:textAlignment="center"
+            android:textAllCaps="true"
+            android:textSize="10sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="@id/headerTitleTextView"
-            app:layout_constraintEnd_toStartOf="@+id/headerCellTextView"
-            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintBottom_toTopOf="@id/headerCellTextView"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_weight="0.3"
-            app:layout_constraintStart_toEndOf="@+id/headerCountTextView"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_weight="1"
-            tools:layout_constraintTop_toTopOf="@id/titleTextView" />
+            app:layout_constraintStart_toEndOf="@id/headerTitleTextView"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/headerCellTextView"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:background="@drawable/table_header"
             android:fontFamily="sans-serif-light"
             android:gravity="center"
             android:paddingStart="2dp"
             android:paddingEnd="2dp"
             android:text="@string/header_cell"
             android:textAlignment="center"
+            android:textAllCaps="true"
+            android:textSize="10sp"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="@id/headerTitleTextView"
+            app:layout_constraintBottom_toTopOf="@id/headerSeparator"
+            app:layout_constraintEnd_toEndOf="@id/headerTitleTextView"
+            app:layout_constraintHorizontal_weight="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/headerTitleTextView"
+            app:layout_constraintVertical_weight="1"
+            tools:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/headerCountTextView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center"
+            android:paddingStart="1dp"
+            android:paddingEnd="1dp"
+            android:text="@string/header_quantity"
+            android:textAlignment="center"
+            android:textAllCaps="true"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/headerSeparator"
+            app:layout_constraintEnd_toStartOf="@id/headerUnitOfMeasureTextView"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintHorizontal_weight="0.3"
+            app:layout_constraintStart_toEndOf="@id/headerCellTextView"
+            app:layout_constraintTop_toBottomOf="@id/headerTitleTextView"
+            app:layout_constraintVertical_weight="1" />
+
+        <TextView
+            android:id="@+id/headerUnitOfMeasureTextView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp"
+            android:text="@string/header_unit_of_measurement"
+            android:textAlignment="center"
+            android:textAllCaps="true"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toTopOf="@id/headerSeparator"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintHorizontal_weight="0.5"
-            app:layout_constraintStart_toEndOf="@+id/headerUnitOfMeasureTextView"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_weight="1"
-            tools:layout_constraintTop_toTopOf="@id/titleTextView" />
+            app:layout_constraintHorizontal_weight="0.3"
+            app:layout_constraintStart_toEndOf="@id/headerCountTextView"
+            app:layout_constraintTop_toBottomOf="@id/headerTitleTextView"
+            app:layout_constraintVertical_weight="1" />
 
         <androidx.constraintlayout.widget.Barrier
             android:id="@+id/tableHeaderBarrier"
@@ -273,6 +293,16 @@
         <!--        app:layout_constraintBottom_toBottomOf="parent"-->
         <!--        app:layout_constraintEnd_toEndOf="parent"-->
         <!--        app:srcCompat="@drawable/ic_add_24" />-->
+
+        <View
+            android:id="@+id/headerSeparator"
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:background="@drawable/my_gradient_line"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/headerCellTextView" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

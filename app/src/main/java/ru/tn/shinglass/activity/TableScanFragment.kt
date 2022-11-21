@@ -64,18 +64,14 @@ class TableScanFragment : Fragment() {
 
     private var dialog: AlertDialog? = null
 
+    private var isExternalDocument: Boolean = false
+
     @SuppressLint("SimpleDateFormat", "SetTextI18n", "ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val binding = FragmentTableScanBinding.inflate(inflater, container, false)
-        with(binding) {
-            headerTitleTextView.setTextColor(Color.BLACK)
-            headerCountTextView.setTextColor(Color.BLACK)
-            headerUnitOfMeasureTextView.setTextColor(Color.BLACK)
-            headerCellTextView.setTextColor(Color.BLACK)
-        }
 
         val layoutInflater =
             LayoutInflater.from(requireContext())//.inflate(R.layout.inventory_init_dialog, null)
@@ -88,14 +84,28 @@ class TableScanFragment : Fragment() {
 
         viewModel.refreshTableScan(user1C.getUserGUID(), selectedOption.id)
 
-        if (selectedOption.docType != DocType.TOIR_REQUIREMENT_INVOICE) {
+        isExternalDocument = selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE
+
+        with(binding) {
+            headerTitleTextView.setTextColor(Color.BLACK)
+            headerTotalCount.setTextColor(Color.BLACK)
+            //headerTotalCount.text = if (isExternalDocument) "${getString(R.string.total_text)}\n${getString(R.string.selected_and_by_document_text)}" else "${getString(R.string.total_text)}"
+            headerTotalCount.text = getString(R.string.total_text)
+            headerCountTextView.setTextColor(Color.BLACK)
+            headerUnitOfMeasureTextView.setTextColor(Color.BLACK)
+            headerCellTextView.setTextColor(Color.BLACK)
+        }
+
+        //if (selectedOption.docType != DocType.TOIR_REQUIREMENT_INVOICE) {
+        if (!isExternalDocument) {
             if (DocumentHeaders.getWarehouse() == null)
                 viewModel.getAllWarehousesList()
             if (DocumentHeaders.getPhysicalPerson() == null)
                 viewModel.getAllPhysicalPerson()
         }
 
-        if (selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE) {
+        //if (selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE) {
+        if (isExternalDocument) {
             if (viewModel.getAllScanRecordsByOwner(user1C.getUserGUID(), selectedOption.id)
                     .isEmpty() && !DocumentHeaders.getExternalDocumentSelected()
             ) {
@@ -123,7 +133,8 @@ class TableScanFragment : Fragment() {
 
         val adapter = TableScanAdapter(object : OnTableScanItemInteractionListener {
             override fun selectItem(item: TableScan) {
-                if (selectedOption.docType != DocType.TOIR_REQUIREMENT_INVOICE) {
+                //if (selectedOption.docType != DocType.TOIR_REQUIREMENT_INVOICE) {
+                if (!isExternalDocument) {
                     dlgHeadersAndOther = DialogScreen.getDialog(
                         requireContext(),
                         DialogScreen.IDD_QUESTION,
@@ -144,7 +155,7 @@ class TableScanFragment : Fragment() {
                     openDetailScanForChangeItem(item)
                 }
             }
-        })
+        }, isExternalDocument)
 
         binding.list.adapter = adapter
 
@@ -193,28 +204,41 @@ class TableScanFragment : Fragment() {
         }
 
         viewModel.data.observe(viewLifecycleOwner) {
-            if (selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE) {
+            //if (selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE) {
+            if (isExternalDocument) {
                 binding.completeAndSendBtn.isEnabled =
                     checkScanTableForExternalDocument(it) && itemList.isNotEmpty()
             } else {
                 binding.completeAndSendBtn.isEnabled = it.isNotEmpty()
             }
 
-            val list = it.map { record ->
-                record.copy(
-                    totalCount =
-                    viewModel.getTotalCount(
-                        ownerGuid = record.OwnerGuid,
-                        operationId = record.OperationId,
-                        itemGUID = record.ItemGUID,
-                        itemMeasureOfUnitGUID = record.ItemMeasureOfUnitGUID
-                    )
-                )
-            }
+//            val list = it.map { record ->
+//                record.copy(
+//                    totalCount =
+//                    viewModel.getTotalCount(
+//                        ownerGuid = record.OwnerGuid,
+//                        operationId = record.OperationId,
+//                        itemGUID = record.ItemGUID,
+//                        itemMeasureOfUnitGUID = record.ItemMeasureOfUnitGUID
+//                    )
+//                )
+//            }
 
 
-            adapter.submitList(list)
-            //adapter.submitList(it)
+            val groupList = it.groupBy {record ->
+                OrderByTableScan(
+                    operationId = record.OperationId,
+                    ownerGuid = record.OwnerGuid,
+                    uploaded = record.uploaded,
+                    divisionGuid = record.docHeaders?.getDivision()?.divisionGuid ?: "",
+                    warehouseGuid = record.docHeaders?.getWarehouse()?.warehouseGuid ?: "",
+                    itemGUID = record.ItemGUID,
+                    itemMeasureOfUnitGUID = record.ItemMeasureOfUnitGUID,
+                    docGuid = record.docGuid
+                )}.toList()
+
+            adapter.submitList(it)
+            //adapter.submitList(groupList)
             itemList = it
 
             if (itemList.isNotEmpty()) {
@@ -277,7 +301,8 @@ class TableScanFragment : Fragment() {
 
             BarcodeScannerReceiver.clearData()
 
-            if (selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE) {
+            //if (selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE) {
+            if (isExternalDocument) {
                 if (itemList.isNotEmpty()) {
                     if (itemList[0].docTitle == "") {
                         openExternalDocumentFragment()

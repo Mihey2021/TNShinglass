@@ -90,4 +90,7 @@
     <string name="nomenclature_substitution_text">В режиме редактирования записи подмена номенклатуры недопустима.</string>
     <string name="not_correct_cell">Ячейка в документе не совпадает с отсканированной или текущей</string>
     <string name="cell_text">Ячейка</string>
+    <string name="total_text">Всего</string>
+    <string name="selected_and_by_document_text">отобрано / в документе</string>
+    <string name="not_scanned_yet">[Еще не отсканирована]</string>
 </resources>
