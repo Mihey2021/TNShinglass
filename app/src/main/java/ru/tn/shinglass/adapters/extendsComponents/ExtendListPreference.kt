@@ -8,6 +8,7 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import ru.tn.shinglass.R
 import ru.tn.shinglass.adapters.DynamicListAdapter
+import ru.tn.shinglass.models.Cell
 import ru.tn.shinglass.models.Division
 import ru.tn.shinglass.models.Warehouse
 
@@ -40,6 +41,10 @@ class ExtendListPreference<T>(context: Context, attrs: AttributeSet? = null) :
                 summary = selectedData.divisionTitle
                 value = selectedData.divisionGuid
             }
+            if (selectedData is Cell) {
+                summary = selectedData.title
+                value = selectedData.guid
+            }
             alertDialog.cancel()
         }
 
@@ -64,6 +69,10 @@ class ExtendListPreference<T>(context: Context, attrs: AttributeSet? = null) :
     fun setDataListArray(dataList: ArrayList<T>) {
         this.dataList = dataList
         updateDataList()
+    }
+
+    fun clearAdapterData() {
+        adapter.clear()
     }
 
     fun getDataListArray() = this.dataList

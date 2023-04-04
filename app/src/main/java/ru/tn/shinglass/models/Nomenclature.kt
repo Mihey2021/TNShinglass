@@ -1,4 +1,4 @@
-package ru.tn.shinglass.entity
+package ru.tn.shinglass.models
 
 data class Nomenclature(
     val itemGuid: String,

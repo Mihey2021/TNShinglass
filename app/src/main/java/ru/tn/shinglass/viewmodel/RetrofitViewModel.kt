@@ -7,9 +7,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import ru.tn.shinglass.domain.repository.RetrofitRepository
-import ru.tn.shinglass.dto.models.CreatedDocumentDetails
 import ru.tn.shinglass.dto.repository.RetrofitRepositoryImpl
-import ru.tn.shinglass.entity.Nomenclature
+import ru.tn.shinglass.models.Nomenclature
 import ru.tn.shinglass.models.*
 import java.lang.Exception
 
@@ -27,9 +26,17 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
     val listDataWarehouses: LiveData<List<Warehouse>>
         get() = _listDataWarehouses
 
-    private val _cellData: MutableLiveData<Cells> = MutableLiveData(null)
-    val cellData: LiveData<Cells>
+    private val _cellData: MutableLiveData<Cell> = MutableLiveData(null)
+    val cellData: LiveData<Cell>
         get() = _cellData
+
+    private val _virtualCellData: MutableLiveData<Cell> = MutableLiveData(null)
+    val virtualCellData: LiveData<Cell>
+        get() = _virtualCellData
+
+    private val _cellListData: MutableLiveData<List<Cell>> = MutableLiveData(null)
+    val cellListData: LiveData<List<Cell>>
+        get() = _cellListData
 
     private val _itemData: MutableLiveData<Nomenclature> = MutableLiveData(null)
     val itemData: LiveData<Nomenclature>
@@ -105,6 +112,40 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
                 error = true,
                 errorMessage = e.message.toString(),
                 requestName = "getCellByBarcode"
+            )
+        }
+    }
+
+    fun getCellsList(warehouseGuid: String) {
+        try {
+            viewModelScope.launch {
+                _dataState.value = ModelState(loading = true)
+                _cellListData.value = repository.getCellsList(warehouseGuid)
+                _dataState.value = ModelState()
+            }
+
+        } catch (e: Exception) {
+            _dataState.value = ModelState(
+                error = true,
+                errorMessage = e.message.toString(),
+                requestName = "getCellsList"
+            )
+        }
+    }
+
+    fun getCellByGuid(cellGuid: String) {
+        try {
+            viewModelScope.launch {
+                _dataState.value = ModelState(loading = true)
+                _virtualCellData.value = repository.getCellByGuid(cellGuid)
+                _dataState.value = ModelState()
+            }
+
+        } catch (e: Exception) {
+            _dataState.value = ModelState(
+                error = true,
+                errorMessage = e.message.toString(),
+                requestName = "getCellByGuid"
             )
         }
     }

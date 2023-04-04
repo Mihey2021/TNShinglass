@@ -47,7 +47,11 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun getBasicPreferences() = repositoryPrefs.getBasicPreferences()
 
-    fun getPreferenceByKey(key: String) = repositoryPrefs.getPreferenceByKey(key)
+    fun setPreferenceLong(key: String, value: Long) = repositoryPrefs.setPreferenceLong(key, value)
+
+    fun <T> getPreferenceByKey(key: String, default: T, basicPrefs: Boolean = true) = repositoryPrefs.getPreferenceByKey(key, default, basicPrefs)
+
+    fun removePreference(key: String) = repositoryPrefs.removePreference(key)
 
     //fun getAllWarehouses() = repositoryWarehouses.getAllWarehouses()
     fun getAllWarehouses() {

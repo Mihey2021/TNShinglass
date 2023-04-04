@@ -7,15 +7,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import ru.tn.shinglass.db.room.AppDb
-import ru.tn.shinglass.domain.repository.DivisionRepository
-import ru.tn.shinglass.domain.repository.PhysicalPersonRepository
-import ru.tn.shinglass.domain.repository.TableScanRepository
-import ru.tn.shinglass.domain.repository.WarehousesRepository
+import ru.tn.shinglass.domain.repository.*
 import ru.tn.shinglass.dto.models.CreatedDocumentDetails
-import ru.tn.shinglass.dto.repository.DivisionRepositoryImpl
-import ru.tn.shinglass.dto.repository.PhysicalPersonRepositoryImpl
-import ru.tn.shinglass.dto.repository.TableScanRepositoryImpl
-import ru.tn.shinglass.dto.repository.WarehousesRepositoryRoomImpl
+import ru.tn.shinglass.dto.repository.*
 import ru.tn.shinglass.models.*
 import java.lang.Exception
 
@@ -36,6 +30,11 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
         PhysicalPersonRepositoryImpl(AppDb.getInstance(context = application).physicalPersonDao())
 
     val physicalPersons: LiveData<List<PhysicalPerson>> = repositoryPhysicalPerson.physicalPersons
+
+    private val repositoryEmployee: EmployeeRepository =
+        EmployeeRepositoryImpl(AppDb.getInstance(context = application).employeeDao())
+
+    val employees: LiveData<List<Employee>> = repositoryEmployee.employees
 
     private val _data: MutableLiveData<List<TableScan>> = MutableLiveData()
     val data: LiveData<List<TableScan>>
@@ -105,11 +104,11 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
         }
     }
 
-    fun createDocumentIn1C(scanRecords: List<TableScan>, docType: DocType) {
+    fun createDocumentIn1C(scanRecords: List<TableScan>, docType: DocType, virtualCellGuid: String = "") {
         viewModelScope.launch {
             try {
                 _dataState.value = ModelState(loading = true)
-                _docCreated.value = repositoryTableScan.createDocumentIn1C(scanRecords, docType)
+                _docCreated.value = repositoryTableScan.createDocumentIn1C(scanRecords, docType, virtualCellGuid)
                 _dataState.value = ModelState()
             } catch (e: Exception) {
                 _dataState.value = ModelState(
@@ -128,7 +127,7 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
     fun saveWarehouses(warehouses: List<Warehouse>) =
         repositoryWarehouses.saveWarehouses(warehouses)
 
-    fun refreshTableScan(ownerGuid: String, operationId: Long) {
+    fun reloadTableScan(ownerGuid: String, operationId: Long) {
         _data.value = repositoryTableScan.getAllScanRecordsByOwner(ownerGuid, operationId)
     }
 
@@ -137,18 +136,21 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
 
     fun deleteRecordById(record: TableScan) {
         repositoryTableScan.deleteRecordById(record.id)
-        refreshTableScan(record.OwnerGuid, record.OperationId)
+        reloadTableScan(record.OwnerGuid, record.OperationId)
     }
 
     fun deleteRecordsByOwnerAndOperationId(ownerGuid: String, operationId: Long) {
         repositoryTableScan.deleteRecordsByOwnerAndOperationId(ownerGuid, operationId)
-        refreshTableScan(ownerGuid, operationId)
+        reloadTableScan(ownerGuid, operationId)
     }
 
     fun getScanRecordById(id: Long) = repositoryTableScan.getScanRecordById(id)
 
     fun savePhysicalPerson(physicalPersons: List<PhysicalPerson>) =
         repositoryPhysicalPerson.savePhysicalPerson(physicalPersons)
+
+    fun saveEmployee(employees: List<Employee>) =
+        repositoryEmployee.saveEmployee(employees)
 
     fun updateRecordUpload(ownerGuid: String, operationId: Long) =
         repositoryTableScan.updateRecordUpload(ownerGuid, operationId)
@@ -164,6 +166,22 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
                     error = true,
                     errorMessage = e.message.toString(),
                     requestName = "getAllPhysicalPerson"
+                )
+            }
+        }
+    }
+
+    fun getAllEmployees() {
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                repositoryEmployee.getEmployeeList()
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getAllEmployees"
                 )
             }
         }
@@ -187,6 +205,9 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
 
     fun getPhysicalPersonByGuid(guid: String) =
         repositoryPhysicalPerson.getPhysicalPersonByGuid(guid)
+
+    fun getEmployeeByGuid(guid: String) =
+        repositoryEmployee.getEmployeeByGuid(guid)
 
     fun getDivisionByGuid(guid: String) =
         repositoryDivisions.getDivisionByGuid(guid)

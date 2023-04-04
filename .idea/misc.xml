@@ -9,6 +9,7 @@
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/drawable/ic_baseline_assignment_24.xml" value="0.167" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/drawable/ic_baseline_check_24.xml" value="0.1545" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/drawable/ic_baseline_exit_to_app_24.xml" value="0.1145" />
+        <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/drawable/ic_baseline_filter_center_focus_24.xml" value="0.174" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/drawable/ic_baseline_folder_open_24.xml" value="0.1145" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/drawable/ic_baseline_manage_search_24.xml" value="0.1145" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/drawable/ic_baseline_search_off_24.xml" value="0.167" />
@@ -19,6 +20,7 @@
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/drawable/ic_launcher_foreground.xml" value="0.14" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/drawable/ic_tn.xml" value="0.2985" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/drawable/my_border.xml" value="0.1" />
+        <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/drawable/my_gradient_line.xml" value="0.2375" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/drawable/table_header.xml" value="0.145" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/activity_app.xml" value="0.16666666666666666" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/activity_main.xml" value="0.20871327254305977" />
@@ -27,18 +29,21 @@
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/documents_headers_init_dialog.xml" value="0.25" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/dynamic_prefs_layout.xml" value="0.25" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/fragment_auth.xml" value="0.25" />
+        <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/fragment_barcode_parsing_tn.xml" value="0.2930253623188406" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/fragment_desktop.xml" value="0.25" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/fragment_detail_scan.xml" value="0.33" />
-        <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/fragment_document_select.xml" value="0.33" />
+        <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/fragment_document_select.xml" value="0.4820051413881748" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/fragment_login.xml" value="0.17753623188405798" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/fragment_main_menu.xml" value="0.16576086956521738" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/fragment_screen.xml" value="0.146403242147923" />
-        <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/fragment_table_scan.xml" value="0.25" />
+        <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/fragment_table_scan.xml" value="0.33" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/inventory_init_dialog.xml" value="0.33" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/list_item.xml" value="0.1393110435663627" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/options_group.xml" value="0.33" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/options_item.xml" value="0.33" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/progress_layout.xml" value="0.33" />
+        <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/table_scan_group_item_layout.xml" value="0.33" />
+        <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/table_scan_headers.xml" value="0.5" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/layout/table_scan_item_layout.xml" value="0.33" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/menu/desktop_menu.xml" value="0.33" />
         <entry key="..\:/My/Android/Projects/TNShinglass/app/src/main/res/xml/root_preferences.xml" value="0.33" />
@@ -50,5 +55,12 @@
   </component>
   <component name="ProjectType">
     <option name="id" value="Android" />
+  </component>
+  <component name="VisualizationToolProject">
+    <option name="state">
+      <ProjectState>
+        <option name="scale" value="0.33" />
+      </ProjectState>
+    </option>
   </component>
 </project>

@@ -5,51 +5,74 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import ru.tn.shinglass.R
 import ru.tn.shinglass.databinding.TableScanGroupItemLayoutBinding
 import ru.tn.shinglass.models.TableScan
 
 class TableScanAdapter(
     private val onTableScanItemInteractionListener: OnTableScanItemInteractionListener,
-    private val isExternalDocumentDetail: Boolean = false
+    private val isExternalDocument: Boolean = false,
+    private val isExternalDocumentDetail: Boolean = false,
+    private val emptyCellText: String = "",
 ) :
     ListAdapter<TableScan, TableScanAdapter.TableScanHolder>(TableScanDiffCallback()) {
 
     class TableScanHolder(
         private val binding: TableScanGroupItemLayoutBinding,
         private val onTableScanItemInteractionListener: OnTableScanItemInteractionListener,
-        private val isExternalDocument: Boolean
+        private val isExternalDocument: Boolean,
+        private val isExternalDocumentDetail: Boolean,
+        private val emptyCellText: String = "",
     ) :
         RecyclerView.ViewHolder(binding.root) {
+
+        val itemCard = binding.root
+
         @SuppressLint("SetTextI18n")
         fun bind(tableScan: TableScan) {
             binding.apply {
 
-                if (binding.titleTextView.height >= binding.itemCountTextView.height) {
-                    val lpTitle = binding.titleTextView.layoutParams
-                    lpTitle.height = ViewGroup.LayoutParams.WRAP_CONTENT
-                    binding.titleTextView.layoutParams = lpTitle
-                    val lpTotalCount = binding.itemCountTextView.layoutParams
-                    lpTotalCount.height = 0
-                    binding.itemCountTextView.layoutParams = lpTotalCount
+//                if (binding.titleTextView.height >= binding.itemCountTextView.height) {
+//                    val lpTitle = binding.titleTextView.layoutParams
+//                    lpTitle.height = ViewGroup.LayoutParams.WRAP_CONTENT
+//                    binding.titleTextView.layoutParams = lpTitle
+//                    val lpTotalCount = binding.itemCountTextView.layoutParams
+//                    lpTotalCount.height = 0
+//                    binding.itemCountTextView.layoutParams = lpTotalCount
+//                } else {
+//                    val lpTitle = binding.titleTextView.layoutParams
+//                    lpTitle.height = 0
+//                    binding.titleTextView.layoutParams = lpTitle
+//                    val lpTotalCount = binding.itemCountTextView.layoutParams
+//                    lpTotalCount.height = ViewGroup.LayoutParams.WRAP_CONTENT
+//                    binding.itemCountTextView.layoutParams = lpTotalCount
+//                }
+
+//                if (tableScan.totalCount > 0.0 || tableScan.Count == 0.0)
+                //if (tableScan.isGroup || tableScan.Count == 0.0)
+                if (tableScan.isGroup) {
+                    binding.totalCountGroup.visibility = View.VISIBLE
+                    binding.detailItemGroup.visibility = View.GONE
                 } else {
-                    val lpTitle = binding.titleTextView.layoutParams
-                    lpTitle.height = 0
-                    binding.titleTextView.layoutParams = lpTitle
-                    val lpTotalCount = binding.itemCountTextView.layoutParams
-                    lpTotalCount.height = ViewGroup.LayoutParams.WRAP_CONTENT
-                    binding.itemCountTextView.layoutParams = lpTotalCount
+                    binding.totalCountGroup.visibility = View.GONE
+                    binding.detailItemGroup.visibility = View.VISIBLE
                 }
 
-                if (tableScan.totalCount > 0.0 || tableScan.Count == 0.0)
-                    binding.totalCountGroup.visibility = View.VISIBLE
-                else
-                    binding.totalCountGroup.visibility = View.GONE
+                val transparent = "#80FFFFFF"
+                totalCountGroup.setBackgroundColor(Color.parseColor(transparent))
+                detailItemGroup.setBackgroundColor(Color.parseColor(transparent))
 
-                //Окрашивание применяем только для строк, где есть документ-основание (кол-во по документу-основанию больше 0)
-                if (tableScan.totalCount > 0.0 && tableScan.docCount > 0.0) {
+
+//                binding.detailItemGroup.visibility =
+//                    if (isExternalDocumentDetail ||) View.GONE else View.VISIBLE
+
+                //Окрашивание по принципу светофор применяем только для строк, где есть документ-основание (кол-во по документу-основанию больше 0)
+                //if (tableScan.totalCount > 0.0 && tableScan.docCount > 0.0) {
+                if (tableScan.docCount > 0.0) {
                     applyColorsToRecord(tableScan, binding)
                 }
 //                if (tableScan.Count > 0.0 && tableScan.docCount > 0.0) {
@@ -80,8 +103,12 @@ class TableScanAdapter(
                 countTextView.setTextColor(Color.BLACK)
                 unitOfMeasureTextView.text = tableScan.ItemMeasureOfUnitTitle
                 unitOfMeasureTextView.setTextColor(Color.BLACK)
+
                 if (tableScan.cellGuid != "")
                     cellTextView.text = tableScan.cellTitle
+                else
+                    cellTextView.text = emptyCellText
+
                 cellTextView.setTextColor(Color.BLACK)
 //                titleTextView.setOnClickListener {
 //                    onTableScanItemInteractionListener.selectItem(tableScan)
@@ -99,6 +126,7 @@ class TableScanAdapter(
             val colorGreen = "#ccffcc" //"#90EE90"
             val colorYellow = "#ffffcc" //"#F0E68C"
             val colorRed = "#ff9999" //"#FA8072"
+            val transparent = "#80FFFFFF"
             with(binding) {
                 if (record.totalCount == record.docCount) {
                     totalCountGroup.setBackgroundColor(Color.parseColor(colorGreen))
@@ -111,6 +139,10 @@ class TableScanAdapter(
                 if (record.totalCount > record.docCount) {
                     totalCountGroup.setBackgroundColor(Color.parseColor(colorRed))
                     detailItemGroup.setBackgroundColor(Color.parseColor(colorRed))
+                }
+                if (record.totalCount == 0.0) {
+                    totalCountGroup.setBackgroundColor(Color.parseColor(transparent))
+                    detailItemGroup.setBackgroundColor(Color.parseColor(transparent))
                 }
             }
         }
@@ -126,22 +158,39 @@ class TableScanAdapter(
         return TableScanHolder(
             binding,
             onTableScanItemInteractionListener,
-            isExternalDocumentDetail
+            isExternalDocument,
+            isExternalDocumentDetail,
+            emptyCellText,
         )
     }
 
     override fun onBindViewHolder(holder: TableScanHolder, position: Int) {
         val item = getItem(position)
+        println("LoggingDiff Bind: ${item.ItemTitle}, id: ${item.id}, position: $position")
         holder.bind(item)
+        holder.itemCard.animation = AnimationUtils.loadAnimation(holder.itemView.context, R.anim.recycler_table_scan)
     }
 
     class TableScanDiffCallback : DiffUtil.ItemCallback<TableScan>() {
         override fun areItemsTheSame(oldItem: TableScan, newItem: TableScan): Boolean {
+            println("LoggingDiff areItemsTheSame: ${newItem.ItemTitle}, id: ${newItem.id}, result: ${oldItem.id == newItem.id}")
             return oldItem.id == newItem.id
+
         }
 
         override fun areContentsTheSame(oldItem: TableScan, newItem: TableScan): Boolean {
-            return true //oldItem == newItem
+            println("LoggingDiff areContentsTheSame: ${newItem.ItemTitle}, id: ${newItem.id}, result: ${oldItem.isGroup == newItem.isGroup
+                    && oldItem.cellGuid == newItem.cellGuid
+                    && oldItem.Count == newItem.Count
+                    && oldItem.totalCount == newItem.totalCount
+                    && oldItem.refreshing == newItem.refreshing}")
+
+            return oldItem.isGroup == newItem.isGroup
+                && oldItem.cellGuid == newItem.cellGuid
+                && oldItem.Count == newItem.Count
+                && oldItem.totalCount == newItem.totalCount
+                && oldItem.refreshing == newItem.refreshing
+        //return true //oldItem == newItem
         }
 
         //Еще один способ не применять анимацию (убрать "мерцание")

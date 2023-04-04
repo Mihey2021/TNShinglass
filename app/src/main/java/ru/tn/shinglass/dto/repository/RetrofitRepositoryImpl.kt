@@ -6,7 +6,7 @@ import retrofit2.Response
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.domain.repository.RetrofitRepository
 import ru.tn.shinglass.dto.models.*
-import ru.tn.shinglass.entity.Nomenclature
+import ru.tn.shinglass.models.Nomenclature
 import ru.tn.shinglass.error.ApiError
 import ru.tn.shinglass.error.ApiServiceError
 import ru.tn.shinglass.models.*
@@ -31,7 +31,7 @@ class RetrofitRepositoryImpl : RetrofitRepository {
 //        apiService?.getCellByBarcode(barcode)?.enqueue(getCallbackHandler(callback))
 //    }
 
-    override suspend fun getCellByBarcode(barcode: String, warehouseGuid: String): Cells {
+    override suspend fun getCellByBarcode(barcode: String, warehouseGuid: String): Cell {
         try {
             if (apiService != null) {
                 val response =
@@ -58,7 +58,45 @@ class RetrofitRepositoryImpl : RetrofitRepository {
         apiService?.getItemByBarcode(barcode)?.enqueue(getCallbackHandler(callback))
     }
 
-//    override fun createInventoryOfGoods(
+    override suspend fun getCellsList(warehouseGuid: String): List<Cell> {
+        try {
+            if (apiService != null) {
+                val response =
+                    apiService.getCellsList(warehouseGuid)
+                if (!response.isSuccessful) {
+                    throw ApiError(response.code(), response.message())
+                }
+                return response.body() ?: throw ApiError(response.code(), response.message())
+            } else {
+                throw ApiServiceError("API service not ready")
+            }
+        } catch (e: IOException) {
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
+        }
+    }
+
+    override suspend fun getCellByGuid(cellGuid: String): Cell {
+        try {
+            if (apiService != null) {
+                val response =
+                    apiService.getCellByGuid(cellGuid)
+                if (!response.isSuccessful) {
+                    throw ApiError(response.code(), response.message())
+                }
+                return response.body() ?: throw ApiError(response.code(), response.message())
+            } else {
+                throw ApiServiceError("API service not ready")
+            }
+        } catch (e: IOException) {
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
+        }
+    }
+
+    //    override fun createInventoryOfGoods(
 //        scanRecords: List<TableScan>,
 //        callback: RetrofitRepository.Callback<CreatedDocumentDetails>
 //    ) {
@@ -73,7 +111,7 @@ class RetrofitRepositoryImpl : RetrofitRepository {
         return object : Callback<T> {
             override fun onResponse(call: Call<T>, response: Response<T>) {
                 if (!response.isSuccessful) {
-                    callback.onError(RuntimeException("Operation execution error. The server returned the code: ${response.code()}"))
+                    //callback.onError(RuntimeException("Operation execution error. The server returned the code: ${response.code()}"))
                     return
                 }
 

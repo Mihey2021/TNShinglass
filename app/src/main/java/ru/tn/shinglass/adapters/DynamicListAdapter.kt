@@ -64,6 +64,8 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
                is Warehouse -> itemListTextView?.text = item.warehouseTitle
                is Division -> itemListTextView?.text = item.divisionTitle
                is PhysicalPerson -> itemListTextView?.text = item.physicalPersonFio
+               is Employee -> itemListTextView?.text = item.employeeFio
+               is Cell -> itemListTextView?.text = item.title
                is Counterparty -> {
                    itemListTextView?.text = item.title
                    itemListDescriptionTextView.text = "ИНН: ${item.inn}. КПП: ${item.kpp}"
@@ -141,10 +143,14 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
             override fun convertResultToString(resultValue: Any?): CharSequence {
                 if (resultValue is PhysicalPerson)
                     return resultValue.physicalPersonFio
+                if (resultValue is Employee)
+                    return resultValue.employeeFio
                 if (resultValue is Warehouse)
                     return resultValue.warehouseTitle
                 if (resultValue is Division)
                     return resultValue.divisionTitle
+                if (resultValue is Cell)
+                    return resultValue.title
                 return if (resultValue is ExternalDocument)
                     "${resultValue.externalOrderDocumentTitle} ${resultValue.externalOrderNumber} " +
                             if(resultValue.externalOrderDate == 0L) "" else " от" + sdf.format(resultValue.externalOrderDate)

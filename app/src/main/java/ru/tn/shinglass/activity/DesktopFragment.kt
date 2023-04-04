@@ -9,11 +9,13 @@ import android.widget.SimpleExpandableListAdapter
 import androidx.core.os.bundleOf
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.OnOptionsInteractionListener
 import ru.tn.shinglass.adapters.OptionsMenuExpListAdapter
+import ru.tn.shinglass.auth.AppAuth
 import ru.tn.shinglass.databinding.FragmentDesktopBinding
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.models.Option
@@ -37,9 +39,8 @@ class DesktopFragment : Fragment() {
 
         binding = FragmentDesktopBinding.inflate(inflater, container, false)
 
-        val user1C = arguments?.getSerializable("userData") as User1C
-
-        setFragmentResult("requestUserData", bundleOf("userData" to user1C))
+//        val user1C = arguments?.getSerializable("userData") as User1C
+//        setFragmentResult("requestUserData", bundleOf("userData" to user1C))
 
         desktopViewModel.optionsData.observe(viewLifecycleOwner) { options ->
 
@@ -74,7 +75,7 @@ class DesktopFragment : Fragment() {
                 object : OnOptionsInteractionListener {
                     override fun selectOption(option: Option) {
                         val args = Bundle()
-                        args.putSerializable("userData", user1C)
+                        //args.putSerializable("userData", user1C)
                         args.putSerializable("selectedOption", option)
                         BarcodeScannerReceiver.clearData()
                         findNavController().navigate(
@@ -87,6 +88,10 @@ class DesktopFragment : Fragment() {
             binding.optionsMenuExpandableList.setAdapter(adapter)
 
         }
+
+//        AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) {authState ->
+//            if (authState.userGUID == "") findNavController().navigateUp()
+//        }
 
         return binding.root
     }

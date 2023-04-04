@@ -36,17 +36,17 @@ interface TableScanDao {
     ): Double
 
    // @Query("SELECT TableTotalCount.TotalCount AS totalCount, * FROM TableScanEntity " +
-    @Query("SELECT TableTotalCount.TotalCount AS totalCount, " +
+    @Query("SELECT TableTotalCount.TotalCount AS totalCount, TableTotalCount.isGroup AS isGroup, " +
             "id, OperationId, OperationTitle, cellTitle, cellGuid, ItemTitle, ItemGUID, ItemMeasureOfUnitTitle, " +
             "ItemMeasureOfUnitGUID, Count, docCount, docTitle, docGuid, coefficient, qualityGuid, qualityTitle, " +
             "WorkwearOrdinary, WorkwearDisposable, PurposeOfUseTitle, PurposeOfUse, " +
             "OwnerGuid, uploaded, docNameIn1C, incomingDate, incomingNumber , externalDocumentSelected, " +
             "warehouseTitle, warehouseGuid, warehouseDivisionGuid, warehouseResponsibleGuid, physicalPersonFio, " +
             "physicalPersonGuid, divisionTitle, divisionGuid, divisionDefaultWarehouseGuid, counterpartyTitle, " +
-            "counterpartyGuid, counterpartyInn, counterpartyKpp " +
+            "counterpartyGuid, counterpartyInn, counterpartyKpp, employeeGuid, employeeFio " +
             "FROM TableScanEntity " +
             "LEFT JOIN (" +
-            "SELECT id AS tc_id, SUM(Count) AS TotalCount FROM TableScanEntity " +
+            "SELECT id AS tc_id, SUM(Count) AS TotalCount, 1 AS isGroup FROM TableScanEntity " +
             "GROUP BY OperationId, OwnerGuid, uploaded, divisionGuid, warehouseGuid, ItemGUID, ItemMeasureOfUnitGUID, docGuid)  AS TableTotalCount ON TableScanEntity.id = TableTotalCount.tc_id " +
             "WHERE TableScanEntity.OwnerGuid =:ownerGuid AND TableScanEntity.OperationId =:operationId AND TableScanEntity.uploaded = 0 " +
             "ORDER BY ItemTitle ASC, id DESC")
@@ -63,6 +63,7 @@ interface TableScanDao {
                 "AND warehouseGuid =:warehouseGuid " +
                 "AND purposeOfUse =:purposeOfUse " +
                 "AND physicalPersonGUID =:physicalPersonGUID " +
+                "AND (employeeGuid = :employeeGUID OR employeeGuid is NULL ) " +
                 "AND uploaded = 0 "
     )
     fun getExistingRecordCountSum(
@@ -75,6 +76,7 @@ interface TableScanDao {
         purposeOfUse: String,
         physicalPersonGUID: String,
         ownerGuid: String,
+        employeeGUID: String,
     ): Double
 
     @Query(
@@ -89,6 +91,7 @@ interface TableScanDao {
                 "AND warehouseGuid =:warehouseGuid " +
                 "AND purposeOfUse =:purposeOfUse " +
                 "AND physicalPersonGUID =:physicalPersonGUID " +
+                "AND (employeeGuid = :employeeGUID OR employeeGuid is NULL ) " +
                 "AND uploaded = 0 "
     )
     fun getExistingRecord(
@@ -102,6 +105,7 @@ interface TableScanDao {
         purposeOfUse: String,
         physicalPersonGUID: String,
         ownerGuid: String,
+        employeeGUID: String
     ): TableScanEntity?
 
     @Query(
@@ -115,6 +119,7 @@ interface TableScanDao {
                 "AND warehouseGuid =:warehouseGuid " +
                 "AND purposeOfUse =:purposeOfUse " +
                 "AND physicalPersonGUID =:physicalPersonGUID " +
+                "AND (employeeGuid = :employeeGUID OR employeeGuid is NULL ) " +
                 "AND uploaded = 0 "
     )
     fun getExistingRecordWithoutCell(
@@ -127,6 +132,7 @@ interface TableScanDao {
         purposeOfUse: String,
         physicalPersonGUID: String,
         ownerGuid: String,
+        employeeGUID: String,
     ): TableScanEntity?
 
     @Query("DELETE FROM TableScanEntity WHERE id =:id AND uploaded = 0")

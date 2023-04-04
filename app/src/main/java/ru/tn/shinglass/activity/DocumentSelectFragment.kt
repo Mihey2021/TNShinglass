@@ -47,7 +47,7 @@ class DocumentSelectFragment : Fragment() {
         user1C = arguments?.getSerializable("userData") as User1C
         isNew = arguments?.getBoolean("isNew") ?: false
 
-        viewModelTableScan.refreshTableScan(user1C.getUserGUID(), selectedOption.id)
+        viewModelTableScan.reloadTableScan(user1C.getUserGUID(), selectedOption.id)
 
         //Заполним таблицу физ лиц, чтобы после выбора документа привязать ответственного склада
         viewModelTableScan.getAllPhysicalPerson()
@@ -58,13 +58,15 @@ class DocumentSelectFragment : Fragment() {
             override fun selectItem(item: TableScan) {
                 super.selectItem(item)
             }
-        }, isExternalDocumentDetail = true)
+        }, isExternalDocument = true, isExternalDocumentDetail = true, emptyCellText = getString(R.string.not_scanned_yet))
 
         with(binding) {
             backButton.setOnClickListener {
                 findNavController().navigateUp()
             }
             documentTextInputLayout.isEnabled = isNew
+            backButton.text = getString(R.string.back_text)
+
             list.adapter = adapter
             if (isNew) {
                 initAutoCompleteTextView(binding.documentTextView)
@@ -84,12 +86,14 @@ class DocumentSelectFragment : Fragment() {
                     )
 
                     if (documentItem.externalOrderDocumentGuid == "") {
+                        binding.backButton.text = getString(R.string.back_text)
                         groupTableItems.visibility = View.GONE
                         DocumentHeaders.setExternalDocumentSelected(true)
                         DocumentHeaders.setDivision(null)
                         DocumentHeaders.setWarehouse(null)
                         DocumentHeaders.setPhysicalPerson(null)
                     } else {
+                        binding.backButton.text = getString(R.string.select_text)
                         groupTableItems.visibility = View.VISIBLE
                         DocumentHeaders.setExternalDocumentSelected(true)
                         DocumentHeaders.setDivision(documentItem.externalOrderDivision)
@@ -126,7 +130,7 @@ class DocumentSelectFragment : Fragment() {
                                     ), false
                                 )
                             }
-                        viewModelTableScan.refreshTableScan(user1C.getUserGUID(), selectedOption.id)
+                        viewModelTableScan.reloadTableScan(user1C.getUserGUID(), selectedOption.id)
                     }
                 }
             } else {
@@ -185,7 +189,27 @@ class DocumentSelectFragment : Fragment() {
             }
 
             viewModelTableScan.data.observe(viewLifecycleOwner) {
-                adapter.submitList(it)
+                //adapter.submitList(it)
+                val groups = it.filter { groupRecord -> groupRecord.isGroup }
+
+//                val list = mutableListOf<TableScan>()
+//                groups.forEach { groupRecord ->
+//                    list.add(groupRecord)
+//                    list.addAll(it.filter { filterRecord ->
+//                        filterRecord.OperationId == groupRecord.OperationId
+//                                && filterRecord.OwnerGuid == groupRecord.OwnerGuid
+//                                && filterRecord.uploaded == groupRecord.uploaded
+//                                && filterRecord.docHeaders == groupRecord.docHeaders
+//                                && filterRecord.ItemGUID == groupRecord.ItemGUID
+//                                && filterRecord.ItemMeasureOfUnitGUID == groupRecord.ItemMeasureOfUnitGUID
+//                                && filterRecord.docGuid == groupRecord.docGuid
+//                                && !filterRecord.isGroup
+//                    }.map { listRecord -> listRecord.copy(totalCount = groupRecord.totalCount) }
+//                    )
+//                }
+
+//                adapter.submitList(list)
+                adapter.submitList(groups)
                 if (it.isNotEmpty()) {
                     binding.documentTextView.setText(it[0].docTitle)
                     binding.documentTextInputLayout.hint = getString(R.string.document_1c_text)

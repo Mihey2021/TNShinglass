@@ -13,7 +13,7 @@ interface TableScanRepository {
     fun deleteRecordById(id: Long)
     fun deleteRecordsByOwnerAndOperationId(ownerGuid: String, operationId: Long)
     fun updateRecordUpload(ownerGuid: String, operationId: Long)
-    suspend fun createDocumentIn1C(scanRecords: List<TableScan>, docType: DocType): CreatedDocumentDetails
+    suspend fun createDocumentIn1C(scanRecords: List<TableScan>, docType: DocType, virtualCellGuid: String): CreatedDocumentDetails
     suspend fun getCounterpartiesList(searchParam: String): List<Counterparty>
     suspend fun getInternalOrderList(): List<ExternalDocument>
     fun getExistingRecordCountSum(record: TableScan?): Double

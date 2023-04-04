@@ -13,6 +13,9 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.work.Constraints
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -22,13 +25,19 @@ import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.api.ApiUtils
+import ru.tn.shinglass.auth.AppAuth
+import ru.tn.shinglass.auth.AuthState
 import ru.tn.shinglass.data.api.ApiService
 import ru.tn.shinglass.databinding.FragmentAuthBinding
 import ru.tn.shinglass.databinding.DocumentsHeadersInitDialogBinding
+import ru.tn.shinglass.dto.models.PreferenceKeys
 import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
+import ru.tn.shinglass.workers.AuthManagerWorker
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
@@ -77,15 +86,10 @@ class AuthFragment : Fragment() {
                                 exitProcess(0)
                             }
                         })
-//                    DialogScreen.getDialogBuilder(
-//                        requireContext(),
-//                        DialogScreen.IDD_QUESTION,
-//                        resources.getString(R.string.question_exit_text)
-//                    )
-//                        .setPositiveButton(resources.getString(R.string.menu_exit)) { _, _ ->
-//                            exitProcess(0)
-//                        }
-//                        .show()
+                    true
+                }
+                R.id.menu_barcode_parsing_tn -> {
+                    findNavController().navigate(R.id.barcodeParsingTN)
                     true
                 }
                 else -> false
@@ -128,6 +132,7 @@ class AuthFragment : Fragment() {
                         )
                     }", Toast.LENGTH_LONG
                 )
+                BarcodeScannerReceiver.clearData()
                 return@observe
             }
 
@@ -138,6 +143,14 @@ class AuthFragment : Fragment() {
         }
 
         binding.btnEnter.isEnabled = (apiService != null)
+
+//        Рабочий стол без авторизации
+//        val args = Bundle()
+//        args.putSerializable("userData", User1C("000-000", "Test user", "000-000"))
+//        findNavController().navigate(
+//            R.id.action_authFragment_to_desktopFragment,
+//            args
+//        )
 
 
 //        val layoutInflater = LayoutInflater.from(requireContext())//.inflate(R.layout.inventory_init_dialog, null)
@@ -219,6 +232,7 @@ class AuthFragment : Fragment() {
         val user1C = apiService?.authorization(RequestLogin(login, password))
 
         user1C?.enqueue(object : Callback<User1C?> {
+            @RequiresApi(Build.VERSION_CODES.O)
             override fun onResponse(call: Call<User1C?>, response: Response<User1C?>) {
                 //binding.loadingProgressBar.visibility = View.GONE
                 progressDialog.dismiss()
@@ -227,13 +241,21 @@ class AuthFragment : Fragment() {
                     if (user1C != null) {
                         //serviceViewModel.setAuthData(user1C)
                         BarcodeScannerReceiver.clearData()
-                        val args = Bundle()
-                        args.putSerializable("userData", user1C)
-                        //findNavController().navigate(R.id.action_authFragment_to_desktopFragment, Bundle().apply { userData = user1C })
+//                        val args = Bundle()
+//                        args.putSerializable("userData", user1C)
+                        AppAuth.getInstance().setAuthData(user1C)
+                        settingsViewModel.setPreferenceLong(PreferenceKeys.SESSION_START.key, LocalDateTime.now().toEpochSecond(ZoneOffset.UTC))
+//                        val constraints = Constraints.Builder()
+//                            .setRequiresDeviceIdle(true)
+//                            .build()
+//                        val request = OneTimeWorkRequestBuilder<AuthManagerWorker>()
+//                            .setConstraints(constraints)
+//                            .build()
+                        //WorkManager.getInstance(requireContext()).enqueue(request)
                         AndroidUtils.hideKeyboard(requireView())
                         findNavController().navigate(
                             R.id.action_authFragment_to_desktopFragment,
-                            args
+                            //args
                         )
                     }
                 } else {
@@ -322,6 +344,7 @@ class AuthFragment : Fragment() {
 
     override fun onResume() {
         clearForm()
+        settingsViewModel.removePreference(PreferenceKeys.SESSION_START.key)
         super.onResume()
     }
 }

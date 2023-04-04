@@ -13,6 +13,7 @@ sealed class AppError(var code: String) : RuntimeException(code) {
     companion object {
         fun from(e: Throwable): AppError = when (e) {
             is ApiServiceError -> e
+            is UnsupportedDocumentType -> e
             is AppError -> e
             is SQLException -> DbError
             is IOException -> NetworkError
@@ -23,6 +24,7 @@ sealed class AppError(var code: String) : RuntimeException(code) {
 
 class ApiError(val status: Int, code: String) : AppError(code)
 class ApiServiceError(code: String) : AppError(code)
+class UnsupportedDocumentType(code: String) : AppError(code)
 object NetworkError : AppError("error_network")
 object DbError : AppError("error_db")
 object UnknownError : AppError("error_unknown")

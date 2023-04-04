@@ -46,6 +46,7 @@
     <string name="header_quantity">Кол-во</string>
     <string name="header_unit_of_measurement">Ед. изм</string>
     <string name="header_cell">Ячейка</string>
+    <string name="header_virtual_cell">Виртуальная ячейка</string>
     <string name="retry_loading">Повторить</string>
     <string name="error_loading">An error occurred when accessing the server. Repeat later.</string>
     <string name="settings_for_substituting_text">Настройки подстановки значений в документы</string>
@@ -82,8 +83,9 @@
     <string name="field_must_be_filled_text">*поле должно быть заполнено</string>
     <string name="select_document_text">Выберите документ</string>
     <string name="document_1c_text">Документ 1С</string>
-    <string name="back_text">&lt;&lt; Назад</string>
+    <string name="back_text">&lt; Назад</string>
     <string name="select_document">Выбрать документ</string>
+    <string name="select_text">Выбрать</string>
     <string name="show_selected_text">Показать выбранный</string>
     <string name="choose_another_text">Выбрать другой</string>
     <string name="changing_an_entry_text">Изменение записи</string>
@@ -93,4 +95,20 @@
     <string name="total_text">Всего</string>
     <string name="selected_and_by_document_text">отобрано / в документе</string>
     <string name="not_scanned_yet">[Еще не отсканирована]</string>
+    <string name="employee_title">Работник</string>
+    <string name="select_virtual_cell">Выберите виртуальную ячейку</string>
+    <string name="barcode_text">Штрихкод</string>
+    <string name="unique_number_id_text">Уникальный номер в пределах идентификатора компании</string>
+    <string name="date_of_manufacture">Дата производства (ГГММДД)</string>
+    <string name="batch_number">Номер партии</string>
+    <string name="in_batch_number">Номер в партии</string>
+    <string name="gs1_company_id">Идентификатор компании по стандарту GS1</string>
+    <string name="serial_number">Серийный номер</string>
+    <string name="expiry_date">Дата истечения срока годности (ГГММДД)</string>
+    <string name="product_code">Код товара</string>
+    <string name="type_text">Тип</string>
+    <string name="length_text">Длина</string>
+    <string name="barcode_parsing_tn">Разбор штрихкода TN</string>
+    <string name="scan_tn_barcode_text">[Отсканируйте штрихкод по стандарту TN]</string>
+    <string name="barcode_length_less_than_48_characters">Длина штрихкода меньше 48 символов</string>
 </resources>

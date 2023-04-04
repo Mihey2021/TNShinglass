@@ -7,7 +7,7 @@ import ru.tn.shinglass.dto.models.CreatedDocumentDetails
 import ru.tn.shinglass.dto.models.DocumentToUploaded
 import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C
-import ru.tn.shinglass.entity.Nomenclature
+import ru.tn.shinglass.models.Nomenclature
 import ru.tn.shinglass.models.*
 
 interface ApiService {
@@ -27,8 +27,11 @@ interface ApiService {
     @GET("getPhysicalPersonList")
     suspend fun getPhysicalPersonList(): Response<List<PhysicalPerson>>
 
+    @GET("getPhysicalPersonList")
+    suspend fun getEmployeeList(): Response<List<Employee>>
+
     @GET("getCellByBarcode")
-    suspend fun getCellByBarcode(@Query("barcode") barcode: String, @Query("warehouseGuid") warehouseGuid: String): Response<Cells>
+    suspend fun getCellByBarcode(@Query("barcode") barcode: String, @Query("warehouseGuid") warehouseGuid: String): Response<Cell>
 
     @GET("getItemByBarcode")
     fun getItemByBarcode(@Query("barcode") barcode: String): Call<Nomenclature>
@@ -42,6 +45,12 @@ interface ApiService {
     @GET("getInternalOrderList")
     suspend fun getInternalOrderList(): Response<List<ExternalDocument>>
 
+    @GET("getCellsList")
+    suspend fun getCellsList(@Query("warehouse") warehouseGuid: String): Response<List<Cell>>
+
+    @GET("getCellByGuid")
+    suspend fun getCellByGuid(@Query("guid") cellGuid: String): Response<Cell>
+
     @POST("createInventoryOfGoods")
     suspend fun createInventoryOfGoods(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>
 
@@ -50,4 +59,13 @@ interface ApiService {
 
     @POST("createRequirementInvoice")
     suspend fun createRequirementInvoice(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>
+
+    @POST("createTransferOfMaterialsIntoOperation")
+    suspend fun createTransferOfMaterialsIntoOperation(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>
+
+    @POST("createMovementOfGoods")
+    suspend fun createMovementOfGoods(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>
+
+    @POST("returnsRegistrationOfGoods")
+    suspend fun returnsRegistrationOfGoods(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>
 }

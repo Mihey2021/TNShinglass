@@ -1,20 +1,15 @@
 package ru.tn.shinglass.activity
 
 //import ru.tn.shinglass.adapters.ru.tn.shinglass.adapters.DynamicListAdapter
+import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.preference.ListPreference
-import androidx.preference.Preference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
@@ -22,9 +17,10 @@ import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.adapters.extendsComponents.ExtendListPreference
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.data.api.ApiService
+import ru.tn.shinglass.models.Cell
 import ru.tn.shinglass.models.Division
-import ru.tn.shinglass.models.PhysicalPerson
 import ru.tn.shinglass.models.Warehouse
+import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
 
 private var apiService: ApiService? = null
@@ -34,7 +30,9 @@ private var progressDialog: AlertDialog? = null
 class SettingsFragment : PreferenceFragmentCompat() {
 
     private val settingsViewModel: SettingsViewModel by viewModels()
+    private val retrofitViewModel: RetrofitViewModel by viewModels()
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
 
@@ -57,7 +55,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         divisionListPreference.key = divisionKey
         divisionListPreference.title = getString(R.string.division_title)
         val savedDivision = settingsViewModel.getDivisionByGuid(
-            settingsViewModel.getPreferenceByKey(divisionKey) ?: ""
+            settingsViewModel.getPreferenceByKey<String>(divisionKey, "")  ?: ""
         )
 
         divisionListPreference.summary =
@@ -80,9 +78,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
         val warehouseKey = "warehouse_guid"
         warehouseListPreference.key = warehouseKey
         warehouseListPreference.title = getString(R.string.warehouse_title)
-        warehouseListPreference
+        //warehouseListPreference
         val savedWarehouse = settingsViewModel.getWarehouseByGuid(
-            settingsViewModel.getPreferenceByKey(warehouseKey) ?: ""
+            settingsViewModel.getPreferenceByKey<String>(warehouseKey, "") ?: ""
         )
 
         warehouseListPreference.summary =
@@ -98,17 +96,44 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         categoryDocSettings.addPreference(warehouseListPreference)
 
+        val virtualCellsListPreference = ExtendListPreference<Cell>(requireContext())
+        val virtualCellsAdapter = getVirtualCellAdapter()
+
+        virtualCellsListPreference.setAdapter(virtualCellsAdapter)
+        val virtualCellKey = "virtual_cell_guid"
+        virtualCellsListPreference.key = virtualCellKey
+        virtualCellsListPreference.title = getString(R.string.header_virtual_cell)
+        //virtualCellsListPreference
+        //val savedCell =
+        retrofitViewModel.getCellByGuid(
+            settingsViewModel.getPreferenceByKey<String>(virtualCellKey, "") ?: ""
+        )
+
+
+        virtualCellsListPreference.summary = getString(R.string.select_virtual_cell)
+        virtualCellsListPreference.icon =
+            resources.getDrawable(R.drawable.ic_baseline_virtual_cell_24, requireContext().theme)
+        virtualCellsListPreference.setDialogTitle(getString(R.string.select_virtual_cell))
+
+        //Заполним список складов сразу при открытии
+        if (virtualCellsListPreference.getDataListArray().isEmpty()) {
+            retrofitViewModel.getCellsList(savedWarehouse?.warehouseGuid ?: "")
+        }
+
+        categoryDocSettings.addPreference(virtualCellsListPreference)
+
         listener =
             SharedPreferences.OnSharedPreferenceChangeListener { sharedPrefs, key ->
                 when (key) {
                     "warehouse_guid" -> {
+                        val warehouseGuidPrefSaved = sharedPrefs.getString(
+                            "warehouse_guid",
+                            ""
+                        ).toString()
                         if (sharedPrefs.getString("division_guid", "").toString() == "") {
                             val division = settingsViewModel.getDivisionByGuid(
                                 settingsViewModel.getWarehouseByGuid(
-                                    sharedPrefs.getString(
-                                        "warehouse_guid",
-                                        ""
-                                    ).toString()
+                                    warehouseGuidPrefSaved
                                 )?.warehouseDivisionGuid ?: ""
                             )
                             if (division != null) {
@@ -116,6 +141,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
                                 divisionListPreference.summary = division.divisionTitle
                             }
                         }
+                        virtualCellsListPreference.value = ""
+                        virtualCellsListPreference.summary = getString(R.string.select_virtual_cell)
+                        retrofitViewModel.getCellsList(warehouseGuidPrefSaved)
                     }
                     "division_guid" -> {
                         if (sharedPrefs.getString("warehouse_guid", "").toString() == "") {
@@ -131,13 +159,38 @@ class SettingsFragment : PreferenceFragmentCompat() {
                             if (warehouse != null) {
                                 warehouseListPreference.value = warehouse.warehouseGuid
                                 warehouseListPreference.summary = warehouse.warehouseTitle
+                                virtualCellsListPreference.value = ""
+                                virtualCellsListPreference.summary =
+                                    getString(R.string.select_virtual_cell)
+                                retrofitViewModel.getCellsList(warehouse.warehouseGuid)
                             }
+
                         }
                     }
+//                    "virtual_cell_guid" -> {
+//                        if (sharedPrefs.getString("virtual_cell_guid", "").toString() == "") {
+//                            val virtualCell = retrofitViewModel.getCellByGuid(
+//                                settingsViewModel.getWarehouseByGuid(
+//                                    sharedPrefs.getString(
+//                                        "warehouse_guid",
+//                                        ""
+//                                    ).toString()
+//                                )?.warehouseDivisionGuid ?: ""
+//                            )
+//                            if (virtualCell != null) {
+//                                divisionListPreference.value = virtualCell.g
+//                                divisionListPreference.summary = division.divisionTitle
+//                            }
+//                        }
+//                    }
                 }
             }
 
         preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    private fun getVirtualCellAdapter(): DynamicListAdapter<Cell> {
+        return DynamicListAdapter<Cell>(requireContext(), R.layout.dynamic_prefs_layout)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -147,6 +200,9 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         val divisionListPreference =
             preferenceManager.preferenceScreen.findPreference<ListPreference>("division_guid") as ExtendListPreference<Division>
+
+        val virtualCellsListPreference =
+            preferenceManager.preferenceScreen.findPreference<ListPreference>("virtual_cell_guid") as ExtendListPreference<Cell>
 
 
         settingsViewModel.warehousesList.observe(viewLifecycleOwner) {
@@ -200,6 +256,31 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         }
                     }
                 )
+        }
+
+        retrofitViewModel.cellListData.observe(viewLifecycleOwner) {
+            if (it == null) return@observe
+            //if (it.isEmpty()) return@observe
+
+            val dataList = ArrayList<Cell>()
+            dataList.add(Cell(getString(R.string.not_chosen_text), ""))
+            it.forEach { cell ->
+                dataList.add(cell)
+            }
+
+            //if (virtualCellsListPreference.getDataListArray().isEmpty())
+            virtualCellsListPreference.clearAdapterData()
+            virtualCellsListPreference.setDataListArray(dataList)
+        }
+
+        retrofitViewModel.virtualCellData.observe(viewLifecycleOwner) {
+            var cell = getString(R.string.select_virtual_cell)
+
+            if (it != null)
+                if (it.title != "")
+                    cell = it.title
+
+            virtualCellsListPreference.summary = cell
         }
     }
 

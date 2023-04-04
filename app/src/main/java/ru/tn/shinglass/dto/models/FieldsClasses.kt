@@ -7,6 +7,7 @@ import ru.tn.shinglass.R
 enum class HeaderFields(val viewId: Int) {
     WAREHOUSE(R.id.warehouseTextInputLayout),
     PHYSICAL_PERSON(R.id.physicalPersonTextInputLayout),
+    EMPLOYEE(R.id.employeeTextInputLayout),
     DIVISION(R.id.divisionTextInputLayout),
     COUNTERPARTY(R.id.counterpartyTextInputLayout),
     INCOMING_DATE(R.id.incomingDateTextInputLayout),

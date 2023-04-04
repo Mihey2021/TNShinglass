@@ -16,12 +16,22 @@
             android:id="@+id/totalCountGroup"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:constraint_referenced_ids="titleTextView, itemCountTextView, itemSeparator"
+            android:visibility="visible"
+            app:constraint_referenced_ids="titleTextView, itemCountTextView, itemTitleSeparator, itemSeparator"
             app:layout_constraintBottom_toBottomOf="@id/titleTextView"
             app:layout_constraintEnd_toEndOf="@id/itemCountTextView"
             app:layout_constraintStart_toStartOf="@id/titleTextView"
             app:layout_constraintTop_toTopOf="parent" />
 
+        <View
+            android:id="@+id/itemTitleSeparator"
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:background="@drawable/my_gradient_line"
+            android:visibility="visible"
+            app:layout_constraintBottom_toTopOf="@id/titleTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/titleTextView"/>
         <TextView
             android:id="@+id/titleTextView"
             android:layout_width="0dp"
@@ -34,7 +44,7 @@
             android:textSize="14sp"
             android:textStyle="bold"
             android:typeface="monospace"
-            app:layout_constraintBottom_toTopOf="@id/itemSeparator"
+            app:layout_constraintBottom_toTopOf="@id/cellTextView"
             app:layout_constraintEnd_toStartOf="@id/itemCountTextView"
             app:layout_constraintHeight_min="32dp"
             app:layout_constraintHorizontal_weight="0.7"
@@ -59,27 +69,31 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="0.0 / 10.0" />
 
-        <View
-            android:id="@+id/itemSeparator"
-            android:layout_width="wrap_content"
-            android:layout_height="1dp"
-            android:background="@drawable/my_gradient_line"
-            android:visibility="visible"
-            app:layout_constraintBottom_toTopOf="@id/cellTextView"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@id/cellTextView"
-            app:layout_constraintTop_toBottomOf="@id/titleTextView" />
+<!--        <View-->
+<!--            android:id="@+id/itemSeparator"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="1dp"-->
+<!--            android:background="@drawable/my_gradient_line"-->
+<!--            android:visibility="gone"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/cellTextView"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="@id/cellTextView"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/titleTextView" />-->
 
         <androidx.constraintlayout.widget.Group
             android:id="@+id/detailItemGroup"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:visibility="visible"
             app:constraint_referenced_ids="cellTextView, countTextView, unitOfMeasureTextView"
-            app:layout_constraintBottom_toBottomOf="@id/cellTextView"
             app:layout_constraintBottom_toTopOf="@id/itemSeparatorEndRec"
             app:layout_constraintEnd_toEndOf="@id/unitOfMeasureTextView"
             app:layout_constraintStart_toStartOf="@id/cellTextView"
-            app:layout_constraintTop_toTopOf="@id/cellTextView" />
+            app:layout_constraintTop_toTopOf="@id/cellTextView"
+            tools:layout_constraintBottom_toBottomOf="@id/cellTextView"
+            tools:layout_constraintEnd_toEndOf="parent"
+            tools:layout_constraintStart_toStartOf="parent"
+            tools:layout_constraintTop_toTopOf="@id/cellTextView" />
 
         <TextView
             android:id="@+id/cellTextView"
@@ -127,7 +141,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:fontFamily="sans-serif-light"
-            android:gravity="right|center_vertical|end"
+            android:gravity="start|left|center_vertical"
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
             android:textColor="@color/black"

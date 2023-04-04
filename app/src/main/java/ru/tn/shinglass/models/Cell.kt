@@ -1,6 +1,6 @@
 package ru.tn.shinglass.models
 
-data class Cells (
+data class Cell (
     val title: String,
     val guid: String,
 )

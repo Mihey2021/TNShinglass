@@ -14,6 +14,7 @@ package="ru.tn.shinglass">
     android:roundIcon="@mipmap/ic_launcher_round"
     android:supportsRtl="true"
     android:theme="@style/Theme.TNShinglass"
+    android:name=".application.ShinglassApplication"
     tools:targetApi="31">
     <activity
         android:name=".activity.AppActivity"

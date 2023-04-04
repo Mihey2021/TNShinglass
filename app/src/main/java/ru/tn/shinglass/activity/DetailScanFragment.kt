@@ -1,21 +1,17 @@
 package ru.tn.shinglass.activity
 
+import android.annotation.SuppressLint
 import android.graphics.Color
-import android.graphics.PorterDuff
-import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
+import android.text.SpannableStringBuilder
 import android.text.TextWatcher
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.MotionEvent
-import android.view.View
-import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.textfield.TextInputLayout
@@ -24,6 +20,7 @@ import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.DynamicListAdapter
+import ru.tn.shinglass.auth.AppAuth
 import ru.tn.shinglass.databinding.FragmentDetailScanBinding
 import ru.tn.shinglass.dto.models.DetailScanFields
 import ru.tn.shinglass.dto.models.DocumentHeaders
@@ -47,19 +44,30 @@ class DetailScanFragment : Fragment() {
     private val tableScanViewModel: TableScanFragmentViewModel by viewModels()
     private var forceOverwrite = false
     private var tableFromExternalDocument: List<TableScan> = listOf()
-
+    private var fragmentBinding: FragmentDetailScanBinding? = null
 
     private var dialog: AlertDialog? = null
     private lateinit var currentRecord: TableScan
 
+    lateinit var user1C: User1C
+
+    @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val binding = FragmentDetailScanBinding.inflate(inflater, container, false)
+        fragmentBinding = binding
 
         val selectedOption = arguments?.getSerializable("selectedOption") as Option
-        val user1C = arguments?.getSerializable("userData") as User1C
+        //val user1C = arguments?.getSerializable("userData") as User1C
+        user1C = AppAuth.getInstance().getAuthData()
+
+        AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) {authState ->
+            user1C = authState.user1C
+            if (user1C.getUserGUID() == "") findNavController().navigate(R.id.authFragment)
+        }
+
         var barcode = arguments?.getString("barcode")
         var barcodeType = arguments?.getString("barcodeType")
         var editRecord = arguments?.getSerializable("editRecord") as TableScan
@@ -110,7 +118,12 @@ class DetailScanFragment : Fragment() {
                     } catch (e: Exception) {
                         0.0
                     }
-                    setCountTextColor(changedCount, tempScanRecord.docCount, countEditText)
+                    setCountTextColor(
+                        changedCount,
+                        tempScanRecord.docCount,
+                        tempScanRecord.totalCount,
+                        countEditText
+                    )
                 }
 
                 override fun afterTextChanged(editText: Editable?) {
@@ -123,14 +136,19 @@ class DetailScanFragment : Fragment() {
                 } catch (e: Exception) {
                     0.0
                 }
-                setCountTextColor(currentCount, tempScanRecord.docCount, countEditText)
+                setCountTextColor(
+                    currentCount,
+                    tempScanRecord.docCount,
+                    tempScanRecord.totalCount,
+                    countEditText
+                )
             }
 
             //countEditText.contentDescription = "шт."
             var hint = "<?>"
             if (editRecord.ItemMeasureOfUnitTitle.isNotBlank()) {
                 hint = if (tempScanRecord.docGuid != "")
-                    "Требуется: ${tempScanRecord.docCount}${editRecord.ItemMeasureOfUnitTitle}"
+                    "Потребность: ${tempScanRecord.docCount - tempScanRecord.totalCount} ${editRecord.ItemMeasureOfUnitTitle}"
                 else
                     editRecord.ItemMeasureOfUnitTitle
             }
@@ -165,19 +183,23 @@ class DetailScanFragment : Fragment() {
             ownerTextView.setText("${getString(R.string.owner_title)} ${user1C.getUser1C()}")
             tempScanRecord.OwnerGuid = user1C.getUserGUID()
 
-            buttonApply.setOnTouchListener { _, motionEvent ->
-                when (motionEvent.action) {
-                    MotionEvent.ACTION_DOWN -> {
-                        сheckFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
-                        false
-                    }
-                    else -> false
-                }
-            }
+//            buttonApply.setOnTouchListener { _, motionEvent ->
+//                when (motionEvent.action) {
+//                    MotionEvent.ACTION_DOWN -> {
+//                        сheckFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
+//                        false
+//                    }
+//                    else -> false
+//                }
+//            }
+//
+//            buttonApply.setOnClickListener {
+//                //сheckFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
+//                binding.buttonApply.clearFocus()
+//            }
 
             buttonApply.setOnClickListener {
-                //сheckFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
-                binding.buttonApply.clearFocus()
+                checkFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
             }
         }
 
@@ -201,7 +223,7 @@ class DetailScanFragment : Fragment() {
             if (dataScanBarcode == "") return@observe
 
             dialog?.show()
-            if (dataScanBarcodeType == "Code 128") {
+            if (dataScanBarcodeType == "Code 128" || dataScanBarcodeType == "QR Code") {
                 retrofitViewModel.getCellByBarcode(
                     dataScanBarcode,
                     editRecord.docHeaders.getWarehouse()?.warehouseGuid ?: ""
@@ -265,7 +287,7 @@ class DetailScanFragment : Fragment() {
             }
             //Если собираем по внешнему документу
             if (tableFromExternalDocument.isNotEmpty()) {
-                //Если отбираем на основании документа из 1С и это редактирование записи, проверяем что отсканировали номенклатуру позиции, которую сканируем - они должны совпадать, иначе попытка подмены - отменяем.
+                //Если отбираем на основании документа из 1С и это редактирование записи, проверяем что отсканировали номенклатуру позиции, которую изменяем - они должны совпадать, иначе попытка подмены - отменяем.
                 if (tempScanRecord.ItemGUID != "") {
                     if (it.itemGuid != tempScanRecord.ItemGUID) {
                         dialog = DialogScreen.getDialog(
@@ -286,47 +308,47 @@ class DetailScanFragment : Fragment() {
                 if (filteredItems.isNotEmpty()) {
                     //Нашлась 1 позиция
                     //if (filteredItems.size == 1) {
-                    if (filteredItems.size > 0 ) {
+                    if (filteredItems.size > 0) {
                         var selectedItem = filteredItems[0]
                         //Отфильтруем по ячейке в документе = отсканированной ячейке
                         val filteredCellItems =
                             filteredItems.filter { filteredItem -> filteredItem.cellGuid == tempScanRecord.cellGuid }
-                        if(filteredCellItems.isNotEmpty()) {
+                        if (filteredCellItems.isNotEmpty()) {
                             //Позиция в данной ячейке есть в документе (должна быть всегда 1, т.к. фильтры по Номенклатуре, Ед. изм. и Ячейке)
                             selectedItem = filteredCellItems[0]
 //                            // Если ячейка уже задана в таблице документа, проверим что она совпадает с отсканированной
 //                        val selectedItem = filteredItems[0]
 //                        if (selectedItem.cellGuid != "") {
 //                            if (selectedItem.cellGuid == tempScanRecord.cellGuid) {
+                            tempScanRecord =
+                                TempScanRecord(selectedItem) //Ставим текущую рабочую запись равной найденной в таблице документа
+                            newCount =
+                                if (newCount == 1.0) selectedItem.Count + 1.0 else newCount
+                        } else {
+                            if (selectedItem.cellGuid != "") {
+                                //Позиция есть в документе, но отсканирована другая ячейка - это нормально, нужно добавить новую строку с отсканированной ячейкой
+                                val oldScanRecord = tempScanRecord
                                 tempScanRecord =
-                                    TempScanRecord(selectedItem) //Ставим текущую рабочую запись равной найденной в таблице документа
-                                newCount =
-                                    if (newCount == 1.0) selectedItem.Count + 1.0 else newCount
-                            } else {
-                                if (selectedItem.cellGuid != "") {
-                                    //Позиция есть в документе, но отсканирована другая ячейка - это нормально, нужно добавить новую строку с отсканированной ячейкой
-                                    val oldScanRecord = tempScanRecord
-                                    tempScanRecord =
-                                        TempScanRecord(
-                                            selectedItem.copy(
-                                                id = 0L,
-                                                Count = newCount,
-                                                cellGuid = oldScanRecord.cellGuid,
-                                                cellTitle = oldScanRecord.cellTitle
-                                            )
-                                        )
-                                } else {
-                                    //Ячейка еще не указана в таблице документа, прописываем отсканированную.
-                                    val cellGuid = tempScanRecord.cellGuid
-                                    val cellTitle = tempScanRecord.cellTitle
-                                    tempScanRecord = TempScanRecord(
+                                    TempScanRecord(
                                         selectedItem.copy(
-                                            cellGuid = cellGuid,
-                                            cellTitle = cellTitle,
+                                            id = 0L,
+                                            Count = newCount,
+                                            cellGuid = oldScanRecord.cellGuid,
+                                            cellTitle = oldScanRecord.cellTitle
                                         )
                                     )
-                                }
-                                //Номенклатура есть, но ячейка в документе не совпадает с отсканированной
+                            } else {
+                                //Ячейка еще не указана в таблице документа, прописываем отсканированную.
+                                val cellGuid = tempScanRecord.cellGuid
+                                val cellTitle = tempScanRecord.cellTitle
+                                tempScanRecord = TempScanRecord(
+                                    selectedItem.copy(
+                                        cellGuid = cellGuid,
+                                        cellTitle = cellTitle,
+                                    )
+                                )
+                            }
+                            //Номенклатура есть, но ячейка в документе не совпадает с отсканированной
 //                                dialog = DialogScreen.getDialog(
 //                                    requireContext(),
 //                                    DialogScreen.IDD_ERROR_SINGLE_BUTTON,
@@ -335,10 +357,15 @@ class DetailScanFragment : Fragment() {
 //                                    positiveButtonTitle = "Ok"
 //                                )
 //                                return@observe
-                            }
+                        }
                         //binding.countEditText.setText(selectedItem.Count.toString())
 
-                        setCountTextColor(newCount, selectedItem.docCount, binding.countEditText)
+                        setCountTextColor(
+                            newCount,
+                            selectedItem.docCount,
+                            selectedItem.totalCount,
+                            binding.countEditText
+                        )
 
                     }
                     forceOverwrite = tempScanRecord.id != 0L
@@ -357,7 +384,7 @@ class DetailScanFragment : Fragment() {
             binding.itemTextView.setText(it.itemTitle)
             if (tempScanRecord.docCount != 0.0)
                 binding.countTextInputLayout.hint =
-                    "Требуется: ${tempScanRecord.docCount}${it.unitOfMeasurementTitle}"
+                    "Потребность: ${tempScanRecord.docCount - tempScanRecord.totalCount} ${it.unitOfMeasurementTitle}"
             else
                 binding.countTextInputLayout.hint = it.unitOfMeasurementTitle
 
@@ -462,23 +489,67 @@ class DetailScanFragment : Fragment() {
         return binding.root
     }
 
-    private fun setCountTextColor(newCount: Double, docCount: Double, countEditText: EditText) {
+    fun keyDownPressed(keyCode: Int, event: KeyEvent?) {
+        //Toast.makeText(requireContext(), "Нажата ${keyCode}. Event: ${event?.displayLabel}",Toast.LENGTH_LONG).show()
+        var textCount: Editable =
+            fragmentBinding?.countEditText?.text ?: SpannableStringBuilder("0")
+        if (event != null) {
+            if (event.keyCode == FunctionKeyCodes.M3_M1.keyCode || event.keyCode == FunctionKeyCodes.CIPHERLAB_P1.keyCode) {
+                findNavController().navigateUp()
+            }
+            if (event.keyCode == FunctionKeyCodes.M3_M2.keyCode || event.keyCode == FunctionKeyCodes.CIPHERLAB_P2.keyCode) {
+                fragmentBinding?.buttonApply?.callOnClick()
+            }
+            if (event.keyCode == KeyEvent.KEYCODE_DEL) fragmentBinding?.countEditText?.text?.clear()
+            if (event.keyCode == KeyEvent.KEYCODE_PERIOD) {
+                if (!textCount.contains(".")) {
+                    if ((fragmentBinding?.countEditText?.text?.length ?: -1) > 0) {
+                        fragmentBinding?.countEditText?.text =
+                            textCount.append(event.displayLabel.toString())
+                    }
+                }
+            }
+            val digitKey = event.number.digitToIntOrNull() ?: -1
+            if (digitKey in 0..9) {
+                //if (textCount.contains(".")) textCount.clear()
+                fragmentBinding?.countEditText?.text =
+                    textCount.append(event.displayLabel.toString())
+            }
+        }
+    }
 
-        if (newCount > docCount) {
+    enum class FunctionKeyCodes(val keyCode: Int) {
+        M3_M1(314),
+        M3_M2(315),
+        CIPHERLAB_P1(539),
+        CIPHERLAB_P2(540),
+    }
+
+    private fun setCountTextColor(
+        newCount: Double,
+        docCount: Double,
+        totalCount: Double,
+        countEditText: EditText
+    ) {
+
+        val need = docCount - totalCount
+
+        if (newCount > need) {
             countEditText.setTextColor(Color.parseColor("#FF0000"))
         }
 
-        if (newCount < docCount) {
+        if (newCount < need) {
             countEditText.setTextColor(Color.parseColor("#FF8C00"))
         }
 
-        if (newCount == docCount) {
+        if (newCount == need) {
             countEditText.setTextColor(Color.parseColor("#006400"))
         }
 
     }
 
-    private fun сheckFillingAndSave(
+
+    private fun checkFillingAndSave(
         tempScanRecord: TempScanRecord,
         user1C: User1C,
         selectedOption: Option,
@@ -510,10 +581,12 @@ class DetailScanFragment : Fragment() {
                 }
             }
             if (it == DetailScanFields.COUNT) {
-                if (binding.countEditText.text.toString().isBlank())
+                if (binding.countEditText.text.toString().isBlank()) {
                     tempScanRecord.Count = 0.0
-                else
-                    tempScanRecord.Count = binding.countEditText.text.toString().toDouble()
+                } else {
+                    if ((binding.countEditText.text?.length ?: -1) > 0)
+                        tempScanRecord.Count = binding.countEditText.text.toString().toDouble()
+                }
                 fieldValueIsNotCorrect =
                     binding.countEditText.text.isNullOrBlank() || tempScanRecord.Count == 0.0
                 isError = (fieldValueIsNotCorrect || isError)
@@ -549,7 +622,7 @@ class DetailScanFragment : Fragment() {
 
         viewModel.saveScanRecord(tempScanRecord.toScanRecord(), forceOverwrite)
         val args = Bundle()
-        args.putSerializable("userData", user1C)
+        //args.putSerializable("userData", user1C)
         args.putSerializable("selectedOption", selectedOption)
         //findNavController().navigate(R.id.action_detailScanFragment_to_tableScanFragment, args)
         BarcodeScannerReceiver.clearData()
@@ -605,6 +678,7 @@ class TempScanRecord {
     var ItemMeasureOfUnitTitle: String = ""
     var ItemMeasureOfUnitGUID: String = ""
     var Count: Double = 0.0
+    var totalCount: Double = 0.0
     var docCount: Double = 0.0
     var docTitle: String = ""
     var docGuid: String = ""
@@ -636,6 +710,7 @@ class TempScanRecord {
         ItemMeasureOfUnitTitle = scanRecord.ItemMeasureOfUnitTitle
         ItemMeasureOfUnitGUID = scanRecord.ItemMeasureOfUnitGUID
         Count = scanRecord.Count
+        totalCount = scanRecord.totalCount
         docCount = scanRecord.docCount
         docTitle = scanRecord.docTitle
         docGuid = scanRecord.docGuid
@@ -667,6 +742,7 @@ class TempScanRecord {
             ItemMeasureOfUnitTitle = ItemMeasureOfUnitTitle,
             ItemMeasureOfUnitGUID = ItemMeasureOfUnitGUID,
             Count = Count,
+            totalCount = totalCount,
             docCount = docCount,
             docTitle = docTitle,
             docGuid = docGuid,

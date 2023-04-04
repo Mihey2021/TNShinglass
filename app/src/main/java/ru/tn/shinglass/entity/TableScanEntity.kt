@@ -20,6 +20,7 @@ data class TableScanEntity(
     val ItemMeasureOfUnitGUID: String,
     val Count: Double,
     val totalCount: Double,
+    val isGroup: Boolean,
     val docCount: Double,
     val docTitle: String,
     val docGuid: String,
@@ -54,6 +55,7 @@ data class TableScanEntity(
             ItemMeasureOfUnitGUID = ItemMeasureOfUnitGUID,
             Count = Count,
             totalCount = totalCount,
+            isGroup = isGroup,
             docCount = docCount,
             docTitle = docTitle,
             docGuid = docGuid,
@@ -69,7 +71,7 @@ data class TableScanEntity(
             PurposeOfUse = PurposeOfUse,
 //            PhysicalPersonTitle = PhysicalPersonTitle,
 //            PhysicalPersonGUID = PhysicalPersonGUID,
-            docHeaders = docHeaders?.toDto(),
+            docHeaders = docHeaders.toDto(),
             OwnerGuid = OwnerGuid,
             uploaded = uploaded,
         )
@@ -88,6 +90,7 @@ data class TableScanEntity(
                 ItemMeasureOfUnitGUID = dto.ItemMeasureOfUnitGUID,
                 Count = dto.Count,
                 totalCount = dto.totalCount,
+                isGroup = dto.isGroup,
                 docCount = dto.docCount,
                 docTitle = dto.docTitle,
                 docGuid = dto.docGuid,
@@ -116,6 +119,8 @@ data class DocHeadersEmbeddable(
     @Embedded
     val physicalPerson: PhysicalPerson? = null,
     @Embedded
+    val employee: Employee? = null,
+    @Embedded
     val division: Division? = null,
     @Embedded
     val counterparty: Counterparty? = null,
@@ -126,6 +131,7 @@ data class DocHeadersEmbeddable(
     fun toDto(): DocumentHeaders {
         DocumentHeaders.setWarehouse(warehouse)
         DocumentHeaders.setPhysicalPerson(physicalPerson)
+        DocumentHeaders.setEmployee(employee)
         DocumentHeaders.setDivision(division)
         DocumentHeaders.setCounterparty(counterparty)
         DocumentHeaders.setIncomingDate(incomingDate)
@@ -139,6 +145,7 @@ data class DocHeadersEmbeddable(
             DocHeadersEmbeddable(
                 warehouse = it.getWarehouse(),
                 physicalPerson = it.getPhysicalPerson(),
+                employee = it.getEmployee(),
                 division = it.getDivision(),
                 counterparty = it.getCounterparty(),
                 incomingDate = it.getIncomingDate(),

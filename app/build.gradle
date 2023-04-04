@@ -98,6 +98,10 @@ dependencies {
     def circleimageview_version = "3.1.0"
     implementation "de.hdodenhof:circleimageview:$circleimageview_version"
 
+    //WorkManager
+    def work_version = "2.7.1"
+    implementation "androidx.work:work-runtime-ktx:$work_version"
+
 //    //anko
 //    def anko_version = "0.10.8"
 //    implementation "org.jetbrains.anko:anko-sdk25:$anko_version"

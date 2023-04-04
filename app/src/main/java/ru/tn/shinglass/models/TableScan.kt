@@ -18,6 +18,7 @@ data class TableScan (
     val ItemMeasureOfUnitGUID: String = "",
     val Count: Double = 0.0,
     val totalCount: Double = 0.0,
+    val isGroup: Boolean = false,
     val docCount: Double = 0.0,
     val docTitle: String = "",
     val docGuid: String = "",
@@ -32,4 +33,5 @@ data class TableScan (
     val docHeaders: DocumentHeaders,
     val OwnerGuid: String,
     val uploaded: Boolean = false,
+    val refreshing: Boolean = false,
 ) : Serializable

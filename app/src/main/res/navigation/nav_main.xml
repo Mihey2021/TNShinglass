@@ -18,6 +18,9 @@
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim">
         </action>
+        <action
+            android:id="@+id/action_authFragment_to_barcodeParsingTN"
+            app:destination="@id/barcodeParsingTN" />
     </fragment>
     <fragment
         android:id="@+id/desktopFragment"
@@ -56,4 +59,9 @@
         android:name="ru.tn.shinglass.activity.DocumentSelectFragment"
         android:label="fragment_document_select"
         tools:layout="@layout/fragment_document_select" />
+    <fragment
+        android:id="@+id/barcodeParsingTN"
+        android:name="ru.tn.shinglass.activity.BarcodeParsingTN"
+        android:label="fragment_barcode_parsing_tn"
+        tools:layout="@layout/fragment_barcode_parsing_tn" />
 </navigation>

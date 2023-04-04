@@ -2,7 +2,7 @@ package ru.tn.shinglass.activity
 
 import android.annotation.SuppressLint
 import android.content.DialogInterface
-import android.graphics.Color
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
@@ -28,6 +28,7 @@ import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.adapters.OnTableScanItemInteractionListener
 import ru.tn.shinglass.adapters.TableScanAdapter
+import ru.tn.shinglass.auth.AppAuth
 import ru.tn.shinglass.databinding.DocumentsHeadersInitDialogBinding
 import ru.tn.shinglass.dto.models.DocumentHeaders
 import ru.tn.shinglass.dto.models.HeaderFields
@@ -50,11 +51,14 @@ class TableScanFragment : Fragment() {
 
     private val dataListWarehouses: ArrayList<Warehouse> = arrayListOf()
     private val dataListPhysicalPersons: ArrayList<PhysicalPerson> = arrayListOf()
+    private val dataListEmployees: ArrayList<Employee> = arrayListOf()
     private val dataListDivisions: ArrayList<Division> = arrayListOf()
     private val dataListCounterparties: ArrayList<Counterparty> = arrayListOf()
 
     private lateinit var selectedOption: Option
     private lateinit var user1C: User1C
+    //private var user1C: User1C? = null
+
 
     //private lateinit var itemList: List<TableScan>
     private lateinit var dlgBinding: DocumentsHeadersInitDialogBinding
@@ -65,6 +69,8 @@ class TableScanFragment : Fragment() {
     private var dialog: AlertDialog? = null
 
     private var isExternalDocument: Boolean = false
+
+    private var refreshing: Boolean = false
 
     @SuppressLint("SimpleDateFormat", "SetTextI18n", "ClickableViewAccessibility")
     override fun onCreateView(
@@ -79,29 +85,44 @@ class TableScanFragment : Fragment() {
 
         selectedOption = arguments?.getSerializable("selectedOption") as Option
         setFragmentResult("requestSelectedOption", bundleOf("selectedOption" to selectedOption))
-        user1C = arguments?.getSerializable("userData") as User1C
-        setFragmentResult("requestUserData", bundleOf("userData" to user1C))
+//        user1C = arguments?.getSerializable("userData") as User1C
+//        setFragmentResult("requestUserData", bundleOf("userData" to user1C))
 
-        viewModel.refreshTableScan(user1C.getUserGUID(), selectedOption.id)
+        user1C = AppAuth.getInstance().getAuthData()
+
+        AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) {authState ->
+            user1C = authState.user1C
+        }
+
+        viewModel.reloadTableScan(user1C.getUserGUID(), selectedOption.id)
 
         isExternalDocument = selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE
 
-        with(binding) {
-            headerTitleTextView.setTextColor(Color.BLACK)
-            headerTotalCount.setTextColor(Color.BLACK)
-            //headerTotalCount.text = if (isExternalDocument) "${getString(R.string.total_text)}\n${getString(R.string.selected_and_by_document_text)}" else "${getString(R.string.total_text)}"
-            headerTotalCount.text = getString(R.string.total_text)
-            headerCountTextView.setTextColor(Color.BLACK)
-            headerUnitOfMeasureTextView.setTextColor(Color.BLACK)
-            headerCellTextView.setTextColor(Color.BLACK)
-        }
+//        with(binding) {
+//            headerTitleTextView.setTextColor(Color.BLACK)
+//            headerTotalCount.setTextColor(Color.BLACK)
+//            //headerTotalCount.text = if (isExternalDocument) "${getString(R.string.total_text)}\n${getString(R.string.selected_and_by_document_text)}" else "${getString(R.string.total_text)}"
+//            headerTotalCount.text = getString(R.string.total_text)
+//            headerCountTextView.setTextColor(Color.BLACK)
+//            headerUnitOfMeasureTextView.setTextColor(Color.BLACK)
+//            headerCellTextView.setTextColor(Color.BLACK)
+//        }
 
         //if (selectedOption.docType != DocType.TOIR_REQUIREMENT_INVOICE) {
         if (!isExternalDocument) {
-            if (DocumentHeaders.getWarehouse() == null)
-                viewModel.getAllWarehousesList()
-            if (DocumentHeaders.getPhysicalPerson() == null)
-                viewModel.getAllPhysicalPerson()
+            if (selectedOption.subOption?.headerFields?.contains(HeaderFields.WAREHOUSE) == true) {
+                if (DocumentHeaders.getWarehouse() == null)
+                    viewModel.getAllWarehousesList()
+            }
+            if (selectedOption.subOption?.headerFields?.contains(HeaderFields.PHYSICAL_PERSON) == true) {
+                if (DocumentHeaders.getPhysicalPerson() == null)
+                    viewModel.getAllPhysicalPerson()
+            }
+            if (selectedOption.subOption?.headerFields?.contains(HeaderFields.EMPLOYEE) == true) {
+                if (DocumentHeaders.getEmployee() == null) {
+                    viewModel.getAllEmployees()
+                }
+            }
         }
 
         //if (selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE) {
@@ -131,10 +152,11 @@ class TableScanFragment : Fragment() {
                 getDocumentHeadersDialog(forceOpen = true)
         }
 
-        val adapter = TableScanAdapter(object : OnTableScanItemInteractionListener {
-            override fun selectItem(item: TableScan) {
-                //if (selectedOption.docType != DocType.TOIR_REQUIREMENT_INVOICE) {
-                if (!isExternalDocument) {
+        val adapter = TableScanAdapter(
+            object : OnTableScanItemInteractionListener {
+                override fun selectItem(item: TableScan) {
+                    //if (!isExternalDocument) {
+                    if (item.isGroup) return
                     dlgHeadersAndOther = DialogScreen.getDialog(
                         requireContext(),
                         DialogScreen.IDD_QUESTION,
@@ -144,18 +166,54 @@ class TableScanFragment : Fragment() {
                         isCancelable = true,
                         onDialogsInteractionListener = object : OnDialogsInteractionListener {
                             override fun onPositiveClickButton() {
+                                refreshing = false
                                 openDetailScanForChangeItem(item)
                             }
 
                             override fun onNegativeClickButton() {
-                                viewModel.deleteRecordById(item)
+                                refreshing = true
+                                if (itemList.filter { filterRecord -> filterRecord.ItemGUID == item.ItemGUID && filterRecord.ItemMeasureOfUnitGUID == item.ItemMeasureOfUnitGUID }.size == 1 && isExternalDocument) {
+                                    viewModel.saveRecord(
+                                        item.copy(
+                                            cellGuid = "",
+                                            cellTitle = "",
+                                            Count = 0.0,
+                                            totalCount = 0.0
+                                        ), true
+                                    )
+                                    //binding.list.adapter?.notifyDataSetChanged()
+                                    viewModel.reloadTableScan(
+                                        user1C.getUserGUID(),
+                                        selectedOption.id
+                                    )
+                                } else {
+                                    val isGroup = item.isGroup
+                                    viewModel.deleteRecordById(item)
+//                                if (isGroup)
+//                                    binding.list.adapter?.notifyDataSetChanged()
+                                    viewModel.reloadTableScan(
+                                        user1C.getUserGUID(),
+                                        selectedOption.id
+                                    )
+                                }
+//                            val tmpAdapter = binding.list.adapter
+//                            val tmpLayoutManager = binding.list.layoutManager
+//                            binding.list.adapter = null
+//                            binding.list.layoutManager = null
+//                            binding.list.adapter = tmpAdapter
+//                            binding.list.layoutManager = tmpLayoutManager
+//                            binding.list.adapter?.notifyDataSetChanged()
                             }
                         })
-                } else {
-                    openDetailScanForChangeItem(item)
+//                } else {
+//                    openDetailScanForChangeItem(item)
+//                }
                 }
-            }
-        }, isExternalDocument)
+            },
+            isExternalDocument = isExternalDocument,
+            isExternalDocumentDetail = false,
+            emptyCellText = getString(R.string.not_scanned_yet)
+        )
 
         binding.list.adapter = adapter
 
@@ -173,10 +231,45 @@ class TableScanFragment : Fragment() {
         binding.completeAndSendBtn.setOnTouchListener { _, motionEvent ->
             when (motionEvent.action) {
                 MotionEvent.ACTION_DOWN -> {
+                    if (selectedOption.docType == DocType.DISPOSABLE_PPE) {
+                        if (settingsViewModel.getPreferenceByKey<String>("virtual_cell_guid", "") == "") {
+                            DialogScreen.getDialog(
+                                requireContext(),
+                                DialogScreen.IDD_QUESTION,
+                                message = "В настройках не установлена виртуальная ячейка. Выгрузка документа невозможна",
+                                title = getString(R.string.header_virtual_cell),
+                                positiveButtonTitle = getString(R.string.settings_header),
+                                onDialogsInteractionListener = object :
+                                    OnDialogsInteractionListener {
+                                    override fun onPositiveClickButton() {
+                                        val intent =
+                                            Intent(requireContext(), SettingsActivity::class.java)
+                                        startActivity(intent)
+                                    }
+                                }
+                            )
+                            return@setOnTouchListener false
+                        }
+                    }
+
+
+
                     if (selectedOption.option == OptionType.INVENTORY || selectedOption.option == OptionType.ACCEPTANCE
                         || selectedOption.option == OptionType.SELECTION
                     ) {
-                        createDocumentIn1C()
+                        DialogScreen.getDialog(
+                            requireContext(),
+                            DialogScreen.IDD_QUESTION,
+                            message = "Отправить данные в 1С?",
+                            title = getString(R.string.document_1c_text),
+                            positiveButtonTitle = getString(R.string.text_yes),
+                            onDialogsInteractionListener = object :
+                                OnDialogsInteractionListener {
+                                override fun onPositiveClickButton() {
+                                    createDocumentIn1C()
+                                }
+                            }
+                        )
 //                        retrofitViewModel.createInventoryOfGoods(itemList) //primary = Первичная инвент. (поиск в ТЧ 1С идет без учета ячейки, т.к. в ячейках там еще ничего нет)
 //                        progressDialog =
 //                            DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
@@ -200,7 +293,7 @@ class TableScanFragment : Fragment() {
             viewModel.resetTheDocumentCreatedFlag()
             //viewModel.deleteRecordsByOwnerAndOperationId(user1C.getUserGUID(), selectedOption.id)
             //viewModel.updateRecordUpload(user1C.getUserGUID(), selectedOption.id)
-            viewModel.refreshTableScan(user1C.getUserGUID(), selectedOption.id)
+            viewModel.reloadTableScan(user1C.getUserGUID(), selectedOption.id)
         }
 
         viewModel.data.observe(viewLifecycleOwner) {
@@ -224,21 +317,34 @@ class TableScanFragment : Fragment() {
 //                )
 //            }
 
+            val list = mutableListOf<TableScan>()
+            val groups = it.filter { groupRecord -> groupRecord.isGroup }
 
-            val groupList = it.groupBy {record ->
-                OrderByTableScan(
-                    operationId = record.OperationId,
-                    ownerGuid = record.OwnerGuid,
-                    uploaded = record.uploaded,
-                    divisionGuid = record.docHeaders?.getDivision()?.divisionGuid ?: "",
-                    warehouseGuid = record.docHeaders?.getWarehouse()?.warehouseGuid ?: "",
-                    itemGUID = record.ItemGUID,
-                    itemMeasureOfUnitGUID = record.ItemMeasureOfUnitGUID,
-                    docGuid = record.docGuid
-                )}.toList()
+            groups.forEach { groupRecord ->
+                list.add(groupRecord.copy(refreshing = refreshing))
+                list.add(groupRecord.copy(isGroup = false, refreshing = refreshing))
+                list.addAll(it.filter { filterRecord ->
+                    filterRecord.OperationId == groupRecord.OperationId
+                            && filterRecord.OwnerGuid == groupRecord.OwnerGuid
+                            && filterRecord.uploaded == groupRecord.uploaded
+                            && filterRecord.docHeaders == groupRecord.docHeaders
+                            && filterRecord.ItemGUID == groupRecord.ItemGUID
+                            && filterRecord.ItemMeasureOfUnitGUID == groupRecord.ItemMeasureOfUnitGUID
+                            && filterRecord.docGuid == groupRecord.docGuid
+                            && !filterRecord.isGroup
+                }.map { listRecord ->
+                    listRecord.copy(
+                        totalCount = groupRecord.totalCount,
+                        refreshing = refreshing
+                    )
+                }
+                )
+            }
 
-            adapter.submitList(it)
-            //adapter.submitList(groupList)
+            //adapter.submitList(it)
+            adapter.submitList(list)
+            //refreshing = false
+
             itemList = it
 
             if (itemList.isNotEmpty()) {
@@ -422,6 +528,17 @@ class TableScanFragment : Fragment() {
             }
         }
 
+        viewModel.employees.observe(viewLifecycleOwner) {
+            if (it.isEmpty()) return@observe
+
+            dataListEmployees.clear()
+            dataListEmployees.add(Employee(getString(R.string.not_chosen_text), ""))
+
+            it.forEach { employee ->
+                dataListEmployees.add(employee)
+            }
+        }
+
         viewModel.counterpartiesList.observe(viewLifecycleOwner) {
             dataListCounterparties.clear()
             it.forEach { counterparty ->
@@ -484,8 +601,11 @@ class TableScanFragment : Fragment() {
     }
 
     private fun deleteCurrentExternalDocumentData() {
-
-
+        viewModel.deleteRecordsByOwnerAndOperationId(
+            user1C.getUserGUID(),
+            selectedOption.id
+        )
+        openExternalDocumentFragment(itemList.isEmpty())
     }
 
     private fun openDetailScanForChangeItem(item: TableScan) {
@@ -532,7 +652,7 @@ class TableScanFragment : Fragment() {
     }
 
     private fun createDocumentIn1C() {
-        viewModel.createDocumentIn1C(itemList, selectedOption.docType!!)
+        viewModel.createDocumentIn1C(itemList, selectedOption.docType!!, settingsViewModel.getPreferenceByKey<String>("virtual_cell_guid", "") ?: "")
     }
 
     @SuppressLint("SimpleDateFormat")
@@ -556,7 +676,7 @@ class TableScanFragment : Fragment() {
 
             if (docHeadersFields?.contains(HeaderFields.DIVISION) == true) {
                 val divisionGuidByPrefs =
-                    settingsViewModel.getPreferenceByKey("division_guid")
+                    settingsViewModel.getPreferenceByKey<String>("division_guid", "")
                 if (divisionGuidByPrefs.isNullOrBlank())
                     divisionTextInputLayout.error = "Подразделение не задано в настройках!"
 
@@ -620,7 +740,7 @@ class TableScanFragment : Fragment() {
 
             if (docHeadersFields?.contains(HeaderFields.WAREHOUSE) == true) {
                 val warehouseGuidByPrefs =
-                    settingsViewModel.getPreferenceByKey("warehouse_guid")
+                    settingsViewModel.getPreferenceByKey<String>("warehouse_guid", "")
                 if (warehouseGuidByPrefs.isNullOrBlank())
                     warehouseTextInputLayout.error = "Склад не задан в настройках!".toString()
 
@@ -715,6 +835,45 @@ class TableScanFragment : Fragment() {
                 )
             } else {
                 physicalPersonTextInputLayout.isVisible = false
+            }
+
+            if (docHeadersFields?.contains(HeaderFields.EMPLOYEE) == true) {
+                val employeeAdapter = DynamicListAdapter<Employee>(
+                    requireContext(),
+                    R.layout.dynamic_prefs_layout,
+                    dataListEmployees
+                )
+
+                employeeTextView.isEnabled = tableIsEmpty
+
+                if (!tableIsEmpty) employeeTextInputLayout.endIconMode =
+                    TextInputLayout.END_ICON_NONE
+
+                employeeTextView.setAdapter(employeeAdapter)
+
+                if (DocumentHeaders.getEmployee() != null)
+                    employeeTextView.setText(DocumentHeaders.getEmployee()?.employeeFio)
+                employeeTextView.setOnClickListener {
+                    if (employeeTextView.adapter == null || employeeTextView.adapter.count == 0) {
+                        //getPhysicalPersonList()
+                        viewModel.getAllEmployees()
+//                    progressDialog =
+//                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+                    }
+                }
+                employeeTextView.setOnItemClickListener { adapterView, _, position, _ ->
+                    val employee = adapterView.getItemAtPosition(position) as Employee
+                    if (employee.employeeGuid == "") {
+                        DocumentHeaders.setEmployee(null)
+                    } else {
+                        DocumentHeaders.setEmployee(employee)
+                    }
+                    employeeTextView.setText(employee?.employeeFio)
+                    employeeTextInputLayout.error = null
+                    AndroidUtils.hideKeyboard(dlgBinding.root)
+                }
+            } else {
+                employeeTextInputLayout.isVisible = false
             }
 
             if (docHeadersFields?.contains(HeaderFields.COUNTERPARTY) == false) {
@@ -886,33 +1045,7 @@ class TableScanFragment : Fragment() {
                 isCancelable = cancellable,
                 customView = dlgBinding.root,
                 positiveButtonTitle = getString(R.string.save_text),
-//                onDialogsInteractionListener = object : OnDialogsInteractionListener {
-//                    override fun onPositiveClickButton() {
-////                        if (DocumentHeaders.getWarehouse() == null)
-////                            dlgBinding.warehouseTextInputLayout.error = "Склад не заполнен!"
-////                        if (DocumentHeaders.getPhysicalPerson() == null)
-////                            dlgBinding.physicalPersonTextInputLayout.error = "МОЛ не указан!"
-////                        if (DocumentHeaders.getWarehouse() != null && DocumentHeaders.getPhysicalPerson() != null)
-//                        if (!checkHeadersDataFail()) {
-//                            if (args != null)
-//                                openDetailScanFragment(args)
-//                        }
-//                    }
-//                }
-
             )
-
-//            if (dlg != null) {
-//                //requireContext().display.getCurrentSizeRange(w, Point())
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-//                    val bounds = requireActivity().windowManager.currentWindowMetrics.bounds
-//                    dlg?.window?.setLayout(bounds.width(), bounds.height())
-//                } else {
-//                    val width = requireActivity().windowManager.defaultDisplay.width
-//                    val height = requireActivity().windowManager.defaultDisplay.height
-//                    dlg?.window?.setLayout(width, height)
-//                }
-//            }
         }
 
         dlgHeadersAndOther?.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
@@ -979,6 +1112,19 @@ class TableScanFragment : Fragment() {
                 }
                 physicalPersonTextInputLayout?.error = null
             }
+            if (it == HeaderFields.EMPLOYEE) {
+                fieldValueIsNotCorrect = DocumentHeaders.getEmployee() == null
+                isNotCorrect = (fieldValueIsNotCorrect || isNotCorrect)
+                val employeeTextInputLayout =
+                    dlgHeadersAndOther?.findViewById<TextInputLayout>(HeaderFields.EMPLOYEE.viewId)
+                if (fieldValueIsNotCorrect) {
+                    employeeTextInputLayout?.error =
+                        getString(R.string.field_must_be_filled_text)
+                    return@forEach
+                    //return isNotCorrect
+                }
+                employeeTextInputLayout?.error = null
+            }
             if (it == HeaderFields.COUNTERPARTY) {
                 fieldValueIsNotCorrect = DocumentHeaders.getCounterparty() == null
                 isNotCorrect = (fieldValueIsNotCorrect || isNotCorrect)
@@ -1033,7 +1179,7 @@ class TableScanFragment : Fragment() {
     }
 
     override fun onResume() {
-        viewModel.refreshTableScan(user1C.getUserGUID(), selectedOption.id)
+        viewModel.reloadTableScan(user1C.getUserGUID(), selectedOption.id)
         if (itemList.isEmpty()) {
 //            if (DocumentHeaders.getWarehouse() == null || DocumentHeaders.getPhysicalPerson() == null)
 //                dlgHeaders = getDocumentHeadersDialog()
@@ -1047,6 +1193,7 @@ class TableScanFragment : Fragment() {
         if (itemList.isEmpty()) {
             DocumentHeaders.setWarehouse(null)
             DocumentHeaders.setPhysicalPerson(null)
+            DocumentHeaders.setEmployee(null)
             DocumentHeaders.setCounterparty(null)
             DocumentHeaders.setIncomingDate(null)
             DocumentHeaders.setIncomingNumber("")

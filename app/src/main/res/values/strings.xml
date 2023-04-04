@@ -50,6 +50,7 @@
     <string name="warehouse_title">Warehouse</string>
     <string name="purpose_of_use_title">Purpose of use</string>
     <string name="physical_person_title">Physical person</string>
+    <string name="employee_title">Employee</string>
     <string name="owner_title">Owner:</string>
     <string name="documents_settings_title">Creating documents</string>
     <string name="warehouse_list_description">Select a warehouse</string>
@@ -57,6 +58,7 @@
     <string name="header_quantity">Qty</string>
     <string name="header_unit_of_measurement">UOM</string>
     <string name="header_cell">Cell</string>
+    <string name="header_virtual_cell">Virtual cell</string>
     <string name="retry_loading">Retry</string>
     <string name="error_loading">An error occurred when accessing the server. Repeat later.</string>
     <string name="settings_for_substituting_text">Settings for substituting values into documents</string>
@@ -93,8 +95,9 @@
     <string name="field_must_be_filled_text">*the field must be filled in</string>
     <string name="select_document_text">Select document</string>
     <string name="document_1c_text">Document 1C</string>
-    <string name="back_text">&lt;&lt; Back</string>
+    <string name="back_text">&lt; Back</string>
     <string name="select_document">Select Document</string>
+    <string name="select_text">Select</string>
     <string name="show_selected_text">Show  selected</string>
     <string name="choose_another_text">Choose another</string>
     <string name="changing_an_entry_text">Changing an entry</string>
@@ -104,4 +107,19 @@
     <string name="total_text">Total</string>
     <string name="selected_and_by_document_text">selected / in document</string>
     <string name="not_scanned_yet">[Not scanned yet]</string>
+    <string name="select_virtual_cell">Select virtual cell</string>
+    <string name="barcode_text">Barcode</string>
+    <string name="unique_number_id_text">Unique number within a company ID</string>
+    <string name="date_of_manufacture">Date of manufacture (YYMMDD)</string>
+    <string name="batch_number">Batch number</string>
+    <string name="in_batch_number">In batch number</string>
+    <string name="gs1_company_id">GS1 Company ID</string>
+    <string name="serial_number">Serial number</string>
+    <string name="expiry_date">Expiry Date (YYMMDD)</string>
+    <string name="product_code">Product code</string>
+    <string name="type_text">Type</string>
+    <string name="length_text">Length</string>
+    <string name="barcode_parsing_tn">TN barcode parsing</string>
+    <string name="scan_tn_barcode_text">[Scan a TN barcode]</string>
+    <string name="barcode_length_less_than_48_characters">Barcode length is less than 48 characters</string>
 </resources>

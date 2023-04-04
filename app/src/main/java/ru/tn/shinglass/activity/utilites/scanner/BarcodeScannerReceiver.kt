@@ -39,6 +39,9 @@ class BarcodeScannerReceiver {
                     val barcode = intent.getByteArrayExtra("barocode")
                     val barocodelen = intent.getIntExtra("length", 0)
                     val temp = intent.getByteExtra("barcodeType", 0.toByte()).toInt()
+                    if (temp == 8) {
+                        tmpType = "Code 128";
+                    }
                     if (temp == 11) //EAN13
                     {
                         tmpType = "LABEL-TYPE-EAN13";
@@ -47,6 +50,10 @@ class BarcodeScannerReceiver {
                     {
                         tmpType = "LABEL-TYPE-QRCODE";
                     }
+                    if (temp == 31) {
+                        tmpType = "QR Code";
+                    }
+
                     _dataScan.value = String(barcode!!, 0, barocodelen) to tmpType
                 }
 
