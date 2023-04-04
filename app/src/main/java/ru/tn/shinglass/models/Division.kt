@@ -1,9 +1,13 @@
 package ru.tn.shinglass.models
 
+import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 data class Division(
-    val id: Long = 0,
-    val title: String,
-    val guid: String,
+    @SerializedName("title")
+    val divisionTitle: String,
+    @SerializedName("guid")
+    val divisionGuid: String,
+    @SerializedName("defaultWarehouseGuid")
+    val divisionDefaultWarehouseGuid: String = "",
 ) : Serializable

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="red_50">#ffe6e6</color>
+    <color name="red_100">#ffcccc</color>
     <color name="red_200">#f19392</color>
     <color name="red_400">#f04142</color>
     <color name="red_700">#d3061f</color>
@@ -10,6 +12,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="light_blue_600">#FF039BE5</color>
     <color name="light_blue_900">#FF01579B</color>
+    <color name="light_blue">#0645AD</color>
     <color name="light_blue_A200">#FF40C4FF</color>
     <color name="light_blue_A400">#FF00B0FF</color>
     <color name="black_overlay">#66000000</color>

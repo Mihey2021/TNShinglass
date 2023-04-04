@@ -1,29 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/optionScrollView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:fillViewport="false"
-    app:layout_constraintTop_toTopOf="parent">
+    android:orientation="vertical">
 
-    <LinearLayout
+    <ScrollView
+        android:id="@+id/optionScrollView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="match_parent"
+        android:fillViewport="false"
+        app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/tableScanLayout"
+            android:id="@+id/tableItemScanLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/margin4"
-            android:layout_marginEnd="@dimen/margin4">
+            android:layout_height="0dp">
+
+            <TextView
+                android:id="@+id/itemCountTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/my_border"
+                android:gravity="center"
+                android:text="TextView"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/titleTextView"
                 android:layout_width="0dp"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:background="@drawable/my_border"
                 android:fontFamily="sans-serif-light"
                 android:gravity="center_vertical"
@@ -34,8 +45,8 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintHorizontal_weight="1"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:text="Номенклатура" />
+                app:layout_constraintTop_toBottomOf="@id/itemCountTextView"
+                tools:text="@tools:sample/lorem[100]" />
 
             <TextView
                 android:id="@+id/countTextView"
@@ -51,7 +62,7 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintHorizontal_weight="0.3"
                 app:layout_constraintStart_toEndOf="@+id/titleTextView"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/itemCountTextView"
                 tools:layout_constraintTop_toTopOf="@id/titleTextView"
                 tools:text="1.0" />
 
@@ -69,14 +80,14 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintHorizontal_weight="0.3"
                 app:layout_constraintStart_toEndOf="@+id/countTextView"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/itemCountTextView"
                 tools:layout_constraintTop_toTopOf="@id/titleTextView"
                 tools:text="ед. изм" />
 
             <TextView
                 android:id="@+id/cellTextView"
                 android:layout_width="0dp"
-                android:layout_height="wrap_content"
+                android:layout_height="0dp"
                 android:background="@drawable/my_border"
                 android:fontFamily="sans-serif-light"
                 android:gravity="center_vertical"
@@ -87,11 +98,10 @@
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintHorizontal_weight="0.5"
                 app:layout_constraintStart_toEndOf="@+id/unitOfMeasureTextView"
-                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/itemCountTextView"
                 tools:layout_constraintTop_toTopOf="@id/titleTextView"
                 tools:text="SH1-007-1-B-3-0015" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
+</LinearLayout>

@@ -10,6 +10,8 @@ import android.widget.PopupMenu
 import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
 import ru.tn.shinglass.R
+import ru.tn.shinglass.auth.AppAuth
+import ru.tn.shinglass.auth.AuthState
 import ru.tn.shinglass.databinding.FragmentMainMenuBinding
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.models.Option
@@ -24,7 +26,7 @@ class MainMenuFragment : Fragment() {
         val binding = FragmentMainMenuBinding.inflate(inflater, container, false)
         requireParentFragment().setFragmentResultListener("requestSelectedOption") { requestKey, bundle ->
             val param = bundle.getSerializable("selectedOption") as Option
-            binding.operationTextView.text = param.title
+            binding.operationTextView.text = param.docType?.title ?: ""
         }
         //binding.operationTextView.text = arguments?.optionObj?.title ?: ""//"[ UNDEFINED ]"
         //binding.operationTextView.text = optionsViewModel.getSelectedOption()?.title ?: "[ UNDEFINED ]"
@@ -35,13 +37,18 @@ class MainMenuFragment : Fragment() {
                 setOnMenuItemClickListener { menuItem ->
                     when (menuItem.itemId) {
                         R.id.menu_exit -> {
-                            findNavController().navigate(R.id.authFragment)
+                            //findNavController().navigate(R.id.authFragment)
                             //.navigate(R.id.action_tableScanFragment_to_authFragment)
+                            AppAuth.getInstance().clearAuthData()
                             true
                         }
                         R.id.menu_settings -> {
                             val intent = Intent(requireContext(), SettingsActivity::class.java)
                             startActivity(intent)
+                            true
+                        }
+                        R.id.menu_barcode_parsing_tn -> {
+                            findNavController().navigate(R.id.barcodeParsingTN)
                             true
                         }
                         else -> false
@@ -50,12 +57,21 @@ class MainMenuFragment : Fragment() {
             }.show()
         }
 
-        requireParentFragment().setFragmentResultListener("requestUserData") { requestKey, bundle ->
-            val user1C = bundle.getSerializable("userData") as User1C
-            if (user1C.getUserGUID().isBlank()) {
+//        requireParentFragment().setFragmentResultListener("requestUserData") { requestKey, bundle ->
+//            val user1C = bundle.getSerializable("userData") as User1C
+//            if (user1C.getUserGUID().isBlank()) {
+//                findNavController().navigate(R.id.authFragment)
+//            } else {
+//                binding.userDescriptionText.text = user1C.getUser1C()
+//            }
+//        }
+
+        AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) {authState ->
+            val authData = authState.user1C.getUser1C()
+            if ( authData.isBlank() ) {
                 findNavController().navigate(R.id.authFragment)
             } else {
-                binding.userDescriptionText.text = user1C.getUser1C()
+                binding.userDescriptionText.text = authState.user1C.getUser1C() ?: "[Не авторизован]"
             }
         }
 

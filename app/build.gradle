@@ -88,12 +88,19 @@ dependencies {
     def retrofit_version = "2.6.1"
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
 
+//    //Interceptor
+//    implementation "com.squareup.okhttp3:logging-interceptor:4.10.0"
+
     //Конвертер GSON и XML
     implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
 
     //Круговое представление изображения
     def circleimageview_version = "3.1.0"
     implementation "de.hdodenhof:circleimageview:$circleimageview_version"
+
+    //WorkManager
+    def work_version = "2.7.1"
+    implementation "androidx.work:work-runtime-ktx:$work_version"
 
 //    //anko
 //    def anko_version = "0.10.8"

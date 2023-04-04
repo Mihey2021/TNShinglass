@@ -6,4 +6,5 @@ enum class BarcodeActions(val action: String) {
     HONEYWELL_BARCODE("hsm.RECVRBI"),
     UROVO_BARCODE("urovo.rcv.message"),
     DS2_BARCODE("app.dsic.barcodetray.BARCODE_BR_DECODING_DATA"),
+    M3("com.android.server.scannerservice.broadcast"),
 }

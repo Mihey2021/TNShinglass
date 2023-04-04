@@ -73,7 +73,7 @@ class OptionsMenuExpListAdapter(
 
         bindingGroup.optionGroupLayout.elevation = 0.1f
         bindingGroup.optionsItemTextView.elevation = 1.0f
-        bindingGroup.optionsItemTextView.text = group?.title
+        bindingGroup.optionsItemTextView.text = group?.option?.title
         bindingGroup.optionsItemTextView.setTextColor(Color.BLACK)
 
         return bindingGroup.root
@@ -101,9 +101,9 @@ class OptionsMenuExpListAdapter(
                 onInteractionListener.selectOption(childOptionItem)
             }
 
-        bindingChild.optionsItemTextView.text = childOptionItem?.title
+        bindingChild.optionsItemTextView.text = childOptionItem?.subOption?.title
         bindingChild.optionsItemTextView.setTextColor(Color.BLACK)
-        bindingChild.descriptionOptionTextView.text = childOptionItem?.description
+        bindingChild.descriptionOptionTextView.text = childOptionItem?.subOption?.description
         bindingChild.optionItemLayout.elevation = 0.1f
         bindingChild.optionsItemTextView.elevation = 1.0f
         return bindingChild.root

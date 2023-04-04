@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/tableItemScanLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/totalCountGroup"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="visible"
+            app:constraint_referenced_ids="titleTextView, itemCountTextView, itemTitleSeparator, itemSeparator"
+            app:layout_constraintBottom_toBottomOf="@id/titleTextView"
+            app:layout_constraintEnd_toEndOf="@id/itemCountTextView"
+            app:layout_constraintStart_toStartOf="@id/titleTextView"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/itemTitleSeparator"
+            android:layout_width="wrap_content"
+            android:layout_height="1dp"
+            android:background="@drawable/my_gradient_line"
+            android:visibility="visible"
+            app:layout_constraintBottom_toTopOf="@id/titleTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/titleTextView"/>
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-light"
+            android:gravity="center_vertical"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:typeface="monospace"
+            app:layout_constraintBottom_toTopOf="@id/cellTextView"
+            app:layout_constraintEnd_toStartOf="@id/itemCountTextView"
+            app:layout_constraintHeight_min="32dp"
+            app:layout_constraintHorizontal_weight="0.7"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@tools:sample/lorem[100]" />
+
+        <TextView
+            android:id="@+id/itemCountTextView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:typeface="monospace"
+            app:layout_constraintBottom_toBottomOf="@id/titleTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_min="32dp"
+            app:layout_constraintHorizontal_weight="0.3"
+            app:layout_constraintStart_toEndOf="@id/titleTextView"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="0.0 / 10.0" />
+
+<!--        <View-->
+<!--            android:id="@+id/itemSeparator"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="1dp"-->
+<!--            android:background="@drawable/my_gradient_line"-->
+<!--            android:visibility="gone"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/cellTextView"-->
+<!--            app:layout_constraintEnd_toEndOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="@id/cellTextView"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/titleTextView" />-->
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/detailItemGroup"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="visible"
+            app:constraint_referenced_ids="cellTextView, countTextView, unitOfMeasureTextView"
+            app:layout_constraintBottom_toTopOf="@id/itemSeparatorEndRec"
+            app:layout_constraintEnd_toEndOf="@id/unitOfMeasureTextView"
+            app:layout_constraintStart_toStartOf="@id/cellTextView"
+            app:layout_constraintTop_toTopOf="@id/cellTextView"
+            tools:layout_constraintBottom_toBottomOf="@id/cellTextView"
+            tools:layout_constraintEnd_toEndOf="parent"
+            tools:layout_constraintStart_toStartOf="parent"
+            tools:layout_constraintTop_toTopOf="@id/cellTextView" />
+
+        <TextView
+            android:id="@+id/cellTextView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fontFamily="sans-serif-light"
+            android:gravity="right|center_vertical|end"
+            android:minHeight="24dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:text="@string/not_scanned_yet"
+            android:textAlignment="textEnd"
+            android:textColor="@color/black"
+            android:typeface="monospace"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/countTextView"
+            app:layout_constraintHeight_min="32dp"
+            app:layout_constraintHorizontal_weight="0.7"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/titleTextView"
+            tools:layout_height="wrap_content"
+            tools:text="SH1-007-1-B-3-0015" />
+
+        <TextView
+            android:id="@+id/countTextView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fontFamily="sans-serif-light"
+            android:gravity="right|center_vertical|end"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:textColor="@color/black"
+            android:textStyle="italic"
+            android:typeface="monospace"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/unitOfMeasureTextView"
+            app:layout_constraintHeight_min="32dp"
+            app:layout_constraintHorizontal_weight="0.15"
+            app:layout_constraintStart_toEndOf="@id/cellTextView"
+            app:layout_constraintTop_toBottomOf="@id/titleTextView"
+            tools:text="1.0" />
+
+        <TextView
+            android:id="@+id/unitOfMeasureTextView"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fontFamily="sans-serif-light"
+            android:gravity="start|left|center_vertical"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:textColor="@color/black"
+            android:typeface="monospace"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_min="32dp"
+            app:layout_constraintHorizontal_weight="0.15"
+            app:layout_constraintStart_toEndOf="@+id/countTextView"
+            app:layout_constraintTop_toBottomOf="@id/itemCountTextView"
+            tools:text="ед. изм" />
+
+        <View
+            android:id="@+id/itemSeparatorEndRec"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@drawable/my_gradient_line"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ScrollView
+        android:id="@+id/optionScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="false"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </ScrollView>
+</LinearLayout>

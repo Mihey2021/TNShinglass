@@ -10,7 +10,7 @@ private const val ERR_TAG = "Ошибка при создании Retrofit!"
 
 object ApiUtils  {
 
-    fun getApiService(basicPreferences: SharedPreferences): ApiService? {
+    fun getApiService(basicPreferences: SharedPreferences? = null): ApiService? {
         return try {
             RetrofitClient.getClient(basicPreferences)?.create(ApiService::class.java)
         } catch (e: Exception) {

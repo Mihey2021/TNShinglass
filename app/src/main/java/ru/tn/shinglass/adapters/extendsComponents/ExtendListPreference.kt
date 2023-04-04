@@ -1,11 +1,15 @@
-package ru.tn.shinglass.adapters.extendsPreferences
+package ru.tn.shinglass.adapters.extendsComponents
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.AttributeSet
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.ListPreference
+import androidx.preference.Preference
 import ru.tn.shinglass.R
 import ru.tn.shinglass.adapters.DynamicListAdapter
+import ru.tn.shinglass.models.Cell
+import ru.tn.shinglass.models.Division
 import ru.tn.shinglass.models.Warehouse
 
 class ExtendListPreference<T>(context: Context, attrs: AttributeSet? = null) :
@@ -30,6 +34,14 @@ class ExtendListPreference<T>(context: Context, attrs: AttributeSet? = null) :
             val selectedData = dataList[which]
 
             if (selectedData is Warehouse) {
+                summary = selectedData.warehouseTitle
+                value = selectedData.warehouseGuid
+            }
+            if (selectedData is Division) {
+                summary = selectedData.divisionTitle
+                value = selectedData.divisionGuid
+            }
+            if (selectedData is Cell) {
                 summary = selectedData.title
                 value = selectedData.guid
             }
@@ -59,10 +71,13 @@ class ExtendListPreference<T>(context: Context, attrs: AttributeSet? = null) :
         updateDataList()
     }
 
+    fun clearAdapterData() {
+        adapter.clear()
+    }
+
     fun getDataListArray() = this.dataList
 
     fun setDialogTitle(dlgTitle: String = "") {
         this.dlgTitle = dlgTitle
     }
-
 }

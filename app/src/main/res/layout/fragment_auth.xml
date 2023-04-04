@@ -15,108 +15,123 @@
         android:layout_height="wrap_content"
         android:background="?colorPrimary"
         app:layout_constraintTop_toTopOf="parent"
+        app:menu="@menu/desktop_menu"
         app:title="@string/app_name"
-        app:titleTextColor="?colorOnPrimary"
-        app:menu="@menu/desktop_menu"/>
+        app:titleTextColor="?colorOnPrimary" />
 
-    <TextView
-        android:id="@+id/deviceInfoTextView"
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/profile_image"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="36dp"
-        android:layout_marginTop="18dp"
-        android:layout_marginRight="36dp"
-        android:drawablePadding="@dimen/margin4"
-        android:drawableTint="@color/blue_gray_700"
-        app:drawableLeftCompat="@drawable/ic_baseline_settings_24"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="left"
+        android:alpha="0.1"
+        android:src="@drawable/ic_tn"
+        app:civ_border_color="?colorPrimary"
+        app:civ_border_width="5dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/authorizationFormLinearLayout" />
+        app:layout_constraintTop_toBottomOf="@id/appToolbar" />
 
     <Button
         android:id="@+id/btnEnter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="36dp"
         android:enabled="false"
         android:text="@string/enter"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/deviceInfoTextView" />
+        app:layout_constraintTop_toBottomOf="@id/authScrollLayout" />
 
-    <LinearLayout
-        android:id="@+id/authorizationFormLinearLayout"
+    <ScrollView
+        android:id="@+id/authScrollLayout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_margin="@dimen/margin36"
-        android:layout_marginTop="8dp"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/btnEnter"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/appToolbar"
-        tools:layout_editor_absoluteX="36dp">
+        tools:layout_constraintTop_toBottomOf="@id/appToolbar">
 
-        <!--        <ImageView-->
-        <!--            android:id="@+id/imageView"-->
-        <!--            android:layout_width="match_parent"-->
-        <!--            android:layout_height="wrap_content"-->
-        <!--            android:contentDescription="@string/tn_title"-->
-        <!--            android:src="@drawable/ic_tn" />-->
-
-        <de.hdodenhof.circleimageview.CircleImageView
-            android:id="@+id/profile_image"
-            android:layout_width="150dp"
-            android:layout_height="150dp"
-            android:layout_marginBottom="20dp"
-            android:src="@drawable/ic_tn"
-            app:civ_border_color="?colorPrimary"
-            app:civ_border_width="3dp" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/loginTextInputLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        <LinearLayout
+            android:id="@+id/authorizationFormLinearLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginRight="8dp"
-            android:hint="@string/login"
-            app:errorEnabled="true"
-            app:startIconDrawable="@drawable/ic_baseline_account_circle_24">
+            android:layout_height="0dp"
+            android:layout_marginLeft="24dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginRight="24dp"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@id/appToolbar"
+            tools:layout_editor_absoluteX="36dp">
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/loginInputEditText"
+
+            <!--        <ImageView-->
+            <!--            android:id="@+id/imageView"-->
+            <!--            android:layout_width="match_parent"-->
+            <!--            android:layout_height="wrap_content"-->
+            <!--            android:contentDescription="@string/tn_title"-->
+            <!--            android:src="@drawable/ic_tn" />-->
+
+            <TextView
+                android:id="@+id/deviceInfoTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="8dp"
+                android:drawablePadding="@dimen/margin4"
+                android:drawableTint="@color/blue_gray_700"
+                app:drawableLeftCompat="@drawable/ic_baseline_settings_24"
+                tools:text="Device info" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/loginTextInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:imeOptions="actionDone"
-                android:inputType="text"
-                android:maxLines="1" />
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginRight="8dp"
+                android:hint="@string/login"
+                app:errorEnabled="true"
+                app:startIconDrawable="@drawable/ic_baseline_account_circle_24">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/loginInputEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:imeOptions="actionDone"
+                    android:inputType="text"
+                    android:maxLines="1" />
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/passwordTextInputLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginBottom="8dp"
-            app:errorEnabled="true"
-            app:errorIconDrawable="@drawable/ic_baseline_error_24"
-            app:passwordToggleEnabled="true"
-            app:startIconDrawable="@drawable/ic_baseline_lock_24">
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/passwordInputEditText"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/passwordTextInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/password"
-                android:imeOptions="actionDone"
-                android:inputType="textPassword" />
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_marginBottom="8dp"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@drawable/ic_baseline_error_24"
+                app:passwordToggleEnabled="true"
+                app:startIconDrawable="@drawable/ic_baseline_lock_24">
 
-        </com.google.android.material.textfield.TextInputLayout>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/passwordInputEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/password"
+                    android:imeOptions="actionDone"
+                    android:inputType="textPassword" />
+
+            </com.google.android.material.textfield.TextInputLayout>
 
 
-    </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

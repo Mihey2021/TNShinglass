@@ -5,6 +5,9 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import ru.tn.shinglass.entity.OptionsEntity
+import ru.tn.shinglass.models.DocType
+import ru.tn.shinglass.models.OptionType
+import ru.tn.shinglass.models.SubOptionType
 
 @Dao
 interface OptionsDao {
@@ -17,10 +20,10 @@ interface OptionsDao {
     @Insert
     fun insert(option: OptionsEntity)
 
-    @Query("UPDATE OptionsEntity SET type = :type, title = :title WHERE id = :id")
-    fun updateOptionById(id: Long, type: String, title: String)
+    @Query("UPDATE OptionsEntity SET option = :optionType, subOption = :subOptionType, docType = :docType WHERE id = :id")
+    fun updateOptionById(id: Long, optionType: OptionType, subOptionType: SubOptionType?, docType: DocType?)
 
     fun save(option: OptionsEntity) {
-        if (option.id == 0L) insert(option) else updateOptionById(option.id, option.type, option.title)
+        if (option.id == 0L) insert(option) else updateOptionById(option.id, option.option, option.subOption, option.docType)
     }
 }

@@ -10,5 +10,7 @@ interface PrefsRepository {
 //    fun setAuthData(user1C: User1C?)
 //    fun getAuthData(): User1C?
     fun getBasicPreferences(): SharedPreferences
-    fun getPreferenceByKey(key: String): String?
+    fun <T> getPreferenceByKey(key: String, default: T, basicPrefs: Boolean): T?
+    fun setPreferenceLong(key: String, value: Long)
+    fun removePreference(key: String)
 }

@@ -1,12 +1,15 @@
 package ru.tn.shinglass.domain.repository
 
+import androidx.lifecycle.LiveData
 import ru.tn.shinglass.models.Warehouse
 
 interface WarehousesRepository {
-    fun getAllWarehouses(): List<Warehouse>
-    fun getAllWarehousesByDivision(divisionId: Long): List<Warehouse>
+    val warehousesList: LiveData<List<Warehouse>>
+    //fun getAllWarehouses(): List<Warehouse>
+    suspend fun getAllWarehousesList()
+    fun getAllWarehousesByDivision(divisionGuid: String): List<Warehouse>
     fun getWarehouseByGuid(guid: String): Warehouse?
     fun getWarehousesCountRecords(): Long
-    fun getWarehousesCountRecordsByDivision(divisionId: Long): Long
-    fun save(warehouses: List<Warehouse>)
+    fun getWarehousesCountRecordsByDivision(divisionGuid: String): Long
+    fun saveWarehouses(warehouses: List<Warehouse>)
 }

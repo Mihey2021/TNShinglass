@@ -9,12 +9,12 @@ import ru.tn.shinglass.dto.models.Settings
 object RetrofitClient {
     private var retrofit: Retrofit? = null
 
-    fun getClient(basicPreferences: SharedPreferences): Retrofit? {
-        if (retrofit == null) {
+    fun getClient(basicPreferences: SharedPreferences? = null): Retrofit? {
+        if (retrofit == null && basicPreferences != null) {
             initializeBasicPrefs(basicPreferences)
             var mUrl = basicPreferences.getString(
                 Settings.URL_SETTINGS.value,
-                "https://10.16.62.7/zil-test/hs/PalletQRCode/"
+                "https://10.16.62.7/zil-test/hs/wos/"
             ).toString()
             if (!mUrl[mUrl.length - 1].equals('/', true)) mUrl += "/"
             val serviceUserName =
@@ -42,7 +42,7 @@ object RetrofitClient {
                 editingSharedPrefs = true
                 editor.putString(
                     Settings.URL_SETTINGS.value,
-                    "https://10.16.62.7/zil-test/hs/PalletQRCode/"
+                    "https://10.16.62.7/zil-test/hs/wos/"
                 )
             }
             if (!contains(Settings.USER_NAME_SETTINGS.value)) {

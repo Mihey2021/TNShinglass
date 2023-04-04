@@ -6,6 +6,13 @@
         android:icon="@drawable/ic_baseline_settings_24"
         android:title="@string/menu_settings"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_barcode_parsing_tn"
+        android:icon="@drawable/ic_baseline_filter_center_focus_24"
+        android:title="@string/barcode_parsing_tn"
+        app:showAsAction="ifRoom" />
+
     <item
         android:id="@+id/menu_exit"
         android:icon="@drawable/ic_baseline_exit_to_app_24"

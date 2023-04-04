@@ -18,6 +18,9 @@
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
             app:popExitAnim="@anim/nav_default_pop_exit_anim">
         </action>
+        <action
+            android:id="@+id/action_authFragment_to_barcodeParsingTN"
+            app:destination="@id/barcodeParsingTN" />
     </fragment>
     <fragment
         android:id="@+id/desktopFragment"
@@ -26,7 +29,8 @@
         tools:layout="@layout/fragment_desktop">
         <action
             android:id="@+id/action_desktopFragment_to_tableScanFragment"
-            app:destination="@id/tableScanFragment" />
+            app:destination="@id/tableScanFragment"
+            app:popUpTo="@id/desktopFragment" />
     </fragment>
     <fragment
         android:id="@+id/tableScanFragment"
@@ -34,24 +38,30 @@
         android:label="fragment_table_scan"
         tools:layout="@layout/fragment_table_scan">
         <action
-            android:id="@+id/action_tableScanFragment_to_authFragment"
-            app:destination="@id/authFragment" />
-        <action
-            android:id="@+id/action_tableScanFragment_to_desktopFragment"
-            app:destination="@id/desktopFragment" />
-        <action
             android:id="@+id/action_tableScanFragment_to_detailScanFragment"
             app:destination="@id/detailScanFragment"
-            app:enterAnim="@android:anim/fade_in"
-            app:exitAnim="@android:anim/fade_out" />
+            app:enterAnim="@android:anim/slide_in_left"
+            app:exitAnim="@android:anim/slide_out_right"
+            app:popEnterAnim="@android:anim/slide_in_left"
+            app:popExitAnim="@android:anim/slide_out_right"
+            app:popUpTo="@id/tableScanFragment" />
+        <action
+            android:id="@+id/action_tableScanFragment_to_documentSelectFragment"
+            app:destination="@id/documentSelectFragment" />
     </fragment>
     <fragment
         android:id="@+id/detailScanFragment"
         android:name="ru.tn.shinglass.activity.DetailScanFragment"
         android:label="fragment_detail_scan"
-        tools:layout="@layout/fragment_detail_scan" >
-        <action
-            android:id="@+id/action_detailScanFragment_to_tableScanFragment"
-            app:destination="@id/tableScanFragment" />
-    </fragment>
+        tools:layout="@layout/fragment_detail_scan" />
+    <fragment
+        android:id="@+id/documentSelectFragment"
+        android:name="ru.tn.shinglass.activity.DocumentSelectFragment"
+        android:label="fragment_document_select"
+        tools:layout="@layout/fragment_document_select" />
+    <fragment
+        android:id="@+id/barcodeParsingTN"
+        android:name="ru.tn.shinglass.activity.BarcodeParsingTN"
+        android:label="fragment_barcode_parsing_tn"
+        tools:layout="@layout/fragment_barcode_parsing_tn" />
 </navigation>

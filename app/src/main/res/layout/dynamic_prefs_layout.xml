@@ -17,7 +17,7 @@
         tools:text="Элемент списка" />
 
     <TextView
-        android:id="@+id/itemListDecriptionTextView"
+        android:id="@+id/itemListDescriptionTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/margin4"
