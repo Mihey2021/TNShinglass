@@ -20,6 +20,9 @@ interface ApiService {
     @GET("getWarehousesList")
     suspend fun getAllWarehousesList(): Response<List<Warehouse>>
 
+    @GET("getWarehousesList")
+    suspend fun getAllWarehousesReceiverList(): Response<List<WarehouseReceiver>>
+
 //    fun getWarehousesList(divisionGuid: String = "") {
 //        if (divisionGuid.isBlank()) getAllWarehousesList() else getWarehousesListByDivision(divisionGuid)
 //    }
@@ -45,6 +48,9 @@ interface ApiService {
     @GET("getInternalOrderList")
     suspend fun getInternalOrderList(): Response<List<ExternalDocument>>
 
+    @GET("getRepairEstimate")
+    suspend fun getRepairEstimate(): Response<List<ExternalDocument>>
+
     @GET("getCellsList")
     suspend fun getCellsList(@Query("warehouse") warehouseGuid: String): Response<List<Cell>>
 
@@ -59,6 +65,9 @@ interface ApiService {
 
     @POST("createRequirementInvoice")
     suspend fun createRequirementInvoice(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>
+
+    @POST("fillRepairEstimate")
+    suspend fun fillRepairEstimate(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>
 
     @POST("createTransferOfMaterialsIntoOperation")
     suspend fun createTransferOfMaterialsIntoOperation(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>

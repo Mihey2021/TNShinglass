@@ -11,6 +11,7 @@ import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.viewModels
 import ru.tn.shinglass.R
+import ru.tn.shinglass.activity.utilites.OnBackPressedListener
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.auth.AppAuth
 import ru.tn.shinglass.dto.models.BarcodeActions
@@ -95,6 +96,19 @@ class AppActivity : AppCompatActivity() {
 //////                }
 //
 //            }
+
+    override fun onBackPressed() {
+        val sfm = supportFragmentManager
+        var backPressedListener: OnBackPressedListener? = null
+        // for(fragment in sfm.fragments) {
+        for(fragment in sfm.fragments[0].childFragmentManager.fragments) {
+            if(fragment is OnBackPressedListener) {
+                backPressedListener = fragment
+                break
+            }
+        }
+        backPressedListener?.onBackPressed() ?: super.onBackPressed()
+    }
 
     override fun onDestroy() {
         //requireContext().unregisterReceiver(myDataReceiver)

@@ -31,9 +31,11 @@
         android:gravity="center_horizontal|center_vertical"
         android:singleLine="false"
         android:textColor="@android:color/primary_text_light_nodisable"
+        app:layout_constraintBottom_toTopOf="@id/userInfoBarrier"
         app:layout_constraintEnd_toStartOf="@id/userDescriptionText"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text = "Наименование выбранной операции"/>
 
     <TextView
         android:id="@+id/userDescriptionText"
@@ -42,12 +44,14 @@
         android:layout_margin="@dimen/margin12"
         android:drawablePadding="@dimen/margin4"
         android:fontFamily="sans-serif-thin"
-        android:gravity="right|center_vertical"
+        android:gravity="left|center_vertical"
         android:textStyle="bold"
         app:drawableLeftCompat="@drawable/ic_baseline_account_circle_24"
         app:layout_constraintBottom_toTopOf="@id/userInfoBarrier"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toEndOf="@id/operationTextView"
+        tools:text = "Фамилия Имя Отчество"/>
 
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/userInfoBarrier"

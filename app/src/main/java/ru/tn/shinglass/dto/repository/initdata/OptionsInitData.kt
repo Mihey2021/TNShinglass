@@ -9,13 +9,19 @@ class OptionsInitData {
     private val optionsList = listOf(
         Option(option = OptionType.SELECTION),
         Option(option = OptionType.ACCEPTANCE),
+        Option(option = OptionType.MOVEMENTS),
         Option(option = OptionType.INVENTORY),
         Option(option = OptionType.SELECTION, subOption = DocType.REQUIREMENT_INVOICE.subType, docType = DocType.REQUIREMENT_INVOICE),
+        Option(option = OptionType.SELECTION, subOption = DocType.TOIR_REPAIR_ESTIMATE.subType, docType = DocType.TOIR_REPAIR_ESTIMATE),
         Option(option = OptionType.SELECTION, subOption = DocType.TOIR_REQUIREMENT_INVOICE.subType, docType = DocType.TOIR_REQUIREMENT_INVOICE),
         Option(option = OptionType.SELECTION, subOption = DocType.WORKWEAR_TOOLS.subType, docType = DocType.WORKWEAR_TOOLS),
         Option(option = OptionType.SELECTION, subOption = DocType.DISPOSABLE_PPE.subType, docType = DocType.DISPOSABLE_PPE),
         Option(option = OptionType.ACCEPTANCE, subOption = DocType.STANDARD_ACCEPTANCE.subType, docType = DocType.STANDARD_ACCEPTANCE),
+        Option(option = OptionType.ACCEPTANCE, subOption = DocType.ACCEPTANCE_OF_KITS.subType, docType = DocType.ACCEPTANCE_OF_KITS),
         Option(option = OptionType.ACCEPTANCE, subOption = DocType.RETURNS_REGISTRATION_OF_GOODS.subType, docType = DocType.RETURNS_REGISTRATION_OF_GOODS),
+        Option(option = OptionType.MOVEMENTS, subOption = DocType.FREE_MOVEMENT.subType, docType = DocType.FREE_MOVEMENT),
+        Option(option = OptionType.MOVEMENTS, subOption = DocType.BETWEEN_CELLS.subType, docType = DocType.BETWEEN_CELLS),
+        Option(option = OptionType.MOVEMENTS, subOption = DocType.BETWEEN_WAREHOUSES.subType, docType = DocType.BETWEEN_WAREHOUSES),
         Option(option = OptionType.INVENTORY, subOption = DocType.INVENTORY_IN_CELLS.subType, docType = DocType.INVENTORY_IN_CELLS),
     )
 

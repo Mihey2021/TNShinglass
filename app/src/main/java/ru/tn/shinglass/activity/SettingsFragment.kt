@@ -13,6 +13,7 @@ import androidx.preference.PreferenceFragmentCompat
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
+import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.adapters.extendsComponents.ExtendListPreference
 import ru.tn.shinglass.api.ApiUtils
@@ -281,6 +282,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     cell = it.title
 
             virtualCellsListPreference.summary = cell
+        }
+
+        BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) {
+            if (it.first == "" && it.second == "") return@observe
+            BarcodeScannerReceiver.clearData()
         }
     }
 

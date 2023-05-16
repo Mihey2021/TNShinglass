@@ -30,4 +30,24 @@ class DocumentSelectRepositoryImpl : DocumentSelectRepository {
             throw ApiServiceError(e.message.toString())
         }
     }
+
+    override suspend fun getRepairEstimate(): List<ExternalDocument> {
+        try {
+            if (apiService != null) {
+                val response =
+                    apiService.getRepairEstimate()
+                if (!response.isSuccessful) {
+                    throw ApiError(response.code(), response.message())
+                }
+                return response.body() ?: throw ApiError(response.code(), response.message())
+            } else {
+                throw ApiServiceError("API service not ready")
+            }
+        } catch (e: IOException) {
+            //throw NetworkError
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
+        }
+    }
 }

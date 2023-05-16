@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+Пока не используем - возможно понадобится в будущем.
+На данный момент будем проверять и запрашивать ячейку КУДА в DetailScanFragment
+!-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/cellReceiverTextInputLayout"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="8dp"
+        android:hint="@string/header_cell_receiver"
+        android:visibility="visible"
+        app:errorEnabled="true"
+        tools:visibility="visible">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/cellReceiverTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:editable="false"
+            android:enabled="true"
+            android:imeOptions="actionDone"
+            android:inputType="none"
+            android:maxLines="1"
+            android:textStyle="bold" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+</LinearLayout>

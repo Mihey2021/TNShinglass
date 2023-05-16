@@ -104,10 +104,15 @@ class TableScanAdapter(
                 unitOfMeasureTextView.text = tableScan.ItemMeasureOfUnitTitle
                 unitOfMeasureTextView.setTextColor(Color.BLACK)
 
-                if (tableScan.cellGuid != "")
-                    cellTextView.text = tableScan.cellTitle
-                else
+                if (tableScan.cellGuid != "") {
+                    if (tableScan.cellReceiverGuid != "")
+                        cellTextView.text = tableScan.cellReceiverTitle
+                    else
+                        cellTextView.text = tableScan.cellTitle
+                }
+                else {
                     cellTextView.text = emptyCellText
+                }
 
                 cellTextView.setTextColor(Color.BLACK)
 //                titleTextView.setOnClickListener {

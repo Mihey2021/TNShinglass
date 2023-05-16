@@ -14,3 +14,15 @@ data class Warehouse(
     @SerializedName("responsibleGuid")
     val warehouseResponsibleGuid: String,
 ) :Serializable
+
+data class WarehouseReceiver(
+
+    @SerializedName("title")
+    val warehouseReceiverTitle: String,
+    @SerializedName("guid")
+    val warehouseReceiverGuid: String,
+    @SerializedName("division_guid")
+    val warehouseReceiverDivisionGuid: String,
+    @SerializedName("responsibleGuid")
+    val warehouseReceiverResponsibleGuid: String,
+) :Serializable

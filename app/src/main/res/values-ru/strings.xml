@@ -45,7 +45,8 @@
     <string name="header_nomenclature">Номенклатура</string>
     <string name="header_quantity">Кол-во</string>
     <string name="header_unit_of_measurement">Ед. изм</string>
-    <string name="header_cell">Ячейка</string>
+    <string name="header_cell">Ячейка откуда</string>
+    <string name="header_cell_receiver">Ячейка куда</string>
     <string name="header_virtual_cell">Виртуальная ячейка</string>
     <string name="retry_loading">Повторить</string>
     <string name="error_loading">An error occurred when accessing the server. Repeat later.</string>
@@ -111,4 +112,8 @@
     <string name="barcode_parsing_tn">Разбор штрихкода TN</string>
     <string name="scan_tn_barcode_text">[Отсканируйте штрихкод по стандарту TN]</string>
     <string name="barcode_length_less_than_48_characters">Длина штрихкода меньше 48 символов</string>
+    <string name="clear">Очистить</string>
+    <string name="next">Далее >></string>
+    <string name="warehouse_receiver_title">Склад (куда)</string>
+    <string name="question_exit_session_text">Вы действительно хотите завршить сеанс?</string>
 </resources>

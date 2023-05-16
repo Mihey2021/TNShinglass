@@ -6,6 +6,7 @@ import ru.tn.shinglass.R
 
 enum class HeaderFields(val viewId: Int) {
     WAREHOUSE(R.id.warehouseTextInputLayout),
+    WAREHOUSE_RECEIVER(R.id.warehouseReceiverTextInputLayout),
     PHYSICAL_PERSON(R.id.physicalPersonTextInputLayout),
     EMPLOYEE(R.id.employeeTextInputLayout),
     DIVISION(R.id.divisionTextInputLayout),
@@ -16,6 +17,7 @@ enum class HeaderFields(val viewId: Int) {
 
 enum class DetailScanFields(val viewId: Int, val fieldType: String) {
     CELL(R.id.cellTextInputLayout, "TextInputLayout"),
+    CELL_RECEIVER(R.id.cellReceiverTextInputLayout, "TextInputLayout"),
     ITEM(R.id.itemTextInputLayout, "TextInputLayout"),
     COUNT(R.id.countTextInputLayout, "TextInputLayout"),
     QUALITY(R.id.qualityTextInputLayout, "TextInputLayout"),

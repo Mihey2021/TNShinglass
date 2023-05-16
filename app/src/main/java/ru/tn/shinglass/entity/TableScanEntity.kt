@@ -14,6 +14,8 @@ data class TableScanEntity(
     val OperationTitle: String,
     val cellTitle: String,
     val cellGuid: String,
+    val cellReceiverTitle: String = "",
+    val cellReceiverGuid: String = "",
     val ItemTitle: String,
     val ItemGUID: String,
     val ItemMeasureOfUnitTitle: String,
@@ -49,6 +51,8 @@ data class TableScanEntity(
             OperationTitle = OperationTitle,
             cellTitle = cellTitle,
             cellGuid = cellGuid,
+            cellReceiverGuid = cellReceiverGuid,
+            cellReceiverTitle = cellReceiverTitle,
             ItemTitle = ItemTitle,
             ItemGUID = ItemGUID,
             ItemMeasureOfUnitTitle = ItemMeasureOfUnitTitle,
@@ -84,6 +88,8 @@ data class TableScanEntity(
                 OperationTitle = dto.OperationTitle,
                 cellTitle = dto.cellTitle,
                 cellGuid = dto.cellGuid,
+                cellReceiverTitle = dto.cellReceiverTitle,
+                cellReceiverGuid = dto.cellReceiverGuid,
                 ItemTitle = dto.ItemTitle,
                 ItemGUID = dto.ItemGUID,
                 ItemMeasureOfUnitTitle = dto.ItemMeasureOfUnitTitle,
@@ -117,6 +123,8 @@ data class DocHeadersEmbeddable(
     @Embedded
     val warehouse: Warehouse? = null,
     @Embedded
+    val warehouseReceiver: WarehouseReceiver? = null,
+    @Embedded
     val physicalPerson: PhysicalPerson? = null,
     @Embedded
     val employee: Employee? = null,
@@ -130,6 +138,7 @@ data class DocHeadersEmbeddable(
 ) {
     fun toDto(): DocumentHeaders {
         DocumentHeaders.setWarehouse(warehouse)
+        DocumentHeaders.setWarehouseReceiver(warehouseReceiver)
         DocumentHeaders.setPhysicalPerson(physicalPerson)
         DocumentHeaders.setEmployee(employee)
         DocumentHeaders.setDivision(division)
@@ -141,9 +150,10 @@ data class DocHeadersEmbeddable(
     }
 
     companion object {
-        fun fromDto(dto: DocumentHeaders) = dto?.let {
+        fun fromDto(dto: DocumentHeaders) = dto.let {
             DocHeadersEmbeddable(
                 warehouse = it.getWarehouse(),
+                warehouseReceiver = it.getWarehouseReceiver(),
                 physicalPerson = it.getPhysicalPerson(),
                 employee = it.getEmployee(),
                 division = it.getDivision(),

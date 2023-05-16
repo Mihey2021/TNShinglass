@@ -25,6 +25,7 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
     private val repositoryWarehouses: WarehousesRepository =
         WarehousesRepositoryRoomImpl(AppDb.getInstance(context = application).warehousesDao())
     val warehousesList: LiveData<List<Warehouse>> = repositoryWarehouses.warehousesList
+    val warehousesReceiverList: LiveData<List<WarehouseReceiver>> = repositoryWarehouses.warehouseReceiverList
 
     private val repositoryPhysicalPerson: PhysicalPersonRepository =
         PhysicalPersonRepositoryImpl(AppDb.getInstance(context = application).physicalPersonDao())
@@ -88,17 +89,20 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
     fun saveRecord(record: TableScan, forceOverwrite: Boolean) =
         repositoryTableScan.saveScanRecord(record, forceOverwrite)
 
-    fun getAllWarehousesList() {
+    fun getAllWarehousesList(receiver: Boolean = false) {
         viewModelScope.launch {
             try {
                 _dataState.value = ModelState(loading = true)
-                repositoryWarehouses.getAllWarehousesList()
+                if (receiver)
+                    repositoryWarehouses.getAllWarehousesReceiverList()
+                else
+                    repositoryWarehouses.getAllWarehousesList()
                 _dataState.value = ModelState()
             } catch (e: Exception) {
                 _dataState.value = ModelState(
                     error = true,
                     errorMessage = e.message.toString(),
-                    requestName = "getAllWarehousesList"
+                    requestName = if (receiver) "getAllWarehousesReceiverList" else "getAllWarehousesList"
                 )
             }
         }

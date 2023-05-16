@@ -62,6 +62,7 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
            itemListTextView?.setTextColor(Color.BLACK)
            when (item) {
                is Warehouse -> itemListTextView?.text = item.warehouseTitle
+               is WarehouseReceiver -> itemListTextView?.text = item.warehouseReceiverTitle
                is Division -> itemListTextView?.text = item.divisionTitle
                is PhysicalPerson -> itemListTextView?.text = item.physicalPersonFio
                is Employee -> itemListTextView?.text = item.employeeFio
@@ -147,6 +148,8 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
                     return resultValue.employeeFio
                 if (resultValue is Warehouse)
                     return resultValue.warehouseTitle
+                if (resultValue is WarehouseReceiver)
+                    return resultValue.warehouseReceiverTitle
                 if (resultValue is Division)
                     return resultValue.divisionTitle
                 if (resultValue is Cell)

@@ -12,12 +12,14 @@ import androidx.navigation.fragment.findNavController
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
+import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.adapters.OnTableScanItemInteractionListener
 import ru.tn.shinglass.adapters.TableScanAdapter
 import ru.tn.shinglass.databinding.FragmentDocumentSelectBinding
 import ru.tn.shinglass.dto.models.DocumentHeaders
 import ru.tn.shinglass.dto.models.User1C
+import ru.tn.shinglass.models.DocType
 import ru.tn.shinglass.models.ExternalDocument
 import ru.tn.shinglass.models.Option
 import ru.tn.shinglass.models.TableScan
@@ -34,7 +36,7 @@ class DocumentSelectFragment : Fragment() {
     private lateinit var user1C: User1C
 
     private var progressDialog: AlertDialog? = null
-    private val internalOrderList: ArrayList<ExternalDocument> = arrayListOf()
+    private val externalDocumentList: ArrayList<ExternalDocument> = arrayListOf()
     private var isNew: Boolean = false
 
 
@@ -70,12 +72,13 @@ class DocumentSelectFragment : Fragment() {
             list.adapter = adapter
             if (isNew) {
                 initAutoCompleteTextView(binding.documentTextView)
-                viewModel.getInternalOrderList()
+                getExternalDocumentsList(selectedOption.docType)
                 documentTextView.setText((documentTextView.adapter.getItem(0) as ExternalDocument).externalOrderDocumentTitle, false);
                 DocumentHeaders.setExternalDocumentSelected(true)
                 documentTextView.setOnClickListener {
                     if (documentTextView.adapter == null || documentTextView.adapter.count == 0) {
-                        viewModel.getInternalOrderList()
+                        //viewModel.getInternalOrderList()
+                        getExternalDocumentsList(selectedOption.docType)
                     }
                 }
                 documentTextView.setOnItemClickListener { adapterView, _, position, _ ->
@@ -100,7 +103,8 @@ class DocumentSelectFragment : Fragment() {
                         binding.documentTextInputLayout.hint = getString(R.string.document_1c_text)
                         if (documentItem.externalDocumentItems != null)
                         //adapter.submitList(documentItem.externalDocumentItems)
-                            documentItem.externalDocumentItems.forEach { item ->
+                            if (documentItem.externalDocumentItems.isEmpty()) saveEmptyExternalDocument(documentItem)
+                            documentItem.externalDocumentItems?.forEach { item ->
                                 DocumentHeaders.setWarehouse(item.warehouse)
                                 val physicalPerson = viewModelTableScan.getPhysicalPersonByGuid(
                                     item.warehouse?.warehouseResponsibleGuid ?: ""
@@ -137,14 +141,14 @@ class DocumentSelectFragment : Fragment() {
                 groupTableItems.visibility = View.VISIBLE
             }
 
-            viewModel.internalOrderList.observe(viewLifecycleOwner) {
+            viewModel.externalDocumentList.observe(viewLifecycleOwner) {
                 if (it.isEmpty()) return@observe
 
-                internalOrderList.clear()
-                addEmptyItemInternalOrderList()
+                externalDocumentList.clear()
+                addEmptyItemExternalDocumentList()
 
                 it.forEach { internalOrderDocument ->
-                    internalOrderList.add(internalOrderDocument)
+                    externalDocumentList.add(internalOrderDocument)
                 }
 
                 initAutoCompleteTextView(binding.documentTextView)
@@ -181,6 +185,9 @@ class DocumentSelectFragment : Fragment() {
                                     "getInternalOrderList" -> {
                                         viewModel.getInternalOrderList()
                                     }
+                                    "getRepairEstimate" -> {
+                                        viewModel.getRepairEstimate()
+                                    }
                                 }
                             }
                         }
@@ -209,11 +216,23 @@ class DocumentSelectFragment : Fragment() {
 //                }
 
 //                adapter.submitList(list)
-                adapter.submitList(groups)
+                if (groups.isNotEmpty()) {
+                    if (groups[0].ItemGUID.isNotEmpty()) {
+                        adapter.submitList(groups)
+                    }
+                }
+
+
+
                 if (it.isNotEmpty()) {
                     binding.documentTextView.setText(it[0].docTitle)
                     binding.documentTextInputLayout.hint = getString(R.string.document_1c_text)
                 }
+            }
+
+            BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) {
+                if (it.first == "" && it.second == "") return@observe
+                BarcodeScannerReceiver.clearData()
             }
 
             return binding.root
@@ -221,8 +240,50 @@ class DocumentSelectFragment : Fragment() {
         }
     }
 
-    private fun addEmptyItemInternalOrderList() {
-        internalOrderList.add(
+    private fun saveEmptyExternalDocument(documentItem: ExternalDocument) {
+//        DocumentHeaders.setWarehouse(documentItem.externalOrderDivision?.divisionDefaultWarehouseGuid.)
+//        val physicalPerson = viewModelTableScan.getPhysicalPersonByGuid(
+//            ""
+//        )
+//        DocumentHeaders.setPhysicalPerson(physicalPerson)
+        val sdf = SimpleDateFormat("dd.MM.yyyy")
+        viewModelTableScan.saveRecord(
+            TableScan(
+                OperationId = selectedOption.id,
+                OperationTitle = selectedOption.docType?.title ?: "",
+                docTitle = "${documentItem.externalOrderDocumentTitle} ${documentItem.externalOrderNumber} от ${
+                    sdf.format(
+                        documentItem.externalOrderDate
+                    )
+                }",
+                docGuid = documentItem.externalOrderDocumentGuid,
+                docCount = 0.0,
+                coefficient = 0.0,
+                cellTitle = "",
+                cellGuid = "",
+                ItemTitle = "",
+                ItemGUID = "",
+                ItemMeasureOfUnitGUID = "",
+                ItemMeasureOfUnitTitle = "",
+                docHeaders = DocumentHeaders,
+                OwnerGuid = user1C.getUserGUID(),
+            ), false
+        )
+    }
+
+    private fun getExternalDocumentsList(docType: DocType?) {
+        when (docType) {
+            DocType.TOIR_REQUIREMENT_INVOICE -> {
+                viewModel.getInternalOrderList()
+            }
+            else -> {
+                viewModel.getRepairEstimate()
+            }
+        }
+    }
+
+    private fun addEmptyItemExternalDocumentList() {
+        externalDocumentList.add(
             ExternalDocument(
                 getString(R.string.not_chosen_text),
                 "",
@@ -236,13 +297,13 @@ class DocumentSelectFragment : Fragment() {
 
     private fun initAutoCompleteTextView(autoCompleteTextView: AutoCompleteTextView) {
 
-        if (internalOrderList.isEmpty())
-            addEmptyItemInternalOrderList()
+        if (externalDocumentList.isEmpty())
+            addEmptyItemExternalDocumentList()
 
         val internalOrderAdapter = DynamicListAdapter<ExternalDocument>(
             requireContext(),
             R.layout.dynamic_prefs_layout,
-            internalOrderList,
+            externalDocumentList,
             filterOff = true
         )
 
