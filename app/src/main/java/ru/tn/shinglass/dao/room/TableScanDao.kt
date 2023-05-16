@@ -37,11 +37,11 @@ interface TableScanDao {
 
    // @Query("SELECT TableTotalCount.TotalCount AS totalCount, * FROM TableScanEntity " +
     @Query("SELECT TableTotalCount.TotalCount AS totalCount, TableTotalCount.isGroup AS isGroup, " +
-            "id, OperationId, OperationTitle, cellTitle, cellGuid, ItemTitle, ItemGUID, ItemMeasureOfUnitTitle, " +
+            "id, OperationId, OperationTitle, cellTitle, cellGuid, cellReceiverTitle, cellReceiverGuid, ItemTitle, ItemGUID, ItemMeasureOfUnitTitle, " +
             "ItemMeasureOfUnitGUID, Count, docCount, docTitle, docGuid, coefficient, qualityGuid, qualityTitle, " +
             "WorkwearOrdinary, WorkwearDisposable, PurposeOfUseTitle, PurposeOfUse, " +
             "OwnerGuid, uploaded, docNameIn1C, incomingDate, incomingNumber , externalDocumentSelected, " +
-            "warehouseTitle, warehouseGuid, warehouseDivisionGuid, warehouseResponsibleGuid, physicalPersonFio, " +
+            "warehouseTitle, warehouseGuid, warehouseDivisionGuid, warehouseResponsibleGuid, warehouseReceiverTitle, warehouseReceiverGuid, warehouseReceiverDivisionGuid, warehouseReceiverResponsibleGuid, physicalPersonFio, " +
             "physicalPersonGuid, divisionTitle, divisionGuid, divisionDefaultWarehouseGuid, counterpartyTitle, " +
             "counterpartyGuid, counterpartyInn, counterpartyKpp, employeeGuid, employeeFio " +
             "FROM TableScanEntity " +

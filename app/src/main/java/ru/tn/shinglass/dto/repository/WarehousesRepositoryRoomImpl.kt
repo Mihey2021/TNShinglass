@@ -5,14 +5,13 @@ import androidx.lifecycle.map
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.dao.room.WarehousesDao
 import ru.tn.shinglass.domain.repository.WarehousesRepository
-import ru.tn.shinglass.entity.WarehousesEntity
-import ru.tn.shinglass.entity.toDto
-import ru.tn.shinglass.entity.toEntity
+import ru.tn.shinglass.entity.*
 import ru.tn.shinglass.error.ApiError
 import ru.tn.shinglass.error.ApiServiceError
 import ru.tn.shinglass.error.NetworkError
 import ru.tn.shinglass.error.UnknownError
 import ru.tn.shinglass.models.Warehouse
+import ru.tn.shinglass.models.WarehouseReceiver
 import java.io.IOException
 import java.lang.Exception
 
@@ -20,6 +19,7 @@ class WarehousesRepositoryRoomImpl(private val dao: WarehousesDao) : WarehousesR
     private val apiService = ApiUtils.getApiService()
 
     override val warehousesList: LiveData<List<Warehouse>> = dao.getAllWarehouses().map(List<WarehousesEntity>::toDto)
+    override val warehouseReceiverList: LiveData<List<WarehouseReceiver>> = dao.getAllWarehouses().map(List<WarehousesEntity>::toWarehouseReceiverDto)
 
 //    override fun getAllWarehousesFromDb(): List<Warehouse> =
 //        dao.getAllWarehouses().map { warehousesEntity ->
@@ -35,6 +35,26 @@ class WarehousesRepositoryRoomImpl(private val dao: WarehousesDao) : WarehousesR
                 }
                 val body = response.body() ?: throw ApiError(response.code(), response.message())
                 dao.saveWarehouses(body.toEntity())
+            } else {
+                throw ApiServiceError("API service not ready")
+            }
+        } catch (e: IOException) {
+            //throw NetworkError
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
+        }
+    }
+
+    override suspend fun getAllWarehousesReceiverList() {
+        try {
+            if(apiService != null) {
+                val response = apiService.getAllWarehousesReceiverList()
+                if (!response.isSuccessful) {
+                    throw ApiError(response.code(), response.message())
+                }
+                val body = response.body() ?: throw ApiError(response.code(), response.message())
+                dao.saveWarehousesReceiver(body.toWarehouseReceiverEntity())
             } else {
                 throw ApiServiceError("API service not ready")
             }

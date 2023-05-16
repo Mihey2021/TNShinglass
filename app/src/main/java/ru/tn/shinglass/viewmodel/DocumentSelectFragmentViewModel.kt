@@ -20,21 +20,37 @@ class DocumentSelectFragmentViewModel(application: Application) : AndroidViewMod
     val dataState: LiveData<ModelState>
         get() = _dataState
 
-    private val _internalOrderList = MutableLiveData<List<ExternalDocument>>()
-    val internalOrderList: LiveData<List<ExternalDocument>>
-        get() = _internalOrderList
+    private val _externalDocumentOrderList = MutableLiveData<List<ExternalDocument>>()
+    val externalDocumentList: LiveData<List<ExternalDocument>>
+        get() = _externalDocumentOrderList
 
     fun getInternalOrderList() {
         viewModelScope.launch {
             try {
                 _dataState.value = ModelState(loading = true)
-                _internalOrderList.value = repository.getInternalOrderList()
+                _externalDocumentOrderList.value = repository.getInternalOrderList()
                 _dataState.value = ModelState()
             } catch (e: Exception) {
                 _dataState.value = ModelState(
                     error = true,
                     errorMessage = e.message.toString(),
                     requestName = "getInternalOrderList"
+                )
+            }
+        }
+    }
+
+    fun getRepairEstimate() {
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                _externalDocumentOrderList.value = repository.getRepairEstimate()
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getRepairEstimate"
                 )
             }
         }

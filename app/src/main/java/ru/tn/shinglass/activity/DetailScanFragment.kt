@@ -1,6 +1,7 @@
 package ru.tn.shinglass.activity
 
 import android.annotation.SuppressLint
+import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
@@ -21,6 +22,7 @@ import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.auth.AppAuth
+import ru.tn.shinglass.databinding.CellReceiverDialogBinding
 import ru.tn.shinglass.databinding.FragmentDetailScanBinding
 import ru.tn.shinglass.dto.models.DetailScanFields
 import ru.tn.shinglass.dto.models.DocumentHeaders
@@ -47,6 +49,7 @@ class DetailScanFragment : Fragment() {
     private var fragmentBinding: FragmentDetailScanBinding? = null
 
     private var dialog: AlertDialog? = null
+    private var cellReceiverDialogBinding: CellReceiverDialogBinding? = null
     private lateinit var currentRecord: TableScan
 
     lateinit var user1C: User1C
@@ -63,7 +66,7 @@ class DetailScanFragment : Fragment() {
         //val user1C = arguments?.getSerializable("userData") as User1C
         user1C = AppAuth.getInstance().getAuthData()
 
-        AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) {authState ->
+        AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) { authState ->
             user1C = authState.user1C
             if (user1C.getUserGUID() == "") findNavController().navigate(R.id.authFragment)
         }
@@ -72,18 +75,25 @@ class DetailScanFragment : Fragment() {
         var barcodeType = arguments?.getString("barcodeType")
         var editRecord = arguments?.getSerializable("editRecord") as TableScan
 
+
         if (selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE) {
             tableFromExternalDocument =
                 tableScanViewModel.getAllScanRecordsByOwner(user1C.getUserGUID(), selectedOption.id)
         }
 
-        forceOverwrite = editRecord.id != 0L
+        forceOverwrite = (editRecord.id != 0L) //|| (selectedOption.docType == DocType.TOIR_REPAIR_ESTIMATE && editRecord.ItemGUID.isEmpty())
 
         //BarcodeScannerReceiver.clearData()
 
         var tempScanRecord = TempScanRecord(editRecord)
         tempScanRecord.OperationId = selectedOption.id
         tempScanRecord.OperationTitle = selectedOption.docType?.title ?: ""
+
+        if (selectedOption.docType == DocType.BETWEEN_CELLS) {
+            binding.cellTextInputLayout.hint = getString(R.string.header_cell)
+            if (tempScanRecord.cellReceiverGuid.isBlank())
+                binding.buttonApply.setText(R.string.next)
+        }
 
         val detailScanFields = selectedOption.subOption?.detailScanFields
 
@@ -97,10 +107,21 @@ class DetailScanFragment : Fragment() {
                     if (field.fieldType == "TextInputLayout")
                         rootView.findViewById<TextInputLayout>(field.viewId)?.visibility =
                             View.VISIBLE
+//                    if (field.viewId == R.id.cellReceiverTextInputLayout)
+//                        binding.clearCellReceiverBtn.visibility = View.VISIBLE
                     if (field.fieldType == "CheckBox")
                         rootView.findViewById<CheckBox>(field.viewId)?.visibility = View.VISIBLE
                 }
             }
+
+            cellReceiverTextInputLayout.setEndIconOnClickListener {
+                cellReceiverTextView.setText("")
+                binding.buttonApply.setText(R.string.next)
+            }
+//            clearCellReceiverBtn.setOnClickListener {
+//                cellReceiverTextView.setText("")
+//                binding.buttonApply.setText(R.string.next)
+//            }
 
             val isNextRecordInSession =
                 editRecord.id == 0L && !editRecord.cellGuid.isNullOrBlank()
@@ -178,6 +199,7 @@ class DetailScanFragment : Fragment() {
 
 
             binding.cellTextView.setText(editRecord.cellTitle)
+            binding.cellReceiverTextView.setText(editRecord.cellReceiverTitle)
             binding.itemTextView.setText(editRecord.ItemTitle)
 
             ownerTextView.setText("${getString(R.string.owner_title)} ${user1C.getUser1C()}")
@@ -222,20 +244,32 @@ class DetailScanFragment : Fragment() {
 
             if (dataScanBarcode == "") return@observe
 
-            dialog?.show()
+            if (cellReceiverDialogBinding == null) dialog?.show()
+
             if (dataScanBarcodeType == "Code 128" || dataScanBarcodeType == "QR Code") {
                 retrofitViewModel.getCellByBarcode(
                     dataScanBarcode,
                     editRecord.docHeaders.getWarehouse()?.warehouseGuid ?: ""
                 )
-                binding.cellTextInputLayout.error = null
+                if (cellReceiverDialogBinding != null)
+                    cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error = null
+                else
+                    binding.cellTextInputLayout.error = null
                 return@observe
             } else {
                 if (binding.cellTextView.text.isNullOrBlank()) {
                     binding.cellTextInputLayout.error = "Отсканируйте ячейку!"
                     return@observe
                 }
-                retrofitViewModel.getItemByBarcode(dataScanBarcode)
+                if (cellReceiverDialogBinding != null) {
+                    if (cellReceiverDialogBinding!!.cellReceiverTextView.text.isNullOrBlank()) {
+                        cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error =
+                            "Отсканируйте ячейку!"
+                        return@observe
+                    }
+                }
+                if (cellReceiverDialogBinding == null)
+                    retrofitViewModel.getItemByBarcode(dataScanBarcode)
             }
         }
 
@@ -251,18 +285,39 @@ class DetailScanFragment : Fragment() {
                     message = if (warehouse == null) "Не задан склад." else "Проверьте, что ячейка принадлежит складу \"${warehouse.warehouseTitle}\" и отсканируйте ШК снова.",
                     positiveButtonTitle = "Ok",
                 )
-                binding.cellTextView.setText("")
-                binding.cellTextInputLayout.error = "Ячейка не задана"
-                tempScanRecord.cellGuid = ""
-                tempScanRecord.cellTitle = ""
-                return@observe
+                if (cellReceiverDialogBinding != null) {
+                    cellReceiverDialogBinding!!.cellReceiverTextView.setText("")
+                    cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error =
+                        "Ячейка не задана"
+                    tempScanRecord.cellReceiverGuid = ""
+                    tempScanRecord.cellReceiverTitle = ""
+                    return@observe
+                } else {
+                    binding.cellTextView.setText("")
+                    binding.cellTextInputLayout.error = "Ячейка не задана"
+                    tempScanRecord.cellGuid = ""
+                    tempScanRecord.cellTitle = ""
+                    return@observe
+                }
             }
             dialog?.dismiss()
-            binding.cellTextView.setText(it.title)
-            binding.cellTextInputLayout.error = null
-            tempScanRecord.cellGuid = it.guid
-            tempScanRecord.cellTitle = it.title
-
+            if (cellReceiverDialogBinding != null) {
+                if (it.guid == tempScanRecord.cellGuid) {
+                    cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error =
+                        "Ячейка Куда не может совпадать с ячейкой Откуда"
+                    cellReceiverDialogBinding!!.cellReceiverTextView.setText("")
+                    return@observe
+                }
+                cellReceiverDialogBinding!!.cellReceiverTextView.setText(it.title)
+                cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error = null
+                tempScanRecord.cellReceiverGuid = it.guid
+                tempScanRecord.cellReceiverTitle = it.title
+            } else {
+                binding.cellTextView.setText(it.title)
+                binding.cellTextInputLayout.error = null
+                tempScanRecord.cellGuid = it.guid
+                tempScanRecord.cellTitle = it.title
+            }
         }
 
 
@@ -489,6 +544,9 @@ class DetailScanFragment : Fragment() {
         return binding.root
     }
 
+    private fun getCellReceiverDialogBinding(): CellReceiverDialogBinding =
+        CellReceiverDialogBinding.inflate(LayoutInflater.from(requireContext()))
+
     fun keyDownPressed(keyCode: Int, event: KeyEvent?) {
         //Toast.makeText(requireContext(), "Нажата ${keyCode}. Event: ${event?.displayLabel}",Toast.LENGTH_LONG).show()
         var textCount: Editable =
@@ -558,10 +616,10 @@ class DetailScanFragment : Fragment() {
 
         var isError = false
         var fieldValueIsNotCorrect = false
+        var needShowCellReceiverDialog = false
 
         val detailScanFields = selectedOption.subOption?.detailScanFields
-        if (detailScanFields?.isEmpty() == true)
-            isError = true
+        if (detailScanFields?.isEmpty() == true) isError = true
 
         detailScanFields?.forEach {
             if (it == DetailScanFields.CELL) {
@@ -572,6 +630,7 @@ class DetailScanFragment : Fragment() {
                     return@forEach
                 }
             }
+
             if (it == DetailScanFields.ITEM) {
                 fieldValueIsNotCorrect = binding.itemTextView.text.isNullOrBlank()
                 isError = (fieldValueIsNotCorrect || isError)
@@ -580,6 +639,7 @@ class DetailScanFragment : Fragment() {
                     return@forEach
                 }
             }
+
             if (it == DetailScanFields.COUNT) {
                 if (binding.countEditText.text.toString().isBlank()) {
                     tempScanRecord.Count = 0.0
@@ -594,29 +654,48 @@ class DetailScanFragment : Fragment() {
                     if (fieldValueIsNotCorrect)
                         binding.countTextInputLayout.error = "Количество не может быть нулевым!"
                     return@forEach
+                } else {
+                    binding.countTextInputLayout.error = null
+                }
+            }
+
+            if (it == DetailScanFields.CELL_RECEIVER) {
+                fieldValueIsNotCorrect = binding.cellReceiverTextView.text.isNullOrBlank()
+                needShowCellReceiverDialog =
+                    (fieldValueIsNotCorrect || isError || needShowCellReceiverDialog)
+                if (needShowCellReceiverDialog) {
+                    //binding.cellReceiverTextInputLayout.error = "Ячейка не отсканирована!"
+                    return@forEach
                 }
             }
         }
 
-//        with(binding) {
-//            if (binding.cellTextView.text.isNullOrBlank()) {
-//                cellTextInputLayout.error = "Ячейка не отсканирована!"
-//                isError = true
-//            }
-//            if (binding.itemTextView.text.isNullOrBlank()) {
-//                itemTextInputLayout.error = "Номенклатура не отсканирована!"
-//                isError = true
-//            }
-//            if (binding.countEditText.text.toString().isBlank())
-//                tempScanRecord.Count = 0.0
-//            else
-//                tempScanRecord.Count = binding.countEditText.text.toString().toDouble()
-//
-//            if (binding.countEditText.text.isNullOrBlank() || tempScanRecord.Count == 0.0) {
-//                countTextInputLayout.error = "Количество не может быть нулевым!"
-//                isError = true
-//            }
-//        }
+        if (needShowCellReceiverDialog && !isError) {
+            if (cellReceiverDialogBinding == null) {
+                binding.buttonApply.setText(R.string.next)
+                cellReceiverDialogBinding = getCellReceiverDialogBinding()
+                val cellReceiverDialog = DialogScreen.getDialog(
+                    requireContext(),
+                    DialogScreen.IDD_INPUT,
+                    isCancelable = false,
+                    customView = cellReceiverDialogBinding!!.root,
+                    positiveButtonTitle = getString(R.string.save_text),
+                )
+                cellReceiverDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
+                    binding.cellReceiverTextView.setText(
+                        cellReceiverDialogBinding?.cellReceiverTextView?.text ?: ""
+                    )
+                    if (binding.cellReceiverTextView.text.isNullOrBlank())
+                        binding.buttonApply.setText(R.string.next)
+                    else
+                        binding.buttonApply.setText(R.string.apply_text)
+
+                    cellReceiverDialogBinding = null
+                    cellReceiverDialog.dismiss()
+                }
+            }
+            return
+        }
 
         if (isError) return
 
@@ -665,6 +744,11 @@ class DetailScanFragment : Fragment() {
         BarcodeScannerReceiver.clearData()
         super.onStop()
     }
+
+    override fun onDestroy() {
+        dialog?.dismiss()
+        super.onDestroy()
+    }
 }
 
 class TempScanRecord {
@@ -673,6 +757,8 @@ class TempScanRecord {
     var OperationTitle: String = ""
     var cellTitle: String = ""
     var cellGuid: String = ""
+    var cellReceiverTitle: String = ""
+    var cellReceiverGuid: String = ""
     var ItemTitle: String = ""
     var ItemGUID: String = ""
     var ItemMeasureOfUnitTitle: String = ""
@@ -705,6 +791,8 @@ class TempScanRecord {
         OperationTitle = scanRecord.OperationTitle
         cellTitle = scanRecord.cellTitle
         cellGuid = scanRecord.cellGuid
+        cellReceiverTitle = scanRecord.cellReceiverTitle
+        cellReceiverGuid = scanRecord.cellReceiverGuid
         ItemTitle = scanRecord.ItemTitle
         ItemGUID = scanRecord.ItemGUID
         ItemMeasureOfUnitTitle = scanRecord.ItemMeasureOfUnitTitle
@@ -737,6 +825,8 @@ class TempScanRecord {
             OperationTitle = OperationTitle,
             cellTitle = cellTitle,
             cellGuid = cellGuid,
+            cellReceiverTitle = cellReceiverTitle,
+            cellReceiverGuid = cellReceiverGuid,
             ItemTitle = ItemTitle,
             ItemGUID = ItemGUID,
             ItemMeasureOfUnitTitle = ItemMeasureOfUnitTitle,
@@ -762,7 +852,6 @@ class TempScanRecord {
             OwnerGuid = OwnerGuid
         )
     }
-
 }
 
 

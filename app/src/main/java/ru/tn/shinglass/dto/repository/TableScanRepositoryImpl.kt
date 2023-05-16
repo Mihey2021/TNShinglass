@@ -107,6 +107,17 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                                 )
                             )
                     }
+                    DocType.ACCEPTANCE_OF_KITS -> {
+                        response =
+                            apiService.createMovementOfGoods(
+                                DocumentToUploaded(
+                                    docType = docType,
+                                    virtualCellGuid = virtualCellGuid,
+                                    docHeaders = headers,
+                                    records = scanRecords
+                                )
+                            )
+                    }
                     DocType.REQUIREMENT_INVOICE -> {
                         response =
                             apiService.createRequirementInvoice(
@@ -120,6 +131,16 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     DocType.TOIR_REQUIREMENT_INVOICE -> {
                         response =
                             apiService.createRequirementInvoice(
+                                DocumentToUploaded(
+                                    docType = docType,
+                                    docHeaders = headers,
+                                    records = scanRecords
+                                )
+                            )
+                    }
+                    DocType.TOIR_REPAIR_ESTIMATE -> {
+                        response =
+                            apiService.fillRepairEstimate(
                                 DocumentToUploaded(
                                     docType = docType,
                                     docHeaders = headers,
@@ -153,6 +174,39 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                             apiService.returnsRegistrationOfGoods(
                                 DocumentToUploaded(
                                     docType = docType,
+                                    docHeaders = headers,
+                                    records = scanRecords
+                                )
+                            )
+                    }
+                    DocType.BETWEEN_CELLS -> {
+                        response =
+                            apiService.createMovementOfGoods(
+                                DocumentToUploaded(
+                                    docType = docType,
+                                    virtualCellGuid = virtualCellGuid,
+                                    docHeaders = headers,
+                                    records = scanRecords
+                                )
+                            )
+                    }
+                    DocType.BETWEEN_WAREHOUSES -> {
+                        response =
+                            apiService.createMovementOfGoods(
+                                DocumentToUploaded(
+                                    docType = docType,
+                                    virtualCellGuid = virtualCellGuid,
+                                    docHeaders = headers,
+                                    records = scanRecords
+                                )
+                            )
+                    }
+                    DocType.FREE_MOVEMENT -> {
+                        response =
+                            apiService.createMovementOfGoods(
+                                DocumentToUploaded(
+                                    docType = docType,
+                                    virtualCellGuid = virtualCellGuid,
                                     docHeaders = headers,
                                     records = scanRecords
                                 )

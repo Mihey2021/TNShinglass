@@ -30,4 +30,7 @@ interface WarehousesDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun saveWarehouses(warehouses: List<WarehousesEntity>)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun saveWarehousesReceiver(warehousesReceiver: List<WarehousesEntity>)
+
 }

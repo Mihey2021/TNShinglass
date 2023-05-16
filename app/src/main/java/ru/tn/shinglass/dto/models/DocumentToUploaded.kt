@@ -12,6 +12,7 @@ class DocumentToUploaded (
 
 class DocHeaders(objDocumentHeaders: DocumentHeaders){
     private var warehouse: Warehouse? = null
+    private var warehouseReceiver: WarehouseReceiver? = null
     private var physicalPerson: PhysicalPerson? = null
     private var employee: Employee? = null
     private var division: Division? = null
@@ -21,6 +22,7 @@ class DocHeaders(objDocumentHeaders: DocumentHeaders){
 
     init {
         this.warehouse = objDocumentHeaders.getWarehouse()
+        this.warehouseReceiver = objDocumentHeaders.getWarehouseReceiver()
         this.physicalPerson = objDocumentHeaders.getPhysicalPerson()
         this.employee = objDocumentHeaders.getEmployee()
         this.division = objDocumentHeaders.getDivision()

@@ -50,6 +50,7 @@ class TableScanFragment : Fragment() {
     private val settingsViewModel: SettingsViewModel by viewModels()
 
     private val dataListWarehouses: ArrayList<Warehouse> = arrayListOf()
+    private val dataListWarehousesReceiver: ArrayList<WarehouseReceiver> = arrayListOf()
     private val dataListPhysicalPersons: ArrayList<PhysicalPerson> = arrayListOf()
     private val dataListEmployees: ArrayList<Employee> = arrayListOf()
     private val dataListDivisions: ArrayList<Division> = arrayListOf()
@@ -90,13 +91,14 @@ class TableScanFragment : Fragment() {
 
         user1C = AppAuth.getInstance().getAuthData()
 
-        AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) {authState ->
+        AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) { authState ->
             user1C = authState.user1C
         }
 
         viewModel.reloadTableScan(user1C.getUserGUID(), selectedOption.id)
 
-        isExternalDocument = selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE
+        isExternalDocument =
+            (selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE) || (selectedOption.docType == DocType.TOIR_REPAIR_ESTIMATE)
 
 //        with(binding) {
 //            headerTitleTextView.setTextColor(Color.BLACK)
@@ -108,11 +110,18 @@ class TableScanFragment : Fragment() {
 //            headerCellTextView.setTextColor(Color.BLACK)
 //        }
 
-        //if (selectedOption.docType != DocType.TOIR_REQUIREMENT_INVOICE) {
+        if (selectedOption.docType == DocType.BETWEEN_CELLS) {
+            binding.tableScanHeaders.headerCellTextView.setText(getString(R.string.header_cell_receiver))
+        }
+
         if (!isExternalDocument) {
             if (selectedOption.subOption?.headerFields?.contains(HeaderFields.WAREHOUSE) == true) {
                 if (DocumentHeaders.getWarehouse() == null)
                     viewModel.getAllWarehousesList()
+            }
+            if (selectedOption.subOption?.headerFields?.contains(HeaderFields.WAREHOUSE_RECEIVER) == true) {
+                if (DocumentHeaders.getWarehouseReceiver() == null)
+                    viewModel.getAllWarehousesList(receiver = true)
             }
             if (selectedOption.subOption?.headerFields?.contains(HeaderFields.PHYSICAL_PERSON) == true) {
                 if (DocumentHeaders.getPhysicalPerson() == null)
@@ -232,8 +241,13 @@ class TableScanFragment : Fragment() {
             when (motionEvent.action) {
                 MotionEvent.ACTION_DOWN -> {
                     if (selectedOption.docType == DocType.DISPOSABLE_PPE) {
-                        if (settingsViewModel.getPreferenceByKey<String>("virtual_cell_guid", "") == "") {
-                            DialogScreen.getDialog(
+                        if (settingsViewModel.getPreferenceByKey<String>(
+                                "virtual_cell_guid",
+                                ""
+                            ) == ""
+                        ) {
+                            dialog?.dismiss()
+                            dialog = DialogScreen.getDialog(
                                 requireContext(),
                                 DialogScreen.IDD_QUESTION,
                                 message = "В настройках не установлена виртуальная ячейка. Выгрузка документа невозможна",
@@ -255,9 +269,10 @@ class TableScanFragment : Fragment() {
 
 
                     if (selectedOption.option == OptionType.INVENTORY || selectedOption.option == OptionType.ACCEPTANCE
-                        || selectedOption.option == OptionType.SELECTION
+                        || selectedOption.option == OptionType.SELECTION || selectedOption.option == OptionType.MOVEMENTS
                     ) {
-                        DialogScreen.getDialog(
+                        dialog?.dismiss()
+                        dialog = DialogScreen.getDialog(
                             requireContext(),
                             DialogScreen.IDD_QUESTION,
                             message = "Отправить данные в 1С?",
@@ -271,8 +286,8 @@ class TableScanFragment : Fragment() {
                             }
                         )
 //                        retrofitViewModel.createInventoryOfGoods(itemList) //primary = Первичная инвент. (поиск в ТЧ 1С идет без учета ячейки, т.к. в ячейках там еще ничего нет)
-//                        progressDialog =
-//                            DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+                        //progressDialog =
+                            //DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
                     }
                     false
                 }
@@ -284,6 +299,8 @@ class TableScanFragment : Fragment() {
             if (it == null) return@observe
             //progressDialog?.dismiss()
             //Toast.makeText(requireContext(),"Документ отправлен!", Toast.LENGTH_LONG).show()
+            dialog?.dismiss()
+//            dialog =
             DialogScreen.getDialog(
                 requireContext(),
                 DialogScreen.IDD_SUCCESS,
@@ -298,7 +315,7 @@ class TableScanFragment : Fragment() {
 
         viewModel.data.observe(viewLifecycleOwner) {
             //if (selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE) {
-            if (isExternalDocument) {
+            if (isExternalDocument && (selectedOption.docType != DocType.TOIR_REPAIR_ESTIMATE)) {
                 binding.completeAndSendBtn.isEnabled =
                     checkScanTableForExternalDocument(it) && itemList.isNotEmpty()
             } else {
@@ -342,14 +359,24 @@ class TableScanFragment : Fragment() {
             }
 
             //adapter.submitList(it)
-            adapter.submitList(list)
+            if (isExternalDocument) {
+                if (list.isNotEmpty()) {
+                    if (list[0].ItemGUID.isNotEmpty()) {
+                        adapter.submitList(list)
+                    }
+                } else {
+                    adapter.submitList(list)
+                }
+            } else {
+                adapter.submitList(list)
+            }
             //refreshing = false
 
             itemList = it
 
             if (itemList.isNotEmpty()) {
                 binding.infoTextView.text =
-                    "${getString(R.string.info_table_scan_continue_text)} ${itemList[0].cellTitle}"
+                    "${getString(R.string.info_table_scan_continue_text)} ${if (itemList[0].cellReceiverGuid.isNullOrBlank()) itemList[0].cellTitle else itemList[0].cellReceiverTitle}"
 
                 val externalDocumentTitle = itemList[0].docTitle
                 if (externalDocumentTitle != "")
@@ -369,7 +396,7 @@ class TableScanFragment : Fragment() {
             if (error == null) return@observe
 
             dialog?.dismiss()
-            DialogScreen.getDialog(
+            dialog = DialogScreen.getDialog(
                 requireContext(),
                 DialogScreen.IDD_ERROR,
                 error.message,
@@ -427,31 +454,66 @@ class TableScanFragment : Fragment() {
 
                     if (!showingDialog) {
                         dlgHeadersAndOther = getDocumentHeadersDialog(args)
+                        return@observe
                     }
                 } else {
                     openDetailScanFragment(args)
+                    return@observe
                 }
             } else {
                 //val lastIndex = itemList.count() - 1
                 //binding.infoTextView.text = "Чтобы начать, отсканируйте ячейку или номенклатуру.\nТекущая ячейка: ${itemList[lastIndex].cellTitle}"
-                args.putSerializable(
-                    "editRecord",
-                    TableScan(
-                        cellGuid = itemList[0].cellGuid,
-                        cellTitle = itemList[0].cellTitle,
-                        docHeaders = itemList[0].docHeaders,
+                if (thisOnePositionAndEmpty(itemList)) {
+                    if (checkHeadersDataFail()) {
+                        if (!showingDialog) {
+                            dlgHeadersAndOther = getDocumentHeadersDialog(args)
+                            return@observe
+                        }
+                    }
+                    //openDetailScanFragment(args)
+                    args.putSerializable(
+                        "editRecord",
+                        TableScan(
+                            id = itemList[0].id,
+                            docTitle = itemList[0].docTitle,
+                            docGuid = itemList[0].docGuid,
+                            cellGuid = itemList[0].cellGuid,
+                            cellTitle = itemList[0].cellTitle,
+                            docHeaders = itemList[0].docHeaders,
+                            OwnerGuid = user1C.getUserGUID()
+                        )
+                    )
+                    findNavController().navigate(
+                        R.id.action_tableScanFragment_to_detailScanFragment,
+                        args
+                    )
+                    return@observe
+                } else {
+                    openDetailScanFragment(args, itemList)
+                    return@observe
+                }
+            }
+
+            args.putSerializable(
+                "editRecord",
+                TableScan(
+                    docTitle = itemList[0].docTitle,
+                    docGuid = itemList[0].docGuid,
+                    cellGuid = itemList[0].cellGuid,
+                    cellTitle = itemList[0].cellTitle,
+                    docHeaders = itemList[0].docHeaders,
 //                        warehouseGuid = itemList[0].warehouseGuid,
 //                        PhysicalPersonGUID = itemList[0].PhysicalPersonGUID,
 //                        PhysicalPersonTitle = itemList[0].PhysicalPersonTitle,
-                        OwnerGuid = user1C.getUserGUID()
-                    )
+                    OwnerGuid = user1C.getUserGUID()
                 )
-                findNavController().navigate(
-                    R.id.action_tableScanFragment_to_detailScanFragment,
-                    args
-                )
-            }
+            )
+            findNavController().navigate(
+                R.id.action_tableScanFragment_to_detailScanFragment,
+                args
+            )
         }
+
 
 //        retrofitViewModel.listDataWarehouses.observe(viewLifecycleOwner) {
 //            if (it.isEmpty()) return@observe
@@ -460,7 +522,8 @@ class TableScanFragment : Fragment() {
 //            setWarehousesAdapter(dlgBinding)
 //        }
 
-        viewModel.dataState.observe(viewLifecycleOwner) {
+        viewModel.dataState.observe(viewLifecycleOwner)
+        {
             if (it.loading) {
                 if (dialog?.isShowing == false || dialog == null)
                     dialog =
@@ -471,7 +534,7 @@ class TableScanFragment : Fragment() {
             if (it.error) {
                 //DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR, title = it.errorMessage)
                 dialog?.dismiss()
-                DialogScreen.getDialog(
+                dialog = DialogScreen.getDialog(
                     requireContext(),
                     DialogScreen.IDD_ERROR,
                     it.errorMessage,
@@ -480,6 +543,9 @@ class TableScanFragment : Fragment() {
                             when (it.requestName) {
                                 "getAllWarehousesList" -> {
                                     viewModel.getAllWarehousesList()
+                                }
+                                "getAllWarehousesReceiverList" -> {
+                                    viewModel.getAllWarehousesList(receiver = true)
                                 }
                                 "getAllPhysicalPerson" -> {
                                     viewModel.getAllPhysicalPerson()
@@ -495,7 +561,8 @@ class TableScanFragment : Fragment() {
             }
         }
 
-        viewModel.divisionsList.observe(viewLifecycleOwner) {
+        viewModel.divisionsList.observe(viewLifecycleOwner)
+        {
             if (it.isEmpty()) return@observe
 
             dataListDivisions.clear()
@@ -506,7 +573,8 @@ class TableScanFragment : Fragment() {
             }
         }
 
-        viewModel.warehousesList.observe(viewLifecycleOwner) {
+        viewModel.warehousesList.observe(viewLifecycleOwner)
+        {
             if (it.isEmpty()) return@observe
 
             dataListWarehouses.clear()
@@ -517,7 +585,27 @@ class TableScanFragment : Fragment() {
             }
         }
 
-        viewModel.physicalPersons.observe(viewLifecycleOwner) {
+        viewModel.warehousesReceiverList.observe(viewLifecycleOwner)
+        {
+            if (it.isEmpty()) return@observe
+
+            dataListWarehousesReceiver.clear()
+            dataListWarehousesReceiver.add(
+                WarehouseReceiver(
+                    getString(R.string.not_chosen_text),
+                    "",
+                    "",
+                    ""
+                )
+            )
+
+            it.forEach { warehouseReceiver ->
+                dataListWarehousesReceiver.add(warehouseReceiver)
+            }
+        }
+
+        viewModel.physicalPersons.observe(viewLifecycleOwner)
+        {
             if (it.isEmpty()) return@observe
 
             dataListPhysicalPersons.clear()
@@ -528,7 +616,8 @@ class TableScanFragment : Fragment() {
             }
         }
 
-        viewModel.employees.observe(viewLifecycleOwner) {
+        viewModel.employees.observe(viewLifecycleOwner)
+        {
             if (it.isEmpty()) return@observe
 
             dataListEmployees.clear()
@@ -539,7 +628,8 @@ class TableScanFragment : Fragment() {
             }
         }
 
-        viewModel.counterpartiesList.observe(viewLifecycleOwner) {
+        viewModel.counterpartiesList.observe(viewLifecycleOwner)
+        {
             dataListCounterparties.clear()
             it.forEach { counterparty ->
                 dataListCounterparties.add(counterparty)
@@ -551,19 +641,33 @@ class TableScanFragment : Fragment() {
                 dataListCounterparties
             )
             (dlgBinding.counterpartyTextEdit as? AutoCompleteTextView)?.setAdapter(adapter)
-            if ((dlgHeadersAndOther?.isShowing == true) && dataListCounterparties.isEmpty())
-                DialogScreen.getDialog(
+            if ((dlgHeadersAndOther?.isShowing == true) && dataListCounterparties.isEmpty()) {
+                dialog?.dismiss()
+                dialog = DialogScreen.getDialog(
                     requireContext(),
                     DialogScreen.IDD_SUCCESS,
                     getString(R.string.specify_name_or_inn_text),
                     getString(R.string.nothing_found_text),
                     titleIcon = R.drawable.ic_baseline_search_off_24
                 )
-            else
+            } else {
                 dlgBinding.counterpartyTextEdit.showDropDown()
+            }
         }
 
         return binding.root
+    }
+
+    private fun thisOnePositionAndEmpty(itemList: List<TableScan>): Boolean {
+        var isOnePositionAndEmpty = false
+        if (itemList.isNotEmpty()) {
+            if (itemList.count() == 1) {
+                if (itemList[0].ItemGUID.isEmpty()) {
+                    isOnePositionAndEmpty = true
+                }
+            }
+        }
+        return isOnePositionAndEmpty
     }
 
     override fun onCreateContextMenu(
@@ -652,7 +756,12 @@ class TableScanFragment : Fragment() {
     }
 
     private fun createDocumentIn1C() {
-        viewModel.createDocumentIn1C(itemList, selectedOption.docType!!, settingsViewModel.getPreferenceByKey<String>("virtual_cell_guid", "") ?: "")
+        dialog = DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+        viewModel.createDocumentIn1C(
+            itemList,
+            selectedOption.docType!!,
+            settingsViewModel.getPreferenceByKey<String>("virtual_cell_guid", "") ?: ""
+        )
     }
 
     @SuppressLint("SimpleDateFormat")
@@ -790,6 +899,45 @@ class TableScanFragment : Fragment() {
                 }
             } else {
                 warehouseTextInputLayout.isVisible = false
+            }
+
+            if (docHeadersFields?.contains(HeaderFields.WAREHOUSE_RECEIVER) == true) {
+                val warehousesReceiverAdapter = DynamicListAdapter<WarehouseReceiver>(
+                    requireContext(),
+                    R.layout.dynamic_prefs_layout,
+                    dataListWarehousesReceiver
+                )
+
+                warehouseReceiverTextView.isEnabled = tableIsEmpty
+
+                if (!tableIsEmpty) warehouseReceiverTextInputLayout.endIconMode =
+                    TextInputLayout.END_ICON_NONE
+
+                warehouseReceiverTextView.setAdapter(warehousesReceiverAdapter)
+
+                warehouseReceiverTextView.setText(DocumentHeaders.getWarehouseReceiver()?.warehouseReceiverTitle)
+                warehouseReceiverTextInputLayout.error = null
+
+                warehouseReceiverTextView.setOnClickListener {
+                    if (warehouseReceiverTextView.adapter == null || warehouseReceiverTextView.adapter.count == 0) {
+                        viewModel.getAllWarehousesList(receiver = true)
+                    }
+                }
+
+                warehouseReceiverTextView.setOnItemClickListener { adapterView, _, position, _ ->
+                    val warehouseReceiverItem =
+                        adapterView.getItemAtPosition(position) as WarehouseReceiver
+                    if (warehouseReceiverItem.warehouseReceiverGuid == "") {
+                        DocumentHeaders.setWarehouseReceiver(null)
+                    } else {
+                        DocumentHeaders.setWarehouseReceiver(warehouseReceiverItem)
+                    }
+                    warehouseReceiverTextView.setText(warehouseReceiverItem?.warehouseReceiverTitle)
+                    warehouseReceiverTextInputLayout.error = null
+                    AndroidUtils.hideKeyboard(dlgBinding.root)
+                }
+            } else {
+                warehouseReceiverTextInputLayout.isVisible = false
             }
 
             if (docHeadersFields?.contains(HeaderFields.PHYSICAL_PERSON) == true) {
@@ -1066,7 +1214,7 @@ class TableScanFragment : Fragment() {
     }
 
     //true  - не все заполнено
-    //false - все заполнено
+//false - все заполнено
     private fun checkHeadersDataFail(): Boolean {
         var isNotCorrect = false
         var fieldValueIsNotCorrect = false
@@ -1098,6 +1246,19 @@ class TableScanFragment : Fragment() {
                     //return isNotCorrect
                 }
                 warehouseTextInputLayout?.error = null
+            }
+            if (it == HeaderFields.WAREHOUSE_RECEIVER) {
+                fieldValueIsNotCorrect = DocumentHeaders.getWarehouseReceiver() == null
+                isNotCorrect = (fieldValueIsNotCorrect || isNotCorrect)
+                val warehouseReceiverTextInputLayout =
+                    dlgHeadersAndOther?.findViewById<TextInputLayout>(HeaderFields.WAREHOUSE_RECEIVER.viewId)
+                if (fieldValueIsNotCorrect) {
+                    warehouseReceiverTextInputLayout?.error =
+                        getString(R.string.field_must_be_filled_text)
+                    return@forEach
+                    //return isNotCorrect
+                }
+                warehouseReceiverTextInputLayout?.error = null
             }
             if (it == HeaderFields.PHYSICAL_PERSON) {
                 fieldValueIsNotCorrect = DocumentHeaders.getPhysicalPerson() == null
@@ -1152,7 +1313,7 @@ class TableScanFragment : Fragment() {
     }
 
 
-    private fun openDetailScanFragment(args: Bundle) {
+    private fun openDetailScanFragment(args: Bundle, itemList: List<TableScan>? = null) {
         //if (DocumentHeaders.getWarehouse() != null && DocumentHeaders.getPhysicalPerson() != null) {
         if (!checkHeadersDataFail()) {
 //            val warehouseGuid = DocumentHeaders.getWarehouse()?.warehouseGuid.toString()
@@ -1160,16 +1321,29 @@ class TableScanFragment : Fragment() {
 //                DocumentHeaders.getPhysicalPerson()?.physicalPersonGuid.toString()
 //            val physicalPersonTitle =
 //                DocumentHeaders.getPhysicalPerson()?.physicalPersonFio.toString()
-            args.putSerializable(
-                "editRecord",
-                TableScan(
-                    OwnerGuid = user1C.getUserGUID(),
+            if (itemList != null) {
+                args.putSerializable(
+                    "editRecord",
+                    TableScan(
+                        //id = itemList[0].id,
+                        docTitle = itemList[0].docTitle,
+                        docGuid = itemList[0].docGuid,
+                        OwnerGuid = user1C.getUserGUID(),
+                        docHeaders = DocumentHeaders
+                    )
+                )
+            } else {
+                args.putSerializable(
+                    "editRecord",
+                    TableScan(
+                        OwnerGuid = user1C.getUserGUID(),
 //                    warehouseGuid = warehouseGuid,
 //                    PhysicalPersonGUID = physicalPersonGuid,
 //                    PhysicalPersonTitle = physicalPersonTitle
-                    docHeaders = DocumentHeaders
+                        docHeaders = DocumentHeaders
+                    )
                 )
-            )
+            }
             dlgHeadersAndOther?.dismiss()
             findNavController().navigate(
                 R.id.action_tableScanFragment_to_detailScanFragment,
@@ -1198,6 +1372,10 @@ class TableScanFragment : Fragment() {
             DocumentHeaders.setIncomingDate(null)
             DocumentHeaders.setIncomingNumber("")
         }
+
+        dlgHeadersAndOther?.dismiss()
+        //dialog?.dismiss()
+
         super.onDestroy()
     }
 

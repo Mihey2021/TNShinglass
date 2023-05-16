@@ -84,7 +84,7 @@
             android:gravity="center"
             android:paddingStart="2dp"
             android:paddingEnd="2dp"
-            android:text="@string/header_cell"
+            android:text="@string/cell_text"
             android:textAlignment="center"
             android:textAllCaps="true"
             android:textColor="@color/black"

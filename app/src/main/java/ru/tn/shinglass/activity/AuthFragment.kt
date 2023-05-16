@@ -3,6 +3,8 @@ package ru.tn.shinglass.activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.util.Log.WARN
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -253,10 +255,14 @@ class AuthFragment : Fragment() {
 //                            .build()
                         //WorkManager.getInstance(requireContext()).enqueue(request)
                         AndroidUtils.hideKeyboard(requireView())
-                        findNavController().navigate(
-                            R.id.action_authFragment_to_desktopFragment,
-                            //args
-                        )
+                        try {
+                            findNavController().navigate(
+                                R.id.action_authFragment_to_desktopFragment,
+                                //args
+                            )
+                        } catch (e: Exception) {
+                            Log.e("Exception", e.stackTraceToString())
+                        }
                     }
                 } else {
                     when (response.code()) {

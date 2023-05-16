@@ -57,7 +57,8 @@
     <string name="header_nomenclature">Nomenclature</string>
     <string name="header_quantity">Qty</string>
     <string name="header_unit_of_measurement">UOM</string>
-    <string name="header_cell">Cell</string>
+    <string name="header_cell">Cell from</string>
+    <string name="header_cell_receiver">Cell receiver</string>
     <string name="header_virtual_cell">Virtual cell</string>
     <string name="retry_loading">Retry</string>
     <string name="error_loading">An error occurred when accessing the server. Repeat later.</string>
@@ -67,6 +68,7 @@
     <string name="empty_password_error_text">Password is not specified!</string>
     <string name="request_to_server">Request to the server...</string>
     <string name="question_exit_text">Do you really want to get out?</string>
+    <string name="question_exit_session_text">Are you sure you want to end the session?</string>
     <string name="ok_text">Ok</string>
     <string name="quantity_full_text">Quantity</string>
     <string name="apply_text">Apply</string>
@@ -122,4 +124,7 @@
     <string name="barcode_parsing_tn">TN barcode parsing</string>
     <string name="scan_tn_barcode_text">[Scan a TN barcode]</string>
     <string name="barcode_length_less_than_48_characters">Barcode length is less than 48 characters</string>
+    <string name="clear">Clear</string>
+    <string name="next">Next >></string>
+    <string name="warehouse_receiver_title">Warehouse receiver</string>
 </resources>

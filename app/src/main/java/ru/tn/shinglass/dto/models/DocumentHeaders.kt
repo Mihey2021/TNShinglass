@@ -5,6 +5,7 @@ import java.io.Serializable
 
 object DocumentHeaders : Serializable {
     private var warehouse: Warehouse? = null
+    private var warehouseReceiver: WarehouseReceiver? = null
     private var physicalPerson: PhysicalPerson? = null
     private var employee: Employee? = null
     private var division: Division? = null
@@ -16,6 +17,11 @@ object DocumentHeaders : Serializable {
     fun getWarehouse(): Warehouse? = warehouse
     fun setWarehouse(warehouse: Warehouse?) {
         this.warehouse = warehouse
+    }
+
+    fun getWarehouseReceiver(): WarehouseReceiver? = warehouseReceiver
+    fun setWarehouseReceiver(warehouseReceiver: WarehouseReceiver?) {
+        this.warehouseReceiver = warehouseReceiver
     }
 
     fun getPhysicalPerson(): PhysicalPerson? = physicalPerson

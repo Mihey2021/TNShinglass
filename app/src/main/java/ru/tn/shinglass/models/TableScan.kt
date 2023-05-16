@@ -12,6 +12,8 @@ data class TableScan (
     val OperationTitle: String = "",
     val cellTitle: String = "",
     val cellGuid: String = "",
+    val cellReceiverTitle: String = "",
+    val cellReceiverGuid: String = "",
     val ItemTitle: String = "",
     val ItemGUID: String = "",
     val ItemMeasureOfUnitTitle: String = "",
