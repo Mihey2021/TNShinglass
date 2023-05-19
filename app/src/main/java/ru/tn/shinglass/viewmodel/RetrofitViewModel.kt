@@ -98,55 +98,52 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
 //    }
 
     fun getCellByBarcode(barcode: String, warehouseGuid: String) {
-        try {
-            viewModelScope.launch {
+        viewModelScope.launch {
+            try {
                 _dataState.value = ModelState(loading = true)
                 _cellData.value = repository.getCellByBarcode(barcode, warehouseGuid)
                 //_requestError.value = null
                 _dataState.value = ModelState()
+            } catch (e: Exception) {
+                //_requestError.value = RequestError(e.message.toString(), "getCellByBarcode")
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getCellByBarcode"
+                )
             }
-
-        } catch (e: Exception) {
-            //_requestError.value = RequestError(e.message.toString(), "getCellByBarcode")
-            _dataState.value = ModelState(
-                error = true,
-                errorMessage = e.message.toString(),
-                requestName = "getCellByBarcode"
-            )
         }
     }
 
     fun getCellsList(warehouseGuid: String) {
-        try {
-            viewModelScope.launch {
+        viewModelScope.launch {
+            try {
                 _dataState.value = ModelState(loading = true)
                 _cellListData.value = repository.getCellsList(warehouseGuid)
                 _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getCellsList"
+                )
             }
-
-        } catch (e: Exception) {
-            _dataState.value = ModelState(
-                error = true,
-                errorMessage = e.message.toString(),
-                requestName = "getCellsList"
-            )
         }
     }
 
     fun getCellByGuid(cellGuid: String) {
-        try {
-            viewModelScope.launch {
+        viewModelScope.launch {
+            try {
                 _dataState.value = ModelState(loading = true)
                 _virtualCellData.value = repository.getCellByGuid(cellGuid)
                 _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getCellByGuid"
+                )
             }
-
-        } catch (e: Exception) {
-            _dataState.value = ModelState(
-                error = true,
-                errorMessage = e.message.toString(),
-                requestName = "getCellByGuid"
-            )
         }
     }
 

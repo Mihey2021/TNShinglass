@@ -14,7 +14,7 @@ import java.io.IOException
 
 class RetrofitRepositoryImpl : RetrofitRepository {
 
-    private val apiService = ApiUtils.getApiService()
+    //private val apiService = ApiUtils.getApiService()
     override fun authorization(user: RequestLogin, callback: RetrofitRepository.Callback<User1C>) {
         TODO("Not yet implemented")
     }
@@ -33,13 +33,13 @@ class RetrofitRepositoryImpl : RetrofitRepository {
 
     override suspend fun getCellByBarcode(barcode: String, warehouseGuid: String): Cell {
         try {
-            if (apiService != null) {
+            if (ApiUtils.getApiService() != null) {
                 val response =
-                    apiService.getCellByBarcode(barcode, warehouseGuid)
+                    ApiUtils.getApiService()!!.getCellByBarcode(barcode, warehouseGuid)
                 if (!response.isSuccessful) {
-                    throw ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiError(response.code(), response.message())
+                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }
@@ -55,18 +55,18 @@ class RetrofitRepositoryImpl : RetrofitRepository {
         barcode: String,
         callback: RetrofitRepository.Callback<Nomenclature>
     ) {
-        apiService?.getItemByBarcode(barcode)?.enqueue(getCallbackHandler(callback))
+        ApiUtils.getApiService()?.getItemByBarcode(barcode)?.enqueue(getCallbackHandler(callback))
     }
 
     override suspend fun getCellsList(warehouseGuid: String): List<Cell> {
         try {
-            if (apiService != null) {
+            if (ApiUtils.getApiService() != null) {
                 val response =
-                    apiService.getCellsList(warehouseGuid)
+                    ApiUtils.getApiService()!!.getCellsList(warehouseGuid)
                 if (!response.isSuccessful) {
-                    throw ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiError(response.code(), response.message())
+                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }
@@ -79,13 +79,13 @@ class RetrofitRepositoryImpl : RetrofitRepository {
 
     override suspend fun getCellByGuid(cellGuid: String): Cell {
         try {
-            if (apiService != null) {
+            if (ApiUtils.getApiService() != null) {
                 val response =
-                    apiService.getCellByGuid(cellGuid)
+                    ApiUtils.getApiService()!!.getCellByGuid(cellGuid)
                 if (!response.isSuccessful) {
-                    throw ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiError(response.code(), response.message())
+                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }

@@ -1,17 +1,12 @@
 package ru.tn.shinglass.activity
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.SimpleExpandableListAdapter
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.core.os.bundleOf
-import androidx.fragment.app.setFragmentResult
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.OnBackPressedListener
@@ -20,13 +15,10 @@ import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.OnOptionsInteractionListener
 import ru.tn.shinglass.adapters.OptionsMenuExpListAdapter
-import ru.tn.shinglass.auth.AppAuth
 import ru.tn.shinglass.databinding.FragmentDesktopBinding
-import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.models.Option
 import ru.tn.shinglass.models.OptionType
 import ru.tn.shinglass.viewmodel.DesktopViewModel
-import kotlin.system.exitProcess
 
 private const val ATTR_OPTION_GROUP = "option"
 private const val ATTR_SUB_OPTION_GROUP = "subOption"
@@ -110,15 +102,30 @@ class DesktopFragment : Fragment(), OnBackPressedListener {
 
     override fun onBackPressed() {
         //Toast.makeText(requireContext(), "Back Btn pressed", Toast.LENGTH_LONG).show()
-        dialog?.dismiss()
-        dialog = DialogScreen.getDialog(requireContext(), DialogScreen.IDD_QUESTION,
-            resources.getString(R.string.question_exit_session_text),
+        //dialog?.dismiss()
+        DialogScreen.getDialog()?.dismiss()
+        //dialog =
+            DialogScreen.showDialog(requireContext(), DialogScreen.IDD_QUESTION,
+            message = resources.getString(R.string.question_exit_session_text),
+            title = resources.getString(R.string.question_exit_session_title),
             onDialogsInteractionListener = object : OnDialogsInteractionListener {
                 override fun onPositiveClickButton() {
                     //exitProcess(0)
                     findNavController().navigateUp()
                 }
             })
+    }
+
+//    override fun onStop() {
+//        dialog?.dismiss()
+//        super.onStop()
+//    }
+
+    override fun onDestroyView() {
+        //dialog?.dismiss()
+        DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+        DialogScreen.getDialog()?.dismiss()
+        super.onDestroyView()
     }
 
 }

@@ -21,7 +21,7 @@ import java.io.IOException
 
 class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanRepository {
 
-    private val apiService = ApiUtils.getApiService()
+    //private val apiService = ApiUtils.getApiService()
 
     override fun saveScanRecord(record: TableScan, forceOverwrite: Boolean) {
         var existingRecord: TableScanEntity? = null
@@ -79,7 +79,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
         virtualCellGuid: String,
     ): CreatedDocumentDetails {
         try {
-            if (apiService != null) {
+            if (ApiUtils.getApiService() != null) {
                 val headers =
                     if (scanRecords.isEmpty()) DocHeaders(DocumentHeaders) else DocHeaders(
                         scanRecords[0].docHeaders
@@ -89,7 +89,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                 when (docType) {
                     DocType.INVENTORY_IN_CELLS -> {
                         response =
-                            apiService.createInventoryOfGoods(
+                            ApiUtils.getApiService()!!.createInventoryOfGoods(
                                 DocumentToUploaded(
                                     docType = docType,
                                     docHeaders = headers,
@@ -99,7 +99,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     }
                     DocType.STANDARD_ACCEPTANCE -> {
                         response =
-                            apiService.createGoodsReceiptOrder(
+                            ApiUtils.getApiService()!!.createGoodsReceiptOrder(
                                 DocumentToUploaded(
                                     docType = docType,
                                     docHeaders = headers,
@@ -109,7 +109,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     }
                     DocType.ACCEPTANCE_OF_KITS -> {
                         response =
-                            apiService.createMovementOfGoods(
+                            ApiUtils.getApiService()!!.createMovementOfGoods(
                                 DocumentToUploaded(
                                     docType = docType,
                                     virtualCellGuid = virtualCellGuid,
@@ -120,7 +120,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     }
                     DocType.REQUIREMENT_INVOICE -> {
                         response =
-                            apiService.createRequirementInvoice(
+                            ApiUtils.getApiService()!!.createRequirementInvoice(
                                 DocumentToUploaded(
                                     docType = docType,
                                     docHeaders = headers,
@@ -130,7 +130,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     }
                     DocType.TOIR_REQUIREMENT_INVOICE -> {
                         response =
-                            apiService.createRequirementInvoice(
+                            ApiUtils.getApiService()!!.createRequirementInvoice(
                                 DocumentToUploaded(
                                     docType = docType,
                                     docHeaders = headers,
@@ -140,7 +140,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     }
                     DocType.TOIR_REPAIR_ESTIMATE -> {
                         response =
-                            apiService.fillRepairEstimate(
+                            ApiUtils.getApiService()!!.fillRepairEstimate(
                                 DocumentToUploaded(
                                     docType = docType,
                                     docHeaders = headers,
@@ -150,7 +150,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     }
                     DocType.WORKWEAR_TOOLS -> {
                         response =
-                            apiService.createTransferOfMaterialsIntoOperation(
+                            ApiUtils.getApiService()!!.createTransferOfMaterialsIntoOperation(
                                 DocumentToUploaded(
                                     docType = docType,
                                     docHeaders = headers,
@@ -160,7 +160,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     }
                     DocType.DISPOSABLE_PPE -> {
                         response =
-                            apiService.createMovementOfGoods(
+                            ApiUtils.getApiService()!!.createMovementOfGoods(
                                 DocumentToUploaded(
                                     docType = docType,
                                     virtualCellGuid = virtualCellGuid,
@@ -171,7 +171,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     }
                     DocType.RETURNS_REGISTRATION_OF_GOODS -> {
                         response =
-                            apiService.returnsRegistrationOfGoods(
+                            ApiUtils.getApiService()!!.returnsRegistrationOfGoods(
                                 DocumentToUploaded(
                                     docType = docType,
                                     docHeaders = headers,
@@ -181,7 +181,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     }
                     DocType.BETWEEN_CELLS -> {
                         response =
-                            apiService.createMovementOfGoods(
+                            ApiUtils.getApiService()!!.createMovementOfGoods(
                                 DocumentToUploaded(
                                     docType = docType,
                                     virtualCellGuid = virtualCellGuid,
@@ -192,7 +192,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     }
                     DocType.BETWEEN_WAREHOUSES -> {
                         response =
-                            apiService.createMovementOfGoods(
+                            ApiUtils.getApiService()!!.createMovementOfGoods(
                                 DocumentToUploaded(
                                     docType = docType,
                                     virtualCellGuid = virtualCellGuid,
@@ -203,7 +203,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     }
                     DocType.FREE_MOVEMENT -> {
                         response =
-                            apiService.createMovementOfGoods(
+                            ApiUtils.getApiService()!!.createMovementOfGoods(
                                 DocumentToUploaded(
                                     docType = docType,
                                     virtualCellGuid = virtualCellGuid,
@@ -221,7 +221,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                         }"
                     )
                 }
-                val body = response.body() ?: throw ApiError(response.code(), response.message())
+                val body = response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
 //                dao.saveDivisions(body.toEntity())
                 scanRecords.forEach { record ->
                     dao.save(
@@ -245,13 +245,13 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
 
     override suspend fun getCounterpartiesList(title: String): List<Counterparty> {
         try {
-            if (apiService != null) {
+            if (ApiUtils.getApiService() != null) {
                 val response =
-                    apiService.getCounterpartiesList(title)
+                    ApiUtils.getApiService()!!.getCounterpartiesList(title)
                 if (!response.isSuccessful) {
-                    throw ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiError(response.code(), response.message())
+                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }
@@ -289,13 +289,13 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
 
     override suspend fun getInternalOrderList(): List<ExternalDocument> {
         try {
-            if (apiService != null) {
+            if (ApiUtils.getApiService() != null) {
                 val response =
-                    apiService.getInternalOrderList()
+                    ApiUtils.getApiService()!!.getInternalOrderList()
                 if (!response.isSuccessful) {
-                    throw ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiError(response.code(), response.message())
+                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }

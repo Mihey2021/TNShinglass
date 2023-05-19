@@ -1,23 +1,17 @@
 package ru.tn.shinglass.activity
 
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.util.Log.WARN
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.work.Constraints
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -28,22 +22,18 @@ import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.api.ApiUtils
 import ru.tn.shinglass.auth.AppAuth
-import ru.tn.shinglass.auth.AuthState
 import ru.tn.shinglass.data.api.ApiService
 import ru.tn.shinglass.databinding.FragmentAuthBinding
-import ru.tn.shinglass.databinding.DocumentsHeadersInitDialogBinding
 import ru.tn.shinglass.dto.models.PreferenceKeys
 import ru.tn.shinglass.dto.models.RequestLogin
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
-import ru.tn.shinglass.workers.AuthManagerWorker
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
 import java.util.regex.Matcher
 import java.util.regex.Pattern
-import kotlin.system.exitProcess
 
 const val DOMAIN_NAME = "@tn.ru"
 
@@ -79,13 +69,14 @@ class AuthFragment : Fragment() {
                     true
                 }
                 R.id.menu_exit -> {
-                    DialogScreen.getDialog(
+                    DialogScreen.getDialog()?.dismiss()
+                    DialogScreen.showDialog(
                         requireContext(),
                         DialogScreen.IDD_QUESTION,
                         resources.getString(R.string.question_exit_text),
                         onDialogsInteractionListener = object : OnDialogsInteractionListener {
                             override fun onPositiveClickButton() {
-                                exitProcess(0)
+                                AndroidUtils.closeActivity(requireActivity())
                             }
                         })
                     true
@@ -218,8 +209,9 @@ class AuthFragment : Fragment() {
     }
 
     private fun openSettingsDialog() {
-        val intent = Intent(requireContext(), SettingsActivity::class.java)
-        startActivity(intent)
+//        val intent = Intent(requireContext(), SettingsActivity::class.java)
+//        startActivity(intent)
+        findNavController().navigate(R.id.action_global_settingsFragment)
     }
 
     private fun completeLogin(login: String) =
@@ -227,7 +219,9 @@ class AuthFragment : Fragment() {
 
     private fun loginAttempt(login: String, password: String) {
 
-        val progressDialog = DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+        //val progressDialog =
+        DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+        DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
 
         if (apiService == null) return
 
@@ -236,8 +230,8 @@ class AuthFragment : Fragment() {
         user1C?.enqueue(object : Callback<User1C?> {
             @RequiresApi(Build.VERSION_CODES.O)
             override fun onResponse(call: Call<User1C?>, response: Response<User1C?>) {
-                //binding.loadingProgressBar.visibility = View.GONE
-                progressDialog.dismiss()
+                //progressDialog.dismiss()
+                DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
                 if (response.isSuccessful) {
                     val user1C: User1C? = response.body()
                     if (user1C != null) {
@@ -267,11 +261,12 @@ class AuthFragment : Fragment() {
                 } else {
                     when (response.code()) {
                         401 -> {
-                            DialogScreen.getDialog(
+                            DialogScreen.getDialog()?.dismiss()
+                            DialogScreen.showDialog(
                                 requireContext(),
                                 DialogScreen.IDD_ERROR_SINGLE_BUTTON,
                                 "${
-                                    response.errorBody()!!.string()
+                                    resources.getString(R.string.http_service_authorization_error) + "\n\n" + response.errorBody()!!.string()
                                 }(${getString(R.string.text_code)}: ${response.code()})",
                                 positiveButtonTitle = resources.getString(R.string.ok_text)
                             )
@@ -284,7 +279,8 @@ class AuthFragment : Fragment() {
 //                        )
                         }
                         else -> {
-                            DialogScreen.getDialog(
+                            DialogScreen.getDialog()?.dismiss()
+                            DialogScreen.showDialog(
                                 requireContext(),
                                 DialogScreen.IDD_ERROR,
                                 "${
@@ -307,9 +303,11 @@ class AuthFragment : Fragment() {
 
             override fun onFailure(call: Call<User1C?>, t: Throwable) {
 
-                progressDialog.dismiss()
+                //progressDialog.dismiss()
+                DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+                DialogScreen.getDialog()?.dismiss()
 
-                DialogScreen.getDialog(
+                DialogScreen.showDialog(
                     requireContext(),
                     DialogScreen.IDD_ERROR,
                     t.message.toString(),

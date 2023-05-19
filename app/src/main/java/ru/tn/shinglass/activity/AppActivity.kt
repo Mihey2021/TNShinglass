@@ -20,7 +20,8 @@ import ru.tn.shinglass.viewmodel.SettingsViewModel
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-const val SESSION_LIFETIME_MIN: Long = 10L
+const val SESSION_LIFETIME_MIN: Float = 10F
+//const val SESSION_LIFETIME_MIN: Float = 0.083F
 
 class AppActivity : AppCompatActivity() {
 
@@ -66,7 +67,7 @@ class AppActivity : AppCompatActivity() {
     override fun onUserInteraction() {
         super.onUserInteraction()
         idleHandler.removeCallbacks(runnable)
-        idleHandler.postDelayed(runnable, (SESSION_LIFETIME_MIN * 1000 * 60))
+        idleHandler.postDelayed(runnable, (SESSION_LIFETIME_MIN * 1000 * 60).toLong())
     }
 
 //    override fun onBackPressed() {

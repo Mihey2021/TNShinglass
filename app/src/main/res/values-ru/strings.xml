@@ -116,4 +116,8 @@
     <string name="next">Далее >></string>
     <string name="warehouse_receiver_title">Склад (куда)</string>
     <string name="question_exit_session_text">Вы действительно хотите завршить сеанс?</string>
+    <string name="question_exit_session_title">Завершить сеанс</string>
+    <string name="http_service_authorization_error">Ошибка авторизации http-сервиса. Проверьте логин/пароль для http-сервиса</string>
+    <string name="application_will_now_be_restarted">Чтобы изменения вступили в силу, необходимо перезапустить приложение. \nПерезапустить сейчас?</string>
+    <string name="recreate_connection_text">Требуется пересоздать подключение. Применить сейчас?</string>
 </resources>

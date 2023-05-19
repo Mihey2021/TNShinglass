@@ -17,18 +17,18 @@ import java.io.IOException
 import java.lang.Exception
 
 class PhysicalPersonRepositoryImpl(private val dao: PhysicalPersonDao) : PhysicalPersonRepository {
-    private val apiService = ApiUtils.getApiService()
+    //private val apiService = ApiUtils.getApiService()
 
     override val physicalPersons = dao.getAllPhysicalPerson().map(List<PhysicalPersonEntity>::toDto)
 
     override suspend fun getPhysicalPersonList() {
         try {
-            if(apiService != null) {
-                val response = apiService.getPhysicalPersonList()
+            if(ApiUtils.getApiService() != null) {
+                val response = ApiUtils.getApiService()!!.getPhysicalPersonList()
                 if (!response.isSuccessful) {
-                    throw ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 }
-                val body = response.body() ?: throw ApiError(response.code(), response.message())
+                val body = response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 dao.savePhysicalPerson(body.toEntity())
             } else {
                 throw ApiServiceError("API service not ready")

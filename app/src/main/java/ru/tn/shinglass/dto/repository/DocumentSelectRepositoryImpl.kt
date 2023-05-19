@@ -9,17 +9,17 @@ import java.io.IOException
 
 class DocumentSelectRepositoryImpl : DocumentSelectRepository {
 
-    private val apiService = ApiUtils.getApiService()
+    //private val apiService = ApiUtils.getApiService()
 
     override suspend fun getInternalOrderList(): List<ExternalDocument> {
         try {
-            if (apiService != null) {
+            if (ApiUtils.getApiService() != null) {
                 val response =
-                    apiService.getInternalOrderList()
+                    ApiUtils.getApiService()!!.getInternalOrderList()
                 if (!response.isSuccessful) {
-                    throw ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiError(response.code(), response.message())
+                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }
@@ -33,13 +33,13 @@ class DocumentSelectRepositoryImpl : DocumentSelectRepository {
 
     override suspend fun getRepairEstimate(): List<ExternalDocument> {
         try {
-            if (apiService != null) {
+            if (ApiUtils.getApiService() != null) {
                 val response =
-                    apiService.getRepairEstimate()
+                    ApiUtils.getApiService()!!.getRepairEstimate()
                 if (!response.isSuccessful) {
-                    throw ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiError(response.code(), response.message())
+                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }

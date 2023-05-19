@@ -67,7 +67,7 @@ class TableScanFragment : Fragment() {
 
     private var itemList: List<TableScan> = listOf()
 
-    private var dialog: AlertDialog? = null
+    private var currentDialog: AlertDialog? = null
 
     private var isExternalDocument: Boolean = false
 
@@ -166,7 +166,7 @@ class TableScanFragment : Fragment() {
                 override fun selectItem(item: TableScan) {
                     //if (!isExternalDocument) {
                     if (item.isGroup) return
-                    dlgHeadersAndOther = DialogScreen.getDialog(
+                    dlgHeadersAndOther = DialogScreen.showDialog(
                         requireContext(),
                         DialogScreen.IDD_QUESTION,
                         "Что Вы хотите сделать?",
@@ -246,8 +246,8 @@ class TableScanFragment : Fragment() {
                                 ""
                             ) == ""
                         ) {
-                            dialog?.dismiss()
-                            dialog = DialogScreen.getDialog(
+                            currentDialog?.dismiss()
+                            currentDialog = DialogScreen.showDialog(
                                 requireContext(),
                                 DialogScreen.IDD_QUESTION,
                                 message = "В настройках не установлена виртуальная ячейка. Выгрузка документа невозможна",
@@ -271,8 +271,8 @@ class TableScanFragment : Fragment() {
                     if (selectedOption.option == OptionType.INVENTORY || selectedOption.option == OptionType.ACCEPTANCE
                         || selectedOption.option == OptionType.SELECTION || selectedOption.option == OptionType.MOVEMENTS
                     ) {
-                        dialog?.dismiss()
-                        dialog = DialogScreen.getDialog(
+                        currentDialog?.dismiss()
+                        currentDialog = DialogScreen.showDialog(
                             requireContext(),
                             DialogScreen.IDD_QUESTION,
                             message = "Отправить данные в 1С?",
@@ -299,9 +299,9 @@ class TableScanFragment : Fragment() {
             if (it == null) return@observe
             //progressDialog?.dismiss()
             //Toast.makeText(requireContext(),"Документ отправлен!", Toast.LENGTH_LONG).show()
-            dialog?.dismiss()
-//            dialog =
-            DialogScreen.getDialog(
+            currentDialog?.dismiss()
+            //currentDialog =
+                DialogScreen.showDialog(
                 requireContext(),
                 DialogScreen.IDD_SUCCESS,
                 "Документ в 1С успешно создан.\nНомер: ${it.docNumber}\nДетали:${if (it.details.isNotEmpty()) "\n${it.details}" else "[нет]"}",
@@ -395,8 +395,8 @@ class TableScanFragment : Fragment() {
 
             if (error == null) return@observe
 
-            dialog?.dismiss()
-            dialog = DialogScreen.getDialog(
+            currentDialog?.dismiss()
+            currentDialog = DialogScreen.showDialog(
                 requireContext(),
                 DialogScreen.IDD_ERROR,
                 error.message,
@@ -525,16 +525,16 @@ class TableScanFragment : Fragment() {
         viewModel.dataState.observe(viewLifecycleOwner)
         {
             if (it.loading) {
-                if (dialog?.isShowing == false || dialog == null)
-                    dialog =
-                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+                if (currentDialog?.isShowing == false || currentDialog == null)
+                    currentDialog =
+                        DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
             } else
-                dialog?.dismiss()
+                currentDialog?.dismiss()
 
             if (it.error) {
                 //DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR, title = it.errorMessage)
-                dialog?.dismiss()
-                dialog = DialogScreen.getDialog(
+                currentDialog?.dismiss()
+                currentDialog = DialogScreen.showDialog(
                     requireContext(),
                     DialogScreen.IDD_ERROR,
                     it.errorMessage,
@@ -642,8 +642,8 @@ class TableScanFragment : Fragment() {
             )
             (dlgBinding.counterpartyTextEdit as? AutoCompleteTextView)?.setAdapter(adapter)
             if ((dlgHeadersAndOther?.isShowing == true) && dataListCounterparties.isEmpty()) {
-                dialog?.dismiss()
-                dialog = DialogScreen.getDialog(
+                currentDialog?.dismiss()
+                currentDialog = DialogScreen.showDialog(
                     requireContext(),
                     DialogScreen.IDD_SUCCESS,
                     getString(R.string.specify_name_or_inn_text),
@@ -687,8 +687,8 @@ class TableScanFragment : Fragment() {
             }
             IDM_DELETE -> {
                 if (itemList.isNotEmpty()) {
-                    dialog?.dismiss()
-                    dialog = DialogScreen.getDialog(requireContext(), DialogScreen.IDD_QUESTION,
+                    currentDialog?.dismiss()
+                    currentDialog = DialogScreen.showDialog(requireContext(), DialogScreen.IDD_QUESTION,
                         title = getString(R.string.choose_another_text),
                         message = "Текущие данные будут очищены.\nПродолжить?",
                         onDialogsInteractionListener = object : OnDialogsInteractionListener {
@@ -756,7 +756,8 @@ class TableScanFragment : Fragment() {
     }
 
     private fun createDocumentIn1C() {
-        dialog = DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+        currentDialog?.dismiss()
+        currentDialog = DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
         viewModel.createDocumentIn1C(
             itemList,
             selectedOption.docType!!,
@@ -1187,7 +1188,7 @@ class TableScanFragment : Fragment() {
 
         //if (DocumentHeaders.getWarehouse() == null || DocumentHeaders.getPhysicalPerson() == null || forceOpen) {
         if (dialogHeadersNeedOpen || forceOpen) {
-            dlgHeadersAndOther = DialogScreen.getDialog(
+            dlgHeadersAndOther = DialogScreen.showDialog(
                 requireContext(),
                 DialogScreen.IDD_INPUT,
                 isCancelable = cancellable,
@@ -1373,11 +1374,16 @@ class TableScanFragment : Fragment() {
             DocumentHeaders.setIncomingNumber("")
         }
 
-        dlgHeadersAndOther?.dismiss()
+        //dlgHeadersAndOther?.dismiss()
         //dialog?.dismiss()
 
         super.onDestroy()
     }
 
+    override fun onDestroyView() {
+        currentDialog?.dismiss()
+        dlgHeadersAndOther?.dismiss()
+        super.onDestroyView()
+    }
 
 }

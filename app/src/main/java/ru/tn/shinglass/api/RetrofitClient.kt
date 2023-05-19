@@ -9,7 +9,13 @@ import ru.tn.shinglass.dto.models.Settings
 object RetrofitClient {
     private var retrofit: Retrofit? = null
 
-    fun getClient(basicPreferences: SharedPreferences? = null): Retrofit? {
+    fun getClient(
+        basicPreferences: SharedPreferences? = null,
+        recreate: Boolean = false
+    ): Retrofit? {
+
+        retrofit = if (recreate) null else retrofit
+
         if (retrofit == null && basicPreferences != null) {
             initializeBasicPrefs(basicPreferences)
             var mUrl = basicPreferences.getString(

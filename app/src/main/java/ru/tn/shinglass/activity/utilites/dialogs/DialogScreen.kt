@@ -1,7 +1,6 @@
 package ru.tn.shinglass.activity.utilites.dialogs
 
 import android.content.Context
-import android.content.DialogInterface
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -15,7 +14,14 @@ object DialogScreen {
     const val IDD_SUCCESS = 5
     const val IDD_INPUT = 6
 
-    fun getDialog(
+    private var dialog: AlertDialog? = null
+    private var progressDialog: AlertDialog? = null
+
+    fun getDialog(dialogType: Int = 0): AlertDialog? {
+        return if (dialogType == IDD_PROGRESS) progressDialog else dialog
+    }
+
+    fun showDialog(
         context: Context,
         ID: Int,
         message: String = "",
@@ -31,7 +37,7 @@ object DialogScreen {
         when (ID) {
             1, 2 -> {
                 with(alertDialog) {
-                    setTitle(if(title == "") context.resources.getString(R.string.err_an_error_has_occured) else title)
+                    setTitle(if (title == "") context.resources.getString(R.string.err_an_error_has_occured) else title)
                     setMessage(message)
                     setCancelable(isCancelable)
                     setIcon(
@@ -68,7 +74,7 @@ object DialogScreen {
             }
             4 -> {
                 with(alertDialog) {
-                    setTitle(if(title == "") message else title)
+                    setTitle(if (title == "") message else title)
                     setMessage(message)
                     setCancelable(isCancelable)
                     setIcon(
@@ -121,7 +127,8 @@ object DialogScreen {
                         setView(customView)
                     setTitle(message)
                     setCancelable(isCancelable)
-                    setPositiveButton(positiveButtonTitle ?: context.resources.getString(R.string.ok_text)
+                    setPositiveButton(
+                        positiveButtonTitle ?: context.resources.getString(R.string.ok_text)
                     )
                     { _, _ ->
                         onDialogsInteractionListener?.onPositiveClickButton()
@@ -131,6 +138,8 @@ object DialogScreen {
             }
         }
 
-        return alertDialog.show()
+        var generatedDialog = alertDialog.show()
+        if (ID == IDD_PROGRESS) progressDialog = generatedDialog else dialog = generatedDialog
+        return generatedDialog!!
     }
 }

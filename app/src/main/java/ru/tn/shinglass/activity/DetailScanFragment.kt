@@ -278,7 +278,7 @@ class DetailScanFragment : Fragment() {
             if (it == null) return@observe
             if (it.guid.isNullOrBlank()) {
                 val warehouse = editRecord.docHeaders.getWarehouse()
-                DialogScreen.getDialog(
+                DialogScreen.showDialog(
                     requireContext(),
                     DialogScreen.IDD_ERROR_SINGLE_BUTTON,
                     title = "Ячейка не найдена!",
@@ -325,7 +325,7 @@ class DetailScanFragment : Fragment() {
             if (it == null) return@observe
             dialog?.dismiss()
             if (it.itemGuid.isNullOrBlank()) {
-                dialog = DialogScreen.getDialog(
+                dialog = DialogScreen.showDialog(
                     requireContext(),
                     DialogScreen.IDD_ERROR_SINGLE_BUTTON,
                     title = getString(R.string.nomenclature_not_found_text),
@@ -345,7 +345,7 @@ class DetailScanFragment : Fragment() {
                 //Если отбираем на основании документа из 1С и это редактирование записи, проверяем что отсканировали номенклатуру позиции, которую изменяем - они должны совпадать, иначе попытка подмены - отменяем.
                 if (tempScanRecord.ItemGUID != "") {
                     if (it.itemGuid != tempScanRecord.ItemGUID) {
-                        dialog = DialogScreen.getDialog(
+                        dialog = DialogScreen.showDialog(
                             requireContext(),
                             DialogScreen.IDD_ERROR_SINGLE_BUTTON,
                             title = getString(R.string.changing_an_entry_text),
@@ -426,7 +426,7 @@ class DetailScanFragment : Fragment() {
                     forceOverwrite = tempScanRecord.id != 0L
                 } else {
                     //Номенклатура не найдена или не совпадает единица измерения в отсканированном ШК и таблице документа
-                    dialog = DialogScreen.getDialog(
+                    dialog = DialogScreen.showDialog(
                         requireContext(),
                         DialogScreen.IDD_ERROR_SINGLE_BUTTON,
                         title = getString(R.string.nomenclature_not_found_text),
@@ -486,7 +486,7 @@ class DetailScanFragment : Fragment() {
             if (error == null) return@observe
 
             dialog?.dismiss()
-            DialogScreen.getDialog(
+            DialogScreen.showDialog(
                 requireContext(),
                 DialogScreen.IDD_ERROR,
                 error.message,
@@ -514,12 +514,12 @@ class DetailScanFragment : Fragment() {
             if (it.loading) {
                 if (dialog?.isShowing == false || dialog == null)
                     dialog =
-                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+                        DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
             } else
                 dialog?.dismiss()
 
             if (it.error) {
-                DialogScreen.getDialog(
+                DialogScreen.showDialog(
                     requireContext(),
                     DialogScreen.IDD_ERROR,
                     it.errorMessage,
@@ -674,7 +674,7 @@ class DetailScanFragment : Fragment() {
             if (cellReceiverDialogBinding == null) {
                 binding.buttonApply.setText(R.string.next)
                 cellReceiverDialogBinding = getCellReceiverDialogBinding()
-                val cellReceiverDialog = DialogScreen.getDialog(
+                val cellReceiverDialog = DialogScreen.showDialog(
                     requireContext(),
                     DialogScreen.IDD_INPUT,
                     isCancelable = false,
@@ -745,10 +745,11 @@ class DetailScanFragment : Fragment() {
         super.onStop()
     }
 
-    override fun onDestroy() {
+    override fun onDestroyView() {
         dialog?.dismiss()
-        super.onDestroy()
+        super.onDestroyView()
     }
+
 }
 
 class TempScanRecord {

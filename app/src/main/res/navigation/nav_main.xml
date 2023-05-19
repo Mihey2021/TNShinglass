@@ -64,4 +64,8 @@
         android:name="ru.tn.shinglass.activity.BarcodeParsingTN"
         android:label="fragment_barcode_parsing_tn"
         tools:layout="@layout/fragment_barcode_parsing_tn" />
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="ru.tn.shinglass.activity.SettingsFragment"
+        android:label="SettingsFragment" /><action android:id="@+id/action_global_settingsFragment" app:destination="@id/settingsFragment"/>
 </navigation>

@@ -168,14 +168,14 @@ class DocumentSelectFragment : Fragment() {
                 if (it.loading) {
                     if (progressDialog?.isShowing == false || progressDialog == null)
                         progressDialog =
-                            DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+                            DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
                 } else
                     progressDialog?.dismiss()
 
                 if (it.error) {
                     //DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR, title = it.errorMessage)
                     progressDialog?.dismiss()
-                    DialogScreen.getDialog(
+                    DialogScreen.showDialog(
                         requireContext(),
                         DialogScreen.IDD_ERROR,
                         it.errorMessage,
@@ -310,5 +310,9 @@ class DocumentSelectFragment : Fragment() {
         autoCompleteTextView.setAdapter(internalOrderAdapter)
     }
 
+    override fun onDestroyView() {
+        progressDialog?.dismiss()
+        super.onDestroyView()
+    }
 
 }

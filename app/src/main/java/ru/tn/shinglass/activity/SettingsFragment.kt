@@ -1,12 +1,14 @@
 package ru.tn.shinglass.activity
 
-//import ru.tn.shinglass.adapters.ru.tn.shinglass.adapters.DynamicListAdapter
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.text.InputType
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceCategory
 import androidx.preference.PreferenceFragmentCompat
@@ -37,6 +39,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
 
+        val serviceUserPassword = findPreference<EditTextPreference>("serviceUserPassword")
+        serviceUserPassword?.setOnBindEditTextListener { editText ->
+            editText.inputType = InputType.TYPE_CLASS_TEXT + InputType.TYPE_TEXT_VARIATION_PASSWORD
+        }
+
+
         val root = preferenceManager.preferenceScreen
 
         val categoryDocSettings = PreferenceCategory(requireContext())
@@ -45,7 +53,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         root.addPreference(categoryDocSettings)
 
-        apiService = ApiUtils.getApiService(settingsViewModel.getBasicPreferences())
+        getCurrentApiService()
 
         val divisionListPreference = ExtendListPreference<Division>(requireContext())
         val divisionAdapter =
@@ -56,7 +64,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         divisionListPreference.key = divisionKey
         divisionListPreference.title = getString(R.string.division_title)
         val savedDivision = settingsViewModel.getDivisionByGuid(
-            settingsViewModel.getPreferenceByKey<String>(divisionKey, "")  ?: ""
+            settingsViewModel.getPreferenceByKey<String>(divisionKey, "") ?: ""
         )
 
         divisionListPreference.summary =
@@ -126,9 +134,36 @@ class SettingsFragment : PreferenceFragmentCompat() {
         listener =
             SharedPreferences.OnSharedPreferenceChangeListener { sharedPrefs, key ->
                 when (key) {
+                    "serviceUrl", "serviceUserName", "serviceUserPassword" -> {
+                        if (sharedPrefs.getString("serviceUrl", "").toString()
+                                .isEmpty() || sharedPrefs.getString("serviceUserName", "")
+                                .toString()
+                                .isEmpty() || sharedPrefs.getString("serviceUserPassword", "")
+                                .toString().isEmpty()
+                        ) {
+                            getCurrentApiService(newService = true)
+                            return@OnSharedPreferenceChangeListener
+                        }
+
+                        DialogScreen.getDialog()?.dismiss()
+                        DialogScreen.showDialog(
+                            requireContext(),
+                            DialogScreen.IDD_QUESTION,
+                            resources.getString(R.string.recreate_connection_text),
+                            resources.getString(R.string.settings_header),
+                            onDialogsInteractionListener = object :
+                                OnDialogsInteractionListener {
+                                override fun onPositiveClickButton() {
+                                    getCurrentApiService(newService = true)
+                                    findNavController().navigateUp()
+                                    //restartApplication()
+                                }
+                            }
+                        )
+                    }
                     "warehouse_guid" -> {
                         val warehouseGuidPrefSaved = sharedPrefs.getString(
-                            "warehouse_guid",
+                            key,
                             ""
                         ).toString()
                         if (sharedPrefs.getString("division_guid", "").toString() == "") {
@@ -152,7 +187,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                                 settingsViewModel.getWarehouseByGuid(
                                     settingsViewModel.getDivisionByGuid(
                                         sharedPrefs.getString(
-                                            "division_guid",
+                                            key,
                                             ""
                                         ).toString()
                                     )?.divisionDefaultWarehouseGuid ?: ""
@@ -190,12 +225,17 @@ class SettingsFragment : PreferenceFragmentCompat() {
         preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener(listener)
     }
 
+    private fun getCurrentApiService(newService: Boolean = false) {
+        apiService = ApiUtils.getApiService(settingsViewModel.getBasicPreferences(), newService)
+    }
+
     private fun getVirtualCellAdapter(): DynamicListAdapter<Cell> {
         return DynamicListAdapter<Cell>(requireContext(), R.layout.dynamic_prefs_layout)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         val warehouseListPreference =
             preferenceManager.preferenceScreen.findPreference<ListPreference>("warehouse_guid") as ExtendListPreference<Warehouse>
 
@@ -236,14 +276,22 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         settingsViewModel.dataState.observe(viewLifecycleOwner) {
             if (it.loading) {
-                if (progressDialog?.isShowing == false || progressDialog == null)
-                    progressDialog =
-                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
-            } else
-                progressDialog?.dismiss()
+                //if (progressDialog?.isShowing == false || progressDialog == null)
+                if (DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.isShowing == false || DialogScreen.getDialog(
+                        DialogScreen.IDD_PROGRESS
+                    ) == null
+                )
+                //progressDialog =
+                    DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+            } else {
+                DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+                //progressDialog?.dismiss()
+            }
 
-            if (it.error)
-                DialogScreen.getDialog(
+
+            if (it.error) {
+                DialogScreen.getDialog()?.dismiss()
+                DialogScreen.showDialog(
                     requireContext(),
                     DialogScreen.IDD_ERROR,
                     message = it.errorMessage,
@@ -257,6 +305,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                         }
                     }
                 )
+            }
         }
 
         retrofitViewModel.cellListData.observe(viewLifecycleOwner) {
@@ -299,5 +348,29 @@ class SettingsFragment : PreferenceFragmentCompat() {
         super.onPause()
         preferenceManager.sharedPreferences?.unregisterOnSharedPreferenceChangeListener(listener)
     }
+
+    override fun onDestroyView() {
+        DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+        DialogScreen.getDialog()?.dismiss()
+        super.onDestroyView()
+    }
+
+//    private fun restartApplication() {
+////        Log.d("RESTART", "Restart application")
+//        val mStartActivity = Intent(requireContext(), AppActivity::class.java)
+//        val mPendingIntentId: Int = 1234567
+//        val mPendingIntent = PendingIntent.getActivity(
+//            requireContext(),
+//            mPendingIntentId,
+//            mStartActivity,
+//            PendingIntent.FLAG_CANCEL_CURRENT
+//        )
+//        val mgr: AlarmManager =
+//            requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+//        mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 100, mPendingIntent)
+//
+//        AndroidUtils.closeActivity(requireActivity())
+//    }
+
 }
 

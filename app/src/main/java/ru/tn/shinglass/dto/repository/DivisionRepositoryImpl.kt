@@ -14,7 +14,7 @@ import java.io.IOException
 
 class DivisionRepositoryImpl(private val dao: DivisionsDao) : DivisionRepository {
 
-    private val apiService = ApiUtils.getApiService()
+    //private val apiService = ApiUtils.getApiService()
 
     override var divisionsList: LiveData<List<Division>> = dao.getAllDivisions().map(List<DivisionsEntity>::toDto)
 
@@ -26,12 +26,12 @@ class DivisionRepositoryImpl(private val dao: DivisionsDao) : DivisionRepository
 
     override suspend fun getAllDivisions() {
         try {
-            if (apiService != null) {
-                val response = apiService.getAllDivisionsList()
+            if (ApiUtils.getApiService() != null) {
+                val response = ApiUtils.getApiService()!!.getAllDivisionsList()
                 if (!response.isSuccessful) {
-                    throw ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 }
-                val body = response.body() ?: throw ApiError(response.code(), response.message())
+                val body = response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 dao.saveDivisions(body.toEntity())
             } else {
                 throw ApiServiceError("API service not ready")

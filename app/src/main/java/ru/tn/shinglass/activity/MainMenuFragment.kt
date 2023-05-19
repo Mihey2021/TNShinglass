@@ -43,8 +43,9 @@ class MainMenuFragment : Fragment() {
                             true
                         }
                         R.id.menu_settings -> {
-                            val intent = Intent(requireContext(), SettingsActivity::class.java)
-                            startActivity(intent)
+//                            val intent = Intent(requireContext(), SettingsActivity::class.java)
+//                            startActivity(intent)
+                            findNavController().navigate(R.id.action_global_settingsFragment)
                             true
                         }
                         R.id.menu_barcode_parsing_tn -> {

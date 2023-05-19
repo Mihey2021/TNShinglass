@@ -14,18 +14,18 @@ import java.io.IOException
 import java.lang.Exception
 
 class EmployeeRepositoryImpl(private val dao: EmployeeDao) : EmployeeRepository {
-    private val apiService = ApiUtils.getApiService()
+    //private val apiService = ApiUtils.getApiService()
 
     override val employees = dao.getAllEmployee().map(List<EmployeeEntity>::toDto)
 
     override suspend fun getEmployeeList() {
         try {
-            if(apiService != null) {
-                val response = apiService.getEmployeeList()
+            if(ApiUtils.getApiService() != null) {
+                val response = ApiUtils.getApiService()!!.getEmployeeList()
                 if (!response.isSuccessful) {
-                    throw ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 }
-                val body = response.body() ?: throw ApiError(response.code(), response.message())
+                val body = response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 dao.saveEmployee(body.toEntity())
             } else {
                 throw ApiServiceError("API service not ready")

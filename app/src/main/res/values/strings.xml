@@ -69,6 +69,7 @@
     <string name="request_to_server">Request to the server...</string>
     <string name="question_exit_text">Do you really want to get out?</string>
     <string name="question_exit_session_text">Are you sure you want to end the session?</string>
+    <string name="question_exit_session_title">End session</string>
     <string name="ok_text">Ok</string>
     <string name="quantity_full_text">Quantity</string>
     <string name="apply_text">Apply</string>
@@ -127,4 +128,7 @@
     <string name="clear">Clear</string>
     <string name="next">Next >></string>
     <string name="warehouse_receiver_title">Warehouse receiver</string>
+    <string name="http_service_authorization_error">HTTP service authorization error. Check login/password for http service</string>
+    <string name="application_will_now_be_restarted">You must restart the application for the changes to take effect.\nRestart now?</string>
+    <string name="recreate_connection_text">You need to re-create the connection. Apply now?</string>
 </resources>

@@ -13,9 +13,9 @@ fun createSocketFactory(userName: String, password: String): OkHttpClient {
     val sClient = OkHttpClient.Builder().apply {
         addInterceptor(BasicAuthInterceptor(userName, password))
         protocols(mutableListOf(Protocol.HTTP_1_1))
-        connectTimeout(5, TimeUnit.MINUTES)
-        writeTimeout(5, TimeUnit.MINUTES)
-        readTimeout(5, TimeUnit.MINUTES)
+        connectTimeout(30, TimeUnit.SECONDS)
+        writeTimeout(60, TimeUnit.SECONDS)
+        readTimeout(60, TimeUnit.SECONDS)
     }.build()
 
     var sc: SSLContext? = null
