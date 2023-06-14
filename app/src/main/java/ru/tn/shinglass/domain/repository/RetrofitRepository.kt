@@ -13,10 +13,15 @@ interface RetrofitRepository {
     //suspend fun getPhysicalPersonList()
     //fun getAllWarehousesList(callback: Callback<List<Warehouse>>)
     //fun getCellByBarcode(barcode: String, callback: Callback<Cells>)
+    suspend fun getWarehousesListByGuid(warehouseGuid: String =""): List<Warehouse>
     suspend fun getCellByBarcode(barcode: String, warehouseGuid: String): Cell
-    suspend fun getCellsList(warehouseGuid: String): List<Cell>
+    suspend fun getCellsList(warehouseGuid: String, partNameCode: String = ""): List<Cell>
     suspend fun getCellByGuid(cellGuid: String): Cell
-    fun getItemByBarcode(barcode: String, callback: Callback<Nomenclature>)
+    //fun getItemByBarcode(barcode: String, callback: Callback<Nomenclature>)
+    suspend fun getItemByBarcode(barcode: String): Nomenclature
+    suspend fun getItemByTitleOrCode(partNameCode: String): List<Nomenclature>
+    suspend fun getGvzoByTitle(partNameCode: String): List<Gvzo>
+    suspend fun getNomenclatureStocks(warehouseGuid: String, nomenclatureGuid: String = "", cellGuid: String = "", byCell: Boolean = false, gvzoGuid: String = ""): List<NomenclatureStocks>
     //fun createInventoryOfGoods(scanRecords: List<TableScan>, callback: Callback<CreatedDocumentDetails>)
     //fun getAllDivisionsList(callback: Callback<List<Division>>)
 

@@ -92,6 +92,7 @@
     <string name="clear_text">Clear</string>
     <string name="save_text">Save</string>
     <string name="nomenclature_not_found_text">The nomenclature was not found</string>
+    <string name="cell_not_found_text">The cell was not found</string>
     <string name="check_label_scan_again_text">Check the label and scan the barcode again</string>
     <string name="check_nomenclature_and_measure_of_unit_scan_again_text">Check the label and scan the barcode again</string>
     <string name="document_details_text">Document details</string>
@@ -131,4 +132,16 @@
     <string name="http_service_authorization_error">HTTP service authorization error. Check login/password for http service</string>
     <string name="application_will_now_be_restarted">You must restart the application for the changes to take effect.\nRestart now?</string>
     <string name="recreate_connection_text">You need to re-create the connection. Apply now?</string>
+    <string name="other_nomenclature_text">Other nomenclature</string>
+    <string name="scanned_another_nomenclature_text">Scanned another nomenclature. Replace current one?</string>
+    <string name="to_cell_equal_from_cell">The To cell cannot be the same as the From cell.</string>
+    <string name="stocks">Stocks</string>
+    <string name="err_scan_ean13_barcode">Scan the EAN-13 barcode!</string>
+    <string name="search_text">Search</string>
+    <string name="code_text">Code</string>
+    <string name="show_balances_by">Show balances by</string>
+    <string name="enter_least_3_characters">Please enter at least 3 characters</string>
+    <string name="failed_get_warehouse">Failed to get warehouse</string>
+    <string name="gvzo_text">GVZO</string>
+    <string name="gvzo_not_found">The GVZO was not found</string>
 </resources>

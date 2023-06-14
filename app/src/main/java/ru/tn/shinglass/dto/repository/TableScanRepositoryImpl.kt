@@ -9,10 +9,7 @@ import ru.tn.shinglass.dto.models.DocHeaders
 import ru.tn.shinglass.dto.models.DocumentHeaders
 import ru.tn.shinglass.dto.models.DocumentToUploaded
 import ru.tn.shinglass.entity.TableScanEntity
-import ru.tn.shinglass.error.ApiError
 import ru.tn.shinglass.error.ApiServiceError
-import ru.tn.shinglass.error.NetworkError
-import ru.tn.shinglass.error.UnsupportedDocumentType
 import ru.tn.shinglass.models.Counterparty
 import ru.tn.shinglass.models.DocType
 import ru.tn.shinglass.models.ExternalDocument
@@ -24,6 +21,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
     //private val apiService = ApiUtils.getApiService()
 
     override fun saveScanRecord(record: TableScan, forceOverwrite: Boolean) {
+        record.lastModified = System.currentTimeMillis()
         var existingRecord: TableScanEntity? = null
         //На основании внешнего документа, если в нем не указана ячейка
         if (record.docGuid != "" && dao.getScanRecordById(record.id)?.cellGuid == "") {
@@ -42,34 +40,57 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
         } else {
             //Без документа-основания или если в документе-основании укзана ячейка
             existingRecord = dao.getExistingRecord(
-                record.OperationId,
-                record.cellGuid,
-                record.ItemGUID,
-                record.ItemMeasureOfUnitGUID,
-                record.WorkwearOrdinary,
-                record.WorkwearDisposable,
+                operationId = record.OperationId,
+                cellGuid = record.cellGuid,
+                itemGUID = record.ItemGUID,
+                itemMeasureOfUnitGUID = record.ItemMeasureOfUnitGUID,
+                workwearOrdinary = record.WorkwearOrdinary,
+                workwearDisposable = record.WorkwearDisposable,
                 //record.warehouseGuid,
-                record.docHeaders.getWarehouse()?.warehouseGuid ?: "",
-                record.PurposeOfUse,
+                warehouseGuid = record.docHeaders.getWarehouse()?.warehouseGuid ?: "",
+                purposeOfUse = record.PurposeOfUse,
                 //record.PhysicalPersonGUID,
-                record.docHeaders.getPhysicalPerson()?.physicalPersonGuid ?: "",
-
-                record.OwnerGuid,
-                record.docHeaders.getEmployee()?.employeeGuid ?: "",
+                physicalPersonGUID = record.docHeaders.getPhysicalPerson()?.physicalPersonGuid
+                    ?: "",
+                ownerGuid = record.OwnerGuid,
+                employeeGUID = record.docHeaders.getEmployee()?.employeeGuid ?: "",
             )
         }
 
         val tempRecord = TableScanEntity.fromDto(record)
         if (existingRecord == null || forceOverwrite) {
-            dao.save(tempRecord)
+            if (record.replacement) {
+                if (tempRecord.id != 0L) {
+                    if (existingRecord != null) {
+                        val count = tempRecord.Count
+                        dao.deleteRecordById(tempRecord.id)
+                        overwriteRecord(existingRecord, tempRecord, count)
+                    } else {
+                        dao.deleteRecordById(tempRecord.id)
+                        dao.save(tempRecord)
+                    }
+                } else {
+                    dao.save(tempRecord)
+                }
+            } else {
+                dao.save(tempRecord)
+            }
         } else {
-            dao.save(
-                tempRecord.copy(
-                    id = existingRecord.id,
-                    Count = (record.Count + existingRecord.Count)
-                )
-            )
+            overwriteRecord(existingRecord, tempRecord, record.Count)
         }
+    }
+
+    override fun overwriteRecord(
+        existingRecord: TableScanEntity,
+        tempRecord: TableScanEntity,
+        count: Double
+    ) {
+        dao.save(
+            tempRecord.copy(
+                id = existingRecord.id,
+                Count = (count + existingRecord.Count)
+            )
+        )
     }
 
     @Throws(ApiServiceError::class)
@@ -221,7 +242,8 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                         }"
                     )
                 }
-                val body = response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                val body = response.body()
+                    ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
 //                dao.saveDivisions(body.toEntity())
                 scanRecords.forEach { record ->
                     dao.save(
@@ -251,7 +273,8 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                 if (!response.isSuccessful) {
                     throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                return response.body()
+                    ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }
@@ -295,7 +318,8 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                 if (!response.isSuccessful) {
                     throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                return response.body()
+                    ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }

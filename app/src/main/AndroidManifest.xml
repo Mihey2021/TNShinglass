@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools"
-package="ru.tn.shinglass">
+xmlns:tools="http://schemas.android.com/tools">
 
 <uses-permission android:name="android.permission.INTERNET" />
 
@@ -28,7 +27,6 @@ package="ru.tn.shinglass">
     </activity>
     <activity android:name=".activity.SettingsActivity"
         android:exported="false">
-
     </activity>
 <!--    <service android:name="ru.tn.shinglass.api.Service1C">-->
 <!--        &lt;!&ndash;            android:enabled="true"&ndash;&gt;-->

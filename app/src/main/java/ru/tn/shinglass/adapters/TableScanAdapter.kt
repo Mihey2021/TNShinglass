@@ -186,12 +186,14 @@ class TableScanAdapter(
         override fun areContentsTheSame(oldItem: TableScan, newItem: TableScan): Boolean {
             println("LoggingDiff areContentsTheSame: ${newItem.ItemTitle}, id: ${newItem.id}, result: ${oldItem.isGroup == newItem.isGroup
                     && oldItem.cellGuid == newItem.cellGuid
+                    && oldItem.ItemGUID == newItem.ItemGUID
                     && oldItem.Count == newItem.Count
                     && oldItem.totalCount == newItem.totalCount
                     && oldItem.refreshing == newItem.refreshing}")
 
             return oldItem.isGroup == newItem.isGroup
                 && oldItem.cellGuid == newItem.cellGuid
+                && oldItem.ItemGUID == newItem.ItemGUID
                 && oldItem.Count == newItem.Count
                 && oldItem.totalCount == newItem.totalCount
                 && oldItem.refreshing == newItem.refreshing

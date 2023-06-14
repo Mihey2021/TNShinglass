@@ -1,6 +1,7 @@
 package ru.tn.shinglass.domain.repository
 
 import ru.tn.shinglass.dto.models.CreatedDocumentDetails
+import ru.tn.shinglass.entity.TableScanEntity
 import ru.tn.shinglass.models.Counterparty
 import ru.tn.shinglass.models.DocType
 import ru.tn.shinglass.models.ExternalDocument
@@ -23,4 +24,7 @@ interface TableScanRepository {
         itemGUID: String,
         itemMeasureOfUnitGUID: String
     ): Double
+
+    abstract fun overwriteRecord(existingRecordexistingRecord: TableScanEntity, tempRecord: TableScanEntity, count: Double)
+
 }

@@ -21,6 +21,8 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.textfield.TextInputLayout
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.AndroidUtils
+import ru.tn.shinglass.activity.utilites.SoundPlayer
+import ru.tn.shinglass.activity.utilites.SoundType
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.databinding.FragmentTableScanBinding
@@ -182,8 +184,13 @@ class TableScanFragment : Fragment() {
                             override fun onNegativeClickButton() {
                                 refreshing = true
                                 if (itemList.filter { filterRecord -> filterRecord.ItemGUID == item.ItemGUID && filterRecord.ItemMeasureOfUnitGUID == item.ItemMeasureOfUnitGUID }.size == 1 && isExternalDocument) {
+                                    val isToirRepairEstimate = selectedOption.docType == DocType.TOIR_REPAIR_ESTIMATE //Это смета
                                     viewModel.saveRecord(
                                         item.copy(
+                                            ItemGUID = if(isToirRepairEstimate) "" else item.ItemGUID,
+                                            ItemTitle = if(isToirRepairEstimate) "" else item.ItemTitle,
+                                            ItemMeasureOfUnitGUID = if(isToirRepairEstimate) "" else item.ItemMeasureOfUnitGUID,
+                                            ItemMeasureOfUnitTitle = if(isToirRepairEstimate) "" else item.ItemMeasureOfUnitTitle,
                                             cellGuid = "",
                                             cellTitle = "",
                                             Count = 0.0,
@@ -287,7 +294,7 @@ class TableScanFragment : Fragment() {
                         )
 //                        retrofitViewModel.createInventoryOfGoods(itemList) //primary = Первичная инвент. (поиск в ТЧ 1С идет без учета ячейки, т.к. в ячейках там еще ничего нет)
                         //progressDialog =
-                            //DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+                        //DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
                     }
                     false
                 }
@@ -301,7 +308,7 @@ class TableScanFragment : Fragment() {
             //Toast.makeText(requireContext(),"Документ отправлен!", Toast.LENGTH_LONG).show()
             currentDialog?.dismiss()
             //currentDialog =
-                DialogScreen.showDialog(
+            DialogScreen.showDialog(
                 requireContext(),
                 DialogScreen.IDD_SUCCESS,
                 "Документ в 1С успешно создан.\nНомер: ${it.docNumber}\nДетали:${if (it.details.isNotEmpty()) "\n${it.details}" else "[нет]"}",
@@ -363,6 +370,8 @@ class TableScanFragment : Fragment() {
                 if (list.isNotEmpty()) {
                     if (list[0].ItemGUID.isNotEmpty()) {
                         adapter.submitList(list)
+                    } else {
+                        adapter.submitList(mutableListOf<TableScan>())
                     }
                 } else {
                     adapter.submitList(list)
@@ -418,7 +427,10 @@ class TableScanFragment : Fragment() {
             val showingDialog = (dlgHeadersAndOther?.isShowing ?: false)
             //if (dlgHeadersAndOther != null)
 
-            if (showingDialog) return@observe
+            if (showingDialog) {
+                SoundPlayer(requireContext(), SoundType.SMALL_ERROR).playSound()
+                return@observe
+            }
 
             //val dataScanPair = BarcodeScannerReceiver.dataScan.value
             val dataScanBarcode = dataScanPair.first
@@ -489,8 +501,10 @@ class TableScanFragment : Fragment() {
                     )
                     return@observe
                 } else {
-                    openDetailScanFragment(args, itemList)
-                    return@observe
+                    if (isExternalDocument) {
+                        openDetailScanFragment(args, itemList)
+                        return@observe
+                    }
                 }
             }
 
@@ -688,15 +702,16 @@ class TableScanFragment : Fragment() {
             IDM_DELETE -> {
                 if (itemList.isNotEmpty()) {
                     currentDialog?.dismiss()
-                    currentDialog = DialogScreen.showDialog(requireContext(), DialogScreen.IDD_QUESTION,
-                        title = getString(R.string.choose_another_text),
-                        message = "Текущие данные будут очищены.\nПродолжить?",
-                        onDialogsInteractionListener = object : OnDialogsInteractionListener {
-                            override fun onPositiveClickButton() {
-                                deleteCurrentExternalDocumentData()
+                    currentDialog =
+                        DialogScreen.showDialog(requireContext(), DialogScreen.IDD_QUESTION,
+                            title = getString(R.string.choose_another_text),
+                            message = "Текущие данные будут очищены.\nПродолжить?",
+                            onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                                override fun onPositiveClickButton() {
+                                    deleteCurrentExternalDocumentData()
+                                }
                             }
-                        }
-                    )
+                        )
                 }
             }
             else -> return super.onContextItemSelected(item)
@@ -1383,6 +1398,9 @@ class TableScanFragment : Fragment() {
     override fun onDestroyView() {
         currentDialog?.dismiss()
         dlgHeadersAndOther?.dismiss()
+        DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+        DialogScreen.getDialog(DialogScreen.IDD_INPUT)?.dismiss()
+        DialogScreen.getDialog()?.dismiss()
         super.onDestroyView()
     }
 

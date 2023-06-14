@@ -43,13 +43,13 @@ interface TableScanDao {
             "OwnerGuid, uploaded, docNameIn1C, incomingDate, incomingNumber , externalDocumentSelected, " +
             "warehouseTitle, warehouseGuid, warehouseDivisionGuid, warehouseResponsibleGuid, warehouseReceiverTitle, warehouseReceiverGuid, warehouseReceiverDivisionGuid, warehouseReceiverResponsibleGuid, physicalPersonFio, " +
             "physicalPersonGuid, divisionTitle, divisionGuid, divisionDefaultWarehouseGuid, counterpartyTitle, " +
-            "counterpartyGuid, counterpartyInn, counterpartyKpp, employeeGuid, employeeFio " +
+            "counterpartyGuid, counterpartyInn, counterpartyKpp, employeeGuid, employeeFio, lastModified " +
             "FROM TableScanEntity " +
             "LEFT JOIN (" +
-            "SELECT id AS tc_id, SUM(Count) AS TotalCount, 1 AS isGroup FROM TableScanEntity " +
+            "SELECT id AS tc_id, SUM(Count) AS TotalCount, 1 AS isGroup, max(lastModified) AS lastModifiedGroup FROM TableScanEntity " +
             "GROUP BY OperationId, OwnerGuid, uploaded, divisionGuid, warehouseGuid, ItemGUID, ItemMeasureOfUnitGUID, docGuid)  AS TableTotalCount ON TableScanEntity.id = TableTotalCount.tc_id " +
             "WHERE TableScanEntity.OwnerGuid =:ownerGuid AND TableScanEntity.OperationId =:operationId AND TableScanEntity.uploaded = 0 " +
-            "ORDER BY ItemTitle ASC, id DESC")
+            "ORDER BY lastModified DESC, isGroup DESC, ItemTitle ASC")
     fun getAllScanRecordsByOwner(ownerGuid: String, operationId: Long): List<TableScanEntity>
 
     @Query(
@@ -90,7 +90,7 @@ interface TableScanDao {
                 "AND workwearDisposable =:workwearDisposable " +
                 "AND warehouseGuid =:warehouseGuid " +
                 "AND purposeOfUse =:purposeOfUse " +
-                "AND physicalPersonGUID =:physicalPersonGUID " +
+                "AND (physicalPersonGUID =:physicalPersonGUID OR physicalPersonGUID is NULL) " +
                 "AND (employeeGuid = :employeeGUID OR employeeGuid is NULL ) " +
                 "AND uploaded = 0 "
     )
@@ -118,7 +118,7 @@ interface TableScanDao {
                 "AND workwearDisposable =:workwearDisposable " +
                 "AND warehouseGuid =:warehouseGuid " +
                 "AND purposeOfUse =:purposeOfUse " +
-                "AND physicalPersonGUID =:physicalPersonGUID " +
+                "AND (physicalPersonGUID =:physicalPersonGUID OR physicalPersonGUID is NULL)" +
                 "AND (employeeGuid = :employeeGUID OR employeeGuid is NULL ) " +
                 "AND uploaded = 0 "
     )

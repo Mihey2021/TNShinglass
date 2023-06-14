@@ -3,22 +3,38 @@ package ru.tn.shinglass.activity.utilites.scanner
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import ru.tn.shinglass.activity.utilites.SoundPlayer
+import ru.tn.shinglass.activity.utilites.SoundType
 import ru.tn.shinglass.dto.models.BarcodeActions
 
 class BarcodeScannerReceiver {
     companion object : BroadcastReceiver() {
         private val _dataScan = MutableLiveData(Pair("", ""))
+        private var enabled: Boolean = true
+
         val dataScan: LiveData<Pair<String, String>>
             get() = _dataScan
+
+        fun setEnabled(isEnabled: Boolean = true) {
+            enabled = isEnabled
+        }
+
+        fun isEnabled(): Boolean = enabled
 
         fun clearData() {
             _dataScan.value = "" to ""
         }
 
-        override fun onReceive(context: Context?, intent: Intent) {
+        override fun onReceive(context: Context, intent: Intent) {
             var tmpType = ""
+
+            if(!enabled) {
+                SoundPlayer(context, SoundType.SMALL_ERROR).playSound()
+                return
+            }
 
             when (intent.action) {
                 //if (intent.action == BarcodeActions.CIPHERLAB_BARCODE.action) {

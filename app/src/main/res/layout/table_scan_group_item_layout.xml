@@ -17,7 +17,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:visibility="visible"
-            app:constraint_referenced_ids="titleTextView, itemCountTextView, itemTitleSeparator, itemSeparator"
+            app:constraint_referenced_ids="titleTextView, itemCountTextView, itemTitleSeparator"
             app:layout_constraintBottom_toBottomOf="@id/titleTextView"
             app:layout_constraintEnd_toEndOf="@id/itemCountTextView"
             app:layout_constraintStart_toStartOf="@id/titleTextView"
@@ -98,7 +98,7 @@
         <TextView
             android:id="@+id/cellTextView"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:fontFamily="sans-serif-light"
             android:gravity="right|center_vertical|end"
             android:minHeight="24dp"

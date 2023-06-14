@@ -43,6 +43,7 @@ data class TableScanEntity(
     val OwnerGuid: String,
     val uploaded: Boolean = false,
     val docNameIn1C: String = "",
+    val lastModified: Long = System.currentTimeMillis(),
 ) {
     fun toDto() =
         TableScan(
@@ -78,6 +79,7 @@ data class TableScanEntity(
             docHeaders = docHeaders.toDto(),
             OwnerGuid = OwnerGuid,
             uploaded = uploaded,
+            lastModified = lastModified
         )
 
     companion object {
@@ -115,6 +117,7 @@ data class TableScanEntity(
                 docHeaders = DocHeadersEmbeddable.fromDto(dto.docHeaders),
                 OwnerGuid = dto.OwnerGuid,
                 uploaded = dto.uploaded,
+                lastModified = dto.lastModified,
             )
     }
 }

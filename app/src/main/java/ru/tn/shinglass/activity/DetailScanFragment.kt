@@ -12,11 +12,16 @@ import androidx.fragment.app.Fragment
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.textfield.TextInputLayout
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import ru.tn.shinglass.R
+import ru.tn.shinglass.activity.utilites.SoundPlayer
+import ru.tn.shinglass.activity.utilites.SoundType
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
@@ -33,6 +38,7 @@ import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
 import ru.tn.shinglass.viewmodel.TableScanFragmentViewModel
 import java.lang.Exception
+import kotlin.coroutines.EmptyCoroutineContext
 
 class DetailScanFragment : Fragment() {
 
@@ -48,9 +54,11 @@ class DetailScanFragment : Fragment() {
     private var tableFromExternalDocument: List<TableScan> = listOf()
     private var fragmentBinding: FragmentDetailScanBinding? = null
 
-    private var dialog: AlertDialog? = null
+    //private var dialog: AlertDialog? = null
+    private var scannerIsBlocked: Boolean = false
     private var cellReceiverDialogBinding: CellReceiverDialogBinding? = null
     private lateinit var currentRecord: TableScan
+    lateinit var tempScanRecord: TempScanRecord
 
     lateinit var user1C: User1C
 
@@ -81,11 +89,12 @@ class DetailScanFragment : Fragment() {
                 tableScanViewModel.getAllScanRecordsByOwner(user1C.getUserGUID(), selectedOption.id)
         }
 
-        forceOverwrite = (editRecord.id != 0L) //|| (selectedOption.docType == DocType.TOIR_REPAIR_ESTIMATE && editRecord.ItemGUID.isEmpty())
+        forceOverwrite =
+            (editRecord.id != 0L) //|| (selectedOption.docType == DocType.TOIR_REPAIR_ESTIMATE && editRecord.ItemGUID.isEmpty())
 
         //BarcodeScannerReceiver.clearData()
 
-        var tempScanRecord = TempScanRecord(editRecord)
+        tempScanRecord = TempScanRecord(editRecord)
         tempScanRecord.OperationId = selectedOption.id
         tempScanRecord.OperationTitle = selectedOption.docType?.title ?: ""
 
@@ -227,6 +236,11 @@ class DetailScanFragment : Fragment() {
 
         BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) { dataScanPair ->
 
+            if (scannerIsBlocked) {
+                SoundPlayer(requireContext(), SoundType.SMALL_ERROR).playSound()
+                return@observe
+            }
+
             binding.buttonApply.clearFocus()
 
             //val dataScanPair = BarcodeScannerReceiver.dataScan.value
@@ -244,7 +258,8 @@ class DetailScanFragment : Fragment() {
 
             if (dataScanBarcode == "") return@observe
 
-            if (cellReceiverDialogBinding == null) dialog?.show()
+//            if (cellReceiverDialogBinding == null)
+//                DialogScreen.getDialog(DialogScreen.IDD_INPUT)?.show() //dialog?.show()
 
             if (dataScanBarcodeType == "Code 128" || dataScanBarcodeType == "QR Code") {
                 retrofitViewModel.getCellByBarcode(
@@ -268,23 +283,32 @@ class DetailScanFragment : Fragment() {
                         return@observe
                     }
                 }
-                if (cellReceiverDialogBinding == null)
+                if (cellReceiverDialogBinding == null) {
                     retrofitViewModel.getItemByBarcode(dataScanBarcode)
+                }
             }
         }
 
         retrofitViewModel.cellData.observe(viewLifecycleOwner) {
-
             if (it == null) return@observe
-            if (it.guid.isNullOrBlank()) {
+            if (it.guid.isBlank()) {
                 val warehouse = editRecord.docHeaders.getWarehouse()
+                scannerIsBlocked = true
+                DialogScreen.getDialog()?.dismiss()
                 DialogScreen.showDialog(
                     requireContext(),
                     DialogScreen.IDD_ERROR_SINGLE_BUTTON,
                     title = "Ячейка не найдена!",
                     message = if (warehouse == null) "Не задан склад." else "Проверьте, что ячейка принадлежит складу \"${warehouse.warehouseTitle}\" и отсканируйте ШК снова.",
                     positiveButtonTitle = "Ok",
+                    onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                        override fun onPositiveClickButton() {
+                            scannerIsBlocked = false
+                        }
+                    }
                 )
+                SoundPlayer(requireContext(), SoundType.CELL_NOT_FOUND).playSound()
+
                 if (cellReceiverDialogBinding != null) {
                     cellReceiverDialogBinding!!.cellReceiverTextView.setText("")
                     cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error =
@@ -300,11 +324,11 @@ class DetailScanFragment : Fragment() {
                     return@observe
                 }
             }
-            dialog?.dismiss()
+            DialogScreen.getDialog()?.dismiss()
             if (cellReceiverDialogBinding != null) {
                 if (it.guid == tempScanRecord.cellGuid) {
                     cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error =
-                        "Ячейка Куда не может совпадать с ячейкой Откуда"
+                        getString(R.string.to_cell_equal_from_cell)//"Ячейка Куда не может совпадать с ячейкой Откуда"
                     cellReceiverDialogBinding!!.cellReceiverTextView.setText("")
                     return@observe
                 }
@@ -313,8 +337,33 @@ class DetailScanFragment : Fragment() {
                 tempScanRecord.cellReceiverGuid = it.guid
                 tempScanRecord.cellReceiverTitle = it.title
             } else {
+                if (it.guid == tempScanRecord.cellReceiverGuid) {
+                    //binding.cellTextInputLayout.error = getString(R.string.to_cell_equal_from_cell)
+                    scannerIsBlocked = true
+
+                    DialogScreen.showDialog(requireContext(), DialogScreen.IDD_ERROR_SINGLE_BUTTON,
+                        title = getString(R.string.cell_text),
+                        message = getString(R.string.to_cell_equal_from_cell),
+                        isCancelable = false,
+                        positiveButtonTitle = getString(R.string.ok_text),
+                        onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                            override fun onPositiveClickButton() {
+                                scannerIsBlocked = false
+                            }
+                        }
+                    )
+                    return@observe
+                }
                 binding.cellTextView.setText(it.title)
                 binding.cellTextInputLayout.error = null
+//                println("tableFromExternalDocument.isNotEmpty() = ${tableFromExternalDocument.isNotEmpty()}")
+//                println("tableFromExternalDocument.isEmpty() = ${tableFromExternalDocument.isEmpty()}")
+                tempScanRecord.replacement =
+                    (tempScanRecord.id != 0L && it.guid != tempScanRecord.cellGuid && tempScanRecord.cellGuid.isNotEmpty())
+                if (tempScanRecord.replacement) SoundPlayer(
+                    requireContext(),
+                    SoundType.CELL_CHANGED
+                ).playSound()
                 tempScanRecord.cellGuid = it.guid
                 tempScanRecord.cellTitle = it.title
             }
@@ -323,140 +372,37 @@ class DetailScanFragment : Fragment() {
 
         retrofitViewModel.itemData.observe(viewLifecycleOwner) {
             if (it == null) return@observe
-            dialog?.dismiss()
-            if (it.itemGuid.isNullOrBlank()) {
-                dialog = DialogScreen.showDialog(
-                    requireContext(),
-                    DialogScreen.IDD_ERROR_SINGLE_BUTTON,
-                    title = getString(R.string.nomenclature_not_found_text),
-                    message = getString(R.string.check_label_scan_again_text),
-                    positiveButtonTitle = "Ok"
-                )
+            //dialog?.dismiss()
+            DialogScreen.getDialog()?.dismiss()
+            if (it.itemGuid.isBlank()) {
+                itemNotFound(it)
                 return@observe
             }
 
-            var newCount = try {
-                (binding.countEditText.text.toString()).toDouble() + 1.0
-            } catch (e: Exception) {
-                1.0
-            }
-            //Если собираем по внешнему документу
-            if (tableFromExternalDocument.isNotEmpty()) {
-                //Если отбираем на основании документа из 1С и это редактирование записи, проверяем что отсканировали номенклатуру позиции, которую изменяем - они должны совпадать, иначе попытка подмены - отменяем.
-                if (tempScanRecord.ItemGUID != "") {
-                    if (it.itemGuid != tempScanRecord.ItemGUID) {
-                        dialog = DialogScreen.showDialog(
-                            requireContext(),
-                            DialogScreen.IDD_ERROR_SINGLE_BUTTON,
-                            title = getString(R.string.changing_an_entry_text),
-                            message = getString(R.string.nomenclature_substitution_text),
-                            positiveButtonTitle = "Ok"
-                        )
-                        return@observe
-                    }
-                }
-
-                val filteredItems = tableFromExternalDocument
-                    .filter { tableItem -> tableItem.ItemGUID == it.itemGuid }
-                    .filter { filteredItem -> filteredItem.ItemMeasureOfUnitGUID == it.unitOfMeasurementGuid }
-                //Номенклатура есть в документе
-                if (filteredItems.isNotEmpty()) {
-                    //Нашлась 1 позиция
-                    //if (filteredItems.size == 1) {
-                    if (filteredItems.size > 0) {
-                        var selectedItem = filteredItems[0]
-                        //Отфильтруем по ячейке в документе = отсканированной ячейке
-                        val filteredCellItems =
-                            filteredItems.filter { filteredItem -> filteredItem.cellGuid == tempScanRecord.cellGuid }
-                        if (filteredCellItems.isNotEmpty()) {
-                            //Позиция в данной ячейке есть в документе (должна быть всегда 1, т.к. фильтры по Номенклатуре, Ед. изм. и Ячейке)
-                            selectedItem = filteredCellItems[0]
-//                            // Если ячейка уже задана в таблице документа, проверим что она совпадает с отсканированной
-//                        val selectedItem = filteredItems[0]
-//                        if (selectedItem.cellGuid != "") {
-//                            if (selectedItem.cellGuid == tempScanRecord.cellGuid) {
-                            tempScanRecord =
-                                TempScanRecord(selectedItem) //Ставим текущую рабочую запись равной найденной в таблице документа
-                            newCount =
-                                if (newCount == 1.0) selectedItem.Count + 1.0 else newCount
-                        } else {
-                            if (selectedItem.cellGuid != "") {
-                                //Позиция есть в документе, но отсканирована другая ячейка - это нормально, нужно добавить новую строку с отсканированной ячейкой
-                                val oldScanRecord = tempScanRecord
-                                tempScanRecord =
-                                    TempScanRecord(
-                                        selectedItem.copy(
-                                            id = 0L,
-                                            Count = newCount,
-                                            cellGuid = oldScanRecord.cellGuid,
-                                            cellTitle = oldScanRecord.cellTitle
-                                        )
-                                    )
-                            } else {
-                                //Ячейка еще не указана в таблице документа, прописываем отсканированную.
-                                val cellGuid = tempScanRecord.cellGuid
-                                val cellTitle = tempScanRecord.cellTitle
-                                tempScanRecord = TempScanRecord(
-                                    selectedItem.copy(
-                                        cellGuid = cellGuid,
-                                        cellTitle = cellTitle,
-                                    )
-                                )
-                            }
-                            //Номенклатура есть, но ячейка в документе не совпадает с отсканированной
-//                                dialog = DialogScreen.getDialog(
-//                                    requireContext(),
-//                                    DialogScreen.IDD_ERROR_SINGLE_BUTTON,
-//                                    title = getString(R.string.cell_text),
-//                                    message = getString(R.string.not_correct_cell),
-//                                    positiveButtonTitle = "Ok"
-//                                )
-//                                return@observe
+            if (tempScanRecord.ItemGUID.isNotEmpty() && (tempScanRecord.ItemGUID != it.itemGuid)) {
+                scannerIsBlocked = true
+                DialogScreen.getDialog()?.dismiss()
+                DialogScreen.showDialog(requireContext(), DialogScreen.IDD_QUESTION,
+                    title = resources.getString(R.string.other_nomenclature_text),
+                    message = resources.getString(R.string.scanned_another_nomenclature_text),
+                    positiveButtonTitle = resources.getString(R.string.text_yes),
+                    negativeButtonTitle = resources.getString(R.string.text_no),
+                    onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                        override fun onPositiveClickButton() {
+                            processReceivedItemData(it, binding, replacementNomenclature = true)
+                            scannerIsBlocked = false
                         }
-                        //binding.countEditText.setText(selectedItem.Count.toString())
 
-                        setCountTextColor(
-                            newCount,
-                            selectedItem.docCount,
-                            selectedItem.totalCount,
-                            binding.countEditText
-                        )
-
-                    }
-                    forceOverwrite = tempScanRecord.id != 0L
-                } else {
-                    //Номенклатура не найдена или не совпадает единица измерения в отсканированном ШК и таблице документа
-                    dialog = DialogScreen.showDialog(
-                        requireContext(),
-                        DialogScreen.IDD_ERROR_SINGLE_BUTTON,
-                        title = getString(R.string.nomenclature_not_found_text),
-                        message = "${getString(R.string.check_nomenclature_and_measure_of_unit_scan_again_text)}\n(ед. изм. ШК: ${it.unitOfMeasurementTitle})",
-                        positiveButtonTitle = "Ok"
-                    )
-                    return@observe
-                }
+                        override fun onNegativeClickButton() {
+                            scannerIsBlocked = false
+                        }
+                    })
+                SoundPlayer(requireContext(), SoundType.ANOTHER_ITEM_SCAN).playSound()
+                return@observe
             }
-            binding.itemTextView.setText(it.itemTitle)
-            if (tempScanRecord.docCount != 0.0)
-                binding.countTextInputLayout.hint =
-                    "Потребность: ${tempScanRecord.docCount - tempScanRecord.totalCount} ${it.unitOfMeasurementTitle}"
-            else
-                binding.countTextInputLayout.hint = it.unitOfMeasurementTitle
 
-            binding.qualityEditText.setText(it.qualityTitle)
+            processReceivedItemData(it, binding)
 
-            binding.countEditText.setText(newCount.toString())
-            binding.countTextInputLayout.error = null
-
-            binding.itemTextInputLayout.error = null
-
-            tempScanRecord.ItemGUID = it.itemGuid
-            tempScanRecord.ItemTitle = it.itemTitle
-            tempScanRecord.ItemMeasureOfUnitGUID = it.unitOfMeasurementGuid
-            tempScanRecord.ItemMeasureOfUnitTitle = it.unitOfMeasurementTitle
-            tempScanRecord.coefficient = it.coefficient
-            tempScanRecord.qualityGuid = it.qualityGuid
-            tempScanRecord.qualityTitle = it.qualityTitle
         }
 
         retrofitViewModel.listDataPhysicalPersons.observe(viewLifecycleOwner) {
@@ -465,7 +411,7 @@ class DetailScanFragment : Fragment() {
 
             val dataList = arrayListOf<PhysicalPerson>()
             it.forEach { person -> dataList.add(person) }
-            dialog?.dismiss()
+            DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()//dialog?.dismiss()
             val adapter = DynamicListAdapter<PhysicalPerson>(
                 requireContext(),
                 R.layout.dynamic_prefs_layout,
@@ -485,7 +431,9 @@ class DetailScanFragment : Fragment() {
 
             if (error == null) return@observe
 
-            dialog?.dismiss()
+            //dialog?.dismiss()
+            DialogScreen.getDialog()?.dismiss()
+            DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
             DialogScreen.showDialog(
                 requireContext(),
                 DialogScreen.IDD_ERROR,
@@ -494,11 +442,11 @@ class DetailScanFragment : Fragment() {
                     override fun onPositiveClickButton() {
                         when (error.requestName) {
                             "getPhysicalPersonList" -> {
-                                dialog?.show()
+                                DialogScreen.getDialog()?.show()//dialog?.show()
                                 getPhysicalPersonList()
                             }
                             "getAllWarehousesList" -> {
-                                dialog?.show()
+                                DialogScreen.getDialog()?.show()//dialog?.show()
                                 getAllWarehousesList(binding)
                             }
                             "getCellByBarcode" -> {
@@ -511,12 +459,22 @@ class DetailScanFragment : Fragment() {
         }
 
         retrofitViewModel.dataState.observe(viewLifecycleOwner) {
+//            if (it.loading) {
+//                if (dialog?.isShowing == false || dialog == null)
+//                    dialog =
+//                        DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+//            } else
+//                dialog?.dismiss()
             if (it.loading) {
-                if (dialog?.isShowing == false || dialog == null)
-                    dialog =
-                        DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
-            } else
-                dialog?.dismiss()
+                if (DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.isShowing == false || DialogScreen.getDialog(
+                        DialogScreen.IDD_PROGRESS
+                    ) == null
+                )
+                    DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+            } else {
+                DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+                //dialog?.dismiss()
+            }
 
             if (it.error) {
                 DialogScreen.showDialog(
@@ -527,11 +485,11 @@ class DetailScanFragment : Fragment() {
                         override fun onPositiveClickButton() {
                             when (it.requestName) {
                                 "getPhysicalPersonList" -> {
-                                    dialog?.show()
+                                    DialogScreen.getDialog()?.show()//dialog?.show()
                                     getPhysicalPersonList()
                                 }
                                 "getAllWarehousesList" -> {
-                                    dialog?.show()
+                                    DialogScreen.getDialog()?.show()//dialog?.show()
                                     getAllWarehousesList(binding)
                                 }
 
@@ -542,6 +500,160 @@ class DetailScanFragment : Fragment() {
         }
 
         return binding.root
+    }
+
+    private fun itemNotFound(item: Nomenclature, isExternalDocument: Boolean = false) {
+        val context = requireContext()
+        scannerIsBlocked = true
+        DialogScreen.getDialog()?.dismiss()
+        DialogScreen.showDialog(
+            context,
+            DialogScreen.IDD_ERROR_SINGLE_BUTTON,
+            title = getString(R.string.nomenclature_not_found_text),
+            message = if (isExternalDocument) "${getString(R.string.check_nomenclature_and_measure_of_unit_scan_again_text)}\n(ед. изм. ШК: ${item.unitOfMeasurementTitle})" else getString(
+                R.string.check_label_scan_again_text
+            ),
+            positiveButtonTitle = "Ok",
+            onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                override fun onPositiveClickButton() {
+                    scannerIsBlocked = false
+                }
+            })
+        SoundPlayer(context, SoundType.ITEM_NOT_FOUND).playSound()
+    }
+
+    private fun processReceivedItemData(
+        it: Nomenclature,
+        binding: FragmentDetailScanBinding,
+        replacementNomenclature: Boolean = false
+    ) {
+        var newCount = try {
+            if (replacementNomenclature) 1.0 else (binding.countEditText.text.toString()).toDouble() + 1.0
+        } catch (e: Exception) {
+            1.0
+        }
+
+        tempScanRecord.replacement = replacementNomenclature
+
+        //Если собираем по внешнему документу
+        if (tableFromExternalDocument.isNotEmpty()) {
+            //Если отбираем на основании документа из 1С и это редактирование записи, проверяем что отсканировали номенклатуру позиции, которую изменяем - они должны совпадать, иначе попытка подмены - отменяем.
+            if (tempScanRecord.ItemGUID != "") {
+                if (it.itemGuid != tempScanRecord.ItemGUID) {
+                    scannerIsBlocked = true
+                    DialogScreen.getDialog()?.dismiss()
+                    DialogScreen.showDialog(
+                        requireContext(),
+                        DialogScreen.IDD_ERROR_SINGLE_BUTTON,
+                        title = getString(R.string.changing_an_entry_text),
+                        message = getString(R.string.nomenclature_substitution_text),
+                        positiveButtonTitle = "Ok",
+                        onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                            override fun onPositiveClickButton() {
+                                scannerIsBlocked = false
+                            }
+                        }
+                    )
+                    SoundPlayer(requireContext(), SoundType.ANOTHER_ITEM_SCAN).playSound()
+                    return
+                }
+            }
+
+            val filteredItems = tableFromExternalDocument
+                .filter { tableItem -> tableItem.ItemGUID == it.itemGuid }
+                .filter { filteredItem -> filteredItem.ItemMeasureOfUnitGUID == it.unitOfMeasurementGuid }
+            //Номенклатура есть в документе
+            if (filteredItems.isNotEmpty()) {
+                //Нашлась 1 позиция
+                //if (filteredItems.size == 1) {
+                if (filteredItems.size > 0) {
+                    var selectedItem = filteredItems[0]
+                    //Отфильтруем по ячейке в документе = отсканированной ячейке
+                    val filteredCellItems =
+                        filteredItems.filter { filteredItem -> filteredItem.cellGuid == tempScanRecord.cellGuid }
+                    if (filteredCellItems.isNotEmpty()) {
+                        //Позиция в данной ячейке есть в документе (должна быть всегда 1, т.к. фильтры по Номенклатуре, Ед. изм. и Ячейке)
+                        selectedItem = filteredCellItems[0]
+//                            // Если ячейка уже задана в таблице документа, проверим что она совпадает с отсканированной
+//                        val selectedItem = filteredItems[0]
+//                        if (selectedItem.cellGuid != "") {
+//                            if (selectedItem.cellGuid == tempScanRecord.cellGuid) {
+                        tempScanRecord =
+                            TempScanRecord(selectedItem) //Ставим текущую рабочую запись равной найденной в таблице документа
+                        newCount =
+                            if (newCount == 1.0) selectedItem.Count + 1.0 else newCount
+                    } else {
+                        if (selectedItem.cellGuid != "") {
+                            //Позиция есть в документе, но отсканирована другая ячейка - это нормально, нужно добавить новую строку с отсканированной ячейкой
+                            val oldScanRecord = tempScanRecord
+                            tempScanRecord =
+                                TempScanRecord(
+                                    selectedItem.copy(
+                                        id = 0L,
+                                        Count = newCount,
+                                        cellGuid = oldScanRecord.cellGuid,
+                                        cellTitle = oldScanRecord.cellTitle
+                                    )
+                                )
+                        } else {
+                            //Ячейка еще не указана в таблице документа, прописываем отсканированную.
+                            val cellGuid = tempScanRecord.cellGuid
+                            val cellTitle = tempScanRecord.cellTitle
+                            tempScanRecord = TempScanRecord(
+                                selectedItem.copy(
+                                    cellGuid = cellGuid,
+                                    cellTitle = cellTitle,
+                                )
+                            )
+                        }
+                        //Номенклатура есть, но ячейка в документе не совпадает с отсканированной
+//                                dialog = DialogScreen.getDialog(
+//                                    requireContext(),
+//                                    DialogScreen.IDD_ERROR_SINGLE_BUTTON,
+//                                    title = getString(R.string.cell_text),
+//                                    message = getString(R.string.not_correct_cell),
+//                                    positiveButtonTitle = "Ok"
+//                                )
+//                                return@observe
+                    }
+                    //binding.countEditText.setText(selectedItem.Count.toString())
+
+                    setCountTextColor(
+                        newCount,
+                        selectedItem.docCount,
+                        selectedItem.totalCount,
+                        binding.countEditText
+                    )
+
+                }
+                forceOverwrite = tempScanRecord.id != 0L
+            } else {
+                //Номенклатура не найдена или не совпадает единица измерения в отсканированном ШК и таблице документа
+                itemNotFound(it, true)
+                return
+            }
+        }
+        binding.itemTextView.setText(it.itemTitle)
+        if (tempScanRecord.docCount != 0.0)
+            binding.countTextInputLayout.hint =
+                "Потребность: ${tempScanRecord.docCount - tempScanRecord.totalCount} ${it.unitOfMeasurementTitle}"
+        else
+            binding.countTextInputLayout.hint = it.unitOfMeasurementTitle
+
+        binding.qualityEditText.setText(it.qualityTitle)
+
+        binding.countEditText.setText(newCount.toString())
+        binding.countTextInputLayout.error = null
+
+        binding.itemTextInputLayout.error = null
+
+        tempScanRecord.ItemGUID = it.itemGuid
+        tempScanRecord.ItemTitle = it.itemTitle
+        tempScanRecord.ItemMeasureOfUnitGUID = it.unitOfMeasurementGuid
+        tempScanRecord.ItemMeasureOfUnitTitle = it.unitOfMeasurementTitle
+        tempScanRecord.coefficient = it.coefficient
+        tempScanRecord.qualityGuid = it.qualityGuid
+        tempScanRecord.qualityTitle = it.qualityTitle
     }
 
     private fun getCellReceiverDialogBinding(): CellReceiverDialogBinding =
@@ -746,7 +858,10 @@ class DetailScanFragment : Fragment() {
     }
 
     override fun onDestroyView() {
-        dialog?.dismiss()
+        //dialog?.dismiss()
+        DialogScreen.getDialog()?.dismiss()
+        DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+        DialogScreen.getDialog(DialogScreen.IDD_INPUT)?.dismiss()
         super.onDestroyView()
     }
 
@@ -774,6 +889,7 @@ class TempScanRecord {
     var qualityTitle: String = ""
     var WorkwearOrdinary: Boolean = false
     var WorkwearDisposable: Boolean = false
+    var replacement: Boolean = false
 
     //    var DivisionId: Long = 0L
 //    var DivisionOrganization: Long = 0L
@@ -785,6 +901,7 @@ class TempScanRecord {
 //    var PhysicalPersonGUID: String = ""
     var docHeaders: DocumentHeaders = DocumentHeaders
     var OwnerGuid: String = ""
+    var lastModified: Long = System.currentTimeMillis()
 
     constructor(scanRecord: TableScan) {
         id = scanRecord.id
@@ -817,6 +934,8 @@ class TempScanRecord {
 //        PhysicalPersonGUID = scanRecord.PhysicalPersonGUID
         docHeaders = scanRecord.docHeaders
         OwnerGuid = scanRecord.OwnerGuid
+        replacement = scanRecord.replacement
+        lastModified = scanRecord.lastModified
     }
 
     fun toScanRecord(): TableScan {
@@ -850,7 +969,9 @@ class TempScanRecord {
 //            PhysicalPersonTitle = PhysicalPersonTitle,
 //            PhysicalPersonGUID = PhysicalPersonGUID,
             docHeaders = DocumentHeaders,
-            OwnerGuid = OwnerGuid
+            OwnerGuid = OwnerGuid,
+            replacement = replacement,
+            lastModified = lastModified,
         )
     }
 }

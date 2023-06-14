@@ -45,6 +45,7 @@ class DocumentSelectFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
 
+        BarcodeScannerReceiver.setEnabled(false)
         selectedOption = arguments?.getSerializable("selectedOption") as Option
         user1C = arguments?.getSerializable("userData") as User1C
         isNew = arguments?.getBoolean("isNew") ?: false
@@ -311,6 +312,7 @@ class DocumentSelectFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        BarcodeScannerReceiver.setEnabled()
         progressDialog?.dismiss()
         super.onDestroyView()
     }

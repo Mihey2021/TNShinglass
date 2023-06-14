@@ -70,8 +70,14 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
                is Counterparty -> {
                    itemListTextView?.text = item.title
                    itemListDescriptionTextView.text = "ИНН: ${item.inn}. КПП: ${item.kpp}"
-                   //itemListDescriptionTextView?.text = "ИНН: ${item.inn}"
-                   //itemListDescription2TextView?.text = "КПП: ${item.kpp}"
+               }
+               is Nomenclature -> {
+                   itemListTextView?.text = item.itemTitle
+                   itemListDescriptionTextView.text = "Код: ${item.code}."
+               }
+               is Gvzo -> {
+                   itemListTextView?.text = item.title
+                   itemListDescriptionTextView.text = "Код: ${item.code}."
                }
                is ExternalDocument -> {
                    itemListTextView?.text = "${item.externalOrderDocumentTitle} ${item.externalOrderNumber}"
@@ -114,11 +120,13 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
                             }
                         }
                         if (item is Counterparty) {
-//                            if (item.divisionTitle.lowercase(Locale.ROOT)
-//                                    .contains(constraint.toString().lowercase(Locale.ROOT))
-//                            ) {
                             suggestions.add(item)
-//                            }
+                        }
+                        if (item is Nomenclature) {
+                            suggestions.add(item)
+                        }
+                        if (item is Gvzo) {
+                            suggestions.add(item)
                         }
                     }
                     val filterResults = FilterResults()
@@ -153,6 +161,10 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
                 if (resultValue is Division)
                     return resultValue.divisionTitle
                 if (resultValue is Cell)
+                    return resultValue.title
+                if (resultValue is Nomenclature)
+                    return resultValue.itemTitle
+                if (resultValue is Gvzo)
                     return resultValue.title
                 return if (resultValue is ExternalDocument)
                     "${resultValue.externalOrderDocumentTitle} ${resultValue.externalOrderNumber} " +

@@ -5,4 +5,6 @@ data class ModelState(
     val error: Boolean = false,
     val errorMessage: String = "",
     val requestName: String = "",
+    val barcode: String = "",
+    val additionalRequestProperties: List<AdditionalRequestOptions> = listOf(AdditionalRequestOptions()),
 )

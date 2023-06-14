@@ -26,6 +26,14 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
     val listDataWarehouses: LiveData<List<Warehouse>>
         get() = _listDataWarehouses
 
+    private val _listNomenclatureStocks: MutableLiveData<List<NomenclatureStocks>> = MutableLiveData(listOf())
+    val listNomenclatureStocks: LiveData<List<NomenclatureStocks>>
+        get() = _listNomenclatureStocks
+
+    private val _listGvzo: MutableLiveData<List<Gvzo>> = MutableLiveData(null)
+    val listGvzo: LiveData<List<Gvzo>>
+        get() = _listGvzo
+
     private val _cellData: MutableLiveData<Cell> = MutableLiveData(null)
     val cellData: LiveData<Cell>
         get() = _cellData
@@ -41,6 +49,10 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
     private val _itemData: MutableLiveData<Nomenclature> = MutableLiveData(null)
     val itemData: LiveData<Nomenclature>
         get() = _itemData
+
+    private val _itemListData: MutableLiveData<List<Nomenclature>> = MutableLiveData(null)
+    val itemListData: LiveData<List<Nomenclature>>
+        get() = _itemListData
 
 //    private val _docCreated: MutableLiveData<CreatedDocumentDetails?> = MutableLiveData(null)
 //    val docCreated: LiveData<CreatedDocumentDetails?>
@@ -109,23 +121,25 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
                 _dataState.value = ModelState(
                     error = true,
                     errorMessage = e.message.toString(),
-                    requestName = "getCellByBarcode"
+                    requestName = "getCellByBarcode",
+                    additionalRequestProperties = listOf(AdditionalRequestOptions("barcode", barcode))
                 )
             }
         }
     }
 
-    fun getCellsList(warehouseGuid: String) {
+    fun getCellsList(warehouseGuid: String, partNameCode: String = "") {
         viewModelScope.launch {
             try {
                 _dataState.value = ModelState(loading = true)
-                _cellListData.value = repository.getCellsList(warehouseGuid)
+                _cellListData.value = repository.getCellsList(warehouseGuid = warehouseGuid, partNameCode = partNameCode)
                 _dataState.value = ModelState()
             } catch (e: Exception) {
                 _dataState.value = ModelState(
                     error = true,
                     errorMessage = e.message.toString(),
-                    requestName = "getCellsList"
+                    requestName = "getCellsList",
+                    additionalRequestProperties = listOf(AdditionalRequestOptions("partNameCode", partNameCode))
                 )
             }
         }
@@ -147,31 +161,95 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-//    fun createInventoryOfGoods(scanRecords: List<TableScan>){
-//        repository.createInventoryOfGoods(scanRecords, object : RetrofitRepository.Callback<CreatedDocumentDetails> {
-//            override fun onSuccess(receivedData: CreatedDocumentDetails) {
-//                _docCreated.value = receivedData
-//                _requestError.value = null
-//            }
-//
-//            override fun onError(e: Exception) {
-//                _requestError.value = RequestError(e.message.toString(), "createInventoryOfGoods")
-//            }
-//        })
-//
-//    }
-
     fun getItemByBarcode(barcode: String) {
-        repository.getItemByBarcode(barcode, object : RetrofitRepository.Callback<Nomenclature> {
-            override fun onSuccess(receivedData: Nomenclature) {
-                _itemData.value = receivedData
-                _requestError.value = null
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                _itemData.value = repository.getItemByBarcode(barcode)
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getItemByBarcode",
+                    barcode = barcode
+                )
             }
+        }
+    }
 
-            override fun onError(e: Exception) {
-                _requestError.value = RequestError(e.message.toString(), "getItemByBarcode")
+    fun getItemByTitleOrCode(partNameCode: String) {
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                _itemListData.value = repository.getItemByTitleOrCode(partNameCode)
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getItemByTitleOrCode",
+                    additionalRequestProperties = listOf(AdditionalRequestOptions("partNameCode", partNameCode))
+                )
             }
-        })
+        }
+    }
+
+    fun getNomenclatureStocks(
+        warehouseGuid: String,
+        nomenclatureGuid: String,
+        cellGuid: String = "",
+        byCell: Boolean = false,
+        gvzoGuid: String = "",
+    ) {
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                _listNomenclatureStocks.value = repository.getNomenclatureStocks(warehouseGuid = warehouseGuid, nomenclatureGuid = nomenclatureGuid, cellGuid = cellGuid, byCell = byCell, gvzoGuid = gvzoGuid)
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getNomenclatureStocks",
+                    additionalRequestProperties = listOf(AdditionalRequestOptions("warehouseGuid", warehouseGuid), AdditionalRequestOptions("nomenclatureGuid", nomenclatureGuid), AdditionalRequestOptions("gvzoGuid", gvzoGuid))
+                )
+            }
+        }
+    }
+
+    fun getWarehousesListByGuid(warehouseGuid: String) {
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                _listDataWarehouses.value = repository.getWarehousesListByGuid(warehouseGuid = warehouseGuid)
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getWarehousesListByGuid",
+                    additionalRequestProperties = listOf(AdditionalRequestOptions("warehouseGuid", warehouseGuid))
+                )
+            }
+        }
+    }
+
+    fun getGvzoByTitle(partNameCode: String) {
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                _listGvzo.value = repository.getGvzoByTitle(partNameCode = partNameCode)
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getWarehousesListByGuid",
+                    additionalRequestProperties = listOf(AdditionalRequestOptions("partNameCode", partNameCode))
+                )
+            }
+        }
     }
 
 }

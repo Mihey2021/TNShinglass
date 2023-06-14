@@ -16,8 +16,7 @@
             app:enterAnim="@anim/nav_default_enter_anim"
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim">
-        </action>
+            app:popExitAnim="@anim/nav_default_pop_exit_anim"></action>
         <action
             android:id="@+id/action_authFragment_to_barcodeParsingTN"
             app:destination="@id/barcodeParsingTN" />
@@ -67,5 +66,16 @@
     <fragment
         android:id="@+id/settingsFragment"
         android:name="ru.tn.shinglass.activity.SettingsFragment"
-        android:label="SettingsFragment" /><action android:id="@+id/action_global_settingsFragment" app:destination="@id/settingsFragment"/>
+        android:label="SettingsFragment" />
+    <action
+        android:id="@+id/action_global_settingsFragment"
+        app:destination="@id/settingsFragment" />
+    <fragment
+        android:id="@+id/stocksFragment"
+        android:name="ru.tn.shinglass.activity.StocksFragment"
+        android:label="StocksFragment" />
+    <action
+        android:id="@+id/action_global_stocksFragment"
+        app:destination="@id/stocksFragment" />
+
 </navigation>

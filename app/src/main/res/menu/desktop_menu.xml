@@ -8,6 +8,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/menu_stocks"
+        android:icon="@drawable/ic_baseline_stocks_24"
+        android:title="@string/stocks"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/menu_barcode_parsing_tn"
         android:icon="@drawable/ic_baseline_filter_center_focus_24"
         android:title="@string/barcode_parsing_tn"

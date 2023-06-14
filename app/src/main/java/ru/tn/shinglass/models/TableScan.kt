@@ -1,9 +1,7 @@
 package ru.tn.shinglass.models
 
 import androidx.room.Embedded
-import com.google.gson.annotations.SerializedName
 import ru.tn.shinglass.dto.models.DocumentHeaders
-import ru.tn.shinglass.dto.models.User1C
 import java.io.Serializable
 
 data class TableScan (
@@ -36,4 +34,6 @@ data class TableScan (
     val OwnerGuid: String,
     val uploaded: Boolean = false,
     val refreshing: Boolean = false,
+    val replacement: Boolean = false,
+    var lastModified: Long = System.currentTimeMillis(),
 ) : Serializable

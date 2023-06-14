@@ -33,4 +33,6 @@ class DetailScanViewModel(application: Application): AndroidViewModel(applicatio
 
     fun saveScanRecord(record: TableScan, forceOverwrite: Boolean) = repositoryTableScan.saveScanRecord(record, forceOverwrite)
 
+    fun deleteRecordById(id: Long) = repositoryTableScan.deleteRecordById(id)
+
 }

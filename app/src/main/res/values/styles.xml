@@ -5,4 +5,12 @@
         <item name="android:buttonBarStyle">?android:attr/buttonBarStyle</item>
     </style>
 
+<!--    <style name="Base.Widget.Material3.CompoundButton.Switch" parent="Widget.MaterialComponents.CompoundButton.Switch">-->
+    <style name="TNSwitch" parent="Widget.AppCompat.CompoundButton.Switch">
+        <item name="thumbTint">@color/switcher_thumb_selector</item>
+        <item name="colorOnSurface">@color/red_900</item>
+        <item name="thumbIconTint">@color/switcher_thumb_selector</item>
+        <item name="minHeight">4dp</item>
+    </style>
+
 </resources>

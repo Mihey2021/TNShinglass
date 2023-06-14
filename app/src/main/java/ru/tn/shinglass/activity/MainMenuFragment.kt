@@ -52,6 +52,10 @@ class MainMenuFragment : Fragment() {
                             findNavController().navigate(R.id.barcodeParsingTN)
                             true
                         }
+                        R.id.menu_stocks -> {
+                            findNavController().navigate(R.id.action_global_stocksFragment)
+                            true
+                        }
                         else -> false
                     }
                 }

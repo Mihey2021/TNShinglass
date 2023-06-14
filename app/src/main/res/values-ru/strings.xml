@@ -78,6 +78,7 @@
     <string name="clear_text">Очистить</string>
     <string name="save_text">Сохранить</string>
     <string name="nomenclature_not_found_text">Номенклатура не найдена</string>
+    <string name="cell_not_found_text">Ячейка не найдена</string>
     <string name="check_label_scan_again_text">Проверьте этикетку и отсканируйте штрихкод снова</string>
     <string name="check_nomenclature_and_measure_of_unit_scan_again_text">Удостоверьтесь, что номенклатура и единица измерения в отсканированном ШК совпадают с данными в документе 1С.</string>
     <string name="document_details_text">Реквизиты документа</string>
@@ -120,4 +121,16 @@
     <string name="http_service_authorization_error">Ошибка авторизации http-сервиса. Проверьте логин/пароль для http-сервиса</string>
     <string name="application_will_now_be_restarted">Чтобы изменения вступили в силу, необходимо перезапустить приложение. \nПерезапустить сейчас?</string>
     <string name="recreate_connection_text">Требуется пересоздать подключение. Применить сейчас?</string>
+    <string name="other_nomenclature_text">Другая номенклатура</string>
+    <string name="scanned_another_nomenclature_text">Отсканирована другая номенклатура. Заменить текущую?</string>
+    <string name="to_cell_equal_from_cell">Ячейка Куда не может совпадать с ячейкой Откуда</string>
+    <string name="stocks">Остатки</string>
+    <string name="err_scan_ean13_barcode">Отсканируйте штрихкод EAN-13!</string>
+    <string name="search_text">Поиск</string>
+    <string name="code_text">Код</string>
+    <string name="show_balances_by">"Показать остатки по "</string>
+    <string name="enter_least_3_characters">Введите не менее 3-х символов</string>
+    <string name="failed_get_warehouse">Не удалось получить склад</string>
+    <string name="gvzo_text">ГВЗО</string>
+    <string name="gvzo_not_found">ГВЗО не найдена</string>
 </resources>

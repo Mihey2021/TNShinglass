@@ -39,6 +39,8 @@ class DesktopFragment : Fragment(), OnBackPressedListener {
 
         binding = FragmentDesktopBinding.inflate(inflater, container, false)
 
+        BarcodeScannerReceiver.setEnabled(false)
+
 //        val user1C = arguments?.getSerializable("userData") as User1C
 //        setFragmentResult("requestUserData", bundleOf("userData" to user1C))
 
@@ -104,6 +106,7 @@ class DesktopFragment : Fragment(), OnBackPressedListener {
         //Toast.makeText(requireContext(), "Back Btn pressed", Toast.LENGTH_LONG).show()
         //dialog?.dismiss()
         DialogScreen.getDialog()?.dismiss()
+        BarcodeScannerReceiver.setEnabled(false)
         //dialog =
             DialogScreen.showDialog(requireContext(), DialogScreen.IDD_QUESTION,
             message = resources.getString(R.string.question_exit_session_text),
@@ -111,7 +114,12 @@ class DesktopFragment : Fragment(), OnBackPressedListener {
             onDialogsInteractionListener = object : OnDialogsInteractionListener {
                 override fun onPositiveClickButton() {
                     //exitProcess(0)
+                    //BarcodeScannerReceiver.setEnabled()
                     findNavController().navigateUp()
+                }
+
+                override fun onNegativeClickButton() {
+                    //BarcodeScannerReceiver.setEnabled()
                 }
             })
     }
@@ -125,6 +133,7 @@ class DesktopFragment : Fragment(), OnBackPressedListener {
         //dialog?.dismiss()
         DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
         DialogScreen.getDialog()?.dismiss()
+        BarcodeScannerReceiver.setEnabled()
         super.onDestroyView()
     }
 

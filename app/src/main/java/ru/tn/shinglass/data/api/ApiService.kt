@@ -21,6 +21,9 @@ interface ApiService {
     suspend fun getAllWarehousesList(): Response<List<Warehouse>>
 
     @GET("getWarehousesList")
+    suspend fun getWarehousesListByGuid(@Query("warehouseGuid") warehouseGuid: String = ""): Response<List<Warehouse>>
+
+    @GET("getWarehousesList")
     suspend fun getAllWarehousesReceiverList(): Response<List<WarehouseReceiver>>
 
 //    fun getWarehousesList(divisionGuid: String = "") {
@@ -34,10 +37,28 @@ interface ApiService {
     suspend fun getEmployeeList(): Response<List<Employee>>
 
     @GET("getCellByBarcode")
-    suspend fun getCellByBarcode(@Query("barcode") barcode: String, @Query("warehouseGuid") warehouseGuid: String): Response<Cell>
+    suspend fun getCellByBarcode(
+        @Query("barcode") barcode: String,
+        @Query("warehouseGuid") warehouseGuid: String
+    ): Response<Cell>
 
     @GET("getItemByBarcode")
-    fun getItemByBarcode(@Query("barcode") barcode: String): Call<Nomenclature>
+    suspend fun getItemByBarcode(@Query("barcode") barcode: String): Response<Nomenclature>
+
+    @GET("getItemByTitleOrCode")
+    suspend fun getItemByTitleOrCode(@Query("part_name_code") partNameCode: String): Response<List<Nomenclature>>
+
+    @GET("getGvzoByTitle")
+    suspend fun getGvzoByTitle(@Query("part_name_code") partNameCode: String): Response<List<Gvzo>>
+
+    @GET("getNomenclatureStocks")
+    suspend fun getNomenclatureStocks(
+        @Query("warehouseGuid") warehouseGuid: String,
+        @Query("nomenclatureGuid") nomenclatureGuid: String = "",
+        @Query("cellGuid") cellGuid: String = "",
+        @Query("byCell") byCell: Boolean = false,
+        @Query("gvzoGuid") gvzoGuid: String = "",
+    ): Response<List<NomenclatureStocks>>
 
     @GET("getDivisionsList")
     suspend fun getAllDivisionsList(): Response<List<Division>>
@@ -52,7 +73,7 @@ interface ApiService {
     suspend fun getRepairEstimate(): Response<List<ExternalDocument>>
 
     @GET("getCellsList")
-    suspend fun getCellsList(@Query("warehouse") warehouseGuid: String): Response<List<Cell>>
+    suspend fun getCellsList(@Query("warehouse") warehouseGuid: String, @Query("part_name_code") partNameCode: String = ""): Response<List<Cell>>
 
     @GET("getCellByGuid")
     suspend fun getCellByGuid(@Query("guid") cellGuid: String): Response<Cell>

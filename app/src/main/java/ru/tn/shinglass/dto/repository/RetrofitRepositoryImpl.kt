@@ -16,7 +16,27 @@ class RetrofitRepositoryImpl : RetrofitRepository {
 
     //private val apiService = ApiUtils.getApiService()
     override fun authorization(user: RequestLogin, callback: RetrofitRepository.Callback<User1C>) {
-        TODO("Not yet implemented")
+        //TODO("Not yet implemented")
+    }
+
+    override suspend fun getWarehousesListByGuid(warehouseGuid: String): List<Warehouse> {
+        try {
+            if (ApiUtils.getApiService() != null) {
+                val response =
+                    ApiUtils.getApiService()!!.getWarehousesListByGuid(warehouseGuid)
+                if (!response.isSuccessful) {
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+                }
+                return response.body() ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+            } else {
+                throw ApiServiceError("API service not ready")
+            }
+        } catch (e: IOException) {
+            //throw NetworkError
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
+        }
     }
 
 //    override suspend fun getPhysicalPersonList() {
@@ -37,9 +57,9 @@ class RetrofitRepositoryImpl : RetrofitRepository {
                 val response =
                     ApiUtils.getApiService()!!.getCellByBarcode(barcode, warehouseGuid)
                 if (!response.isSuccessful) {
-                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                return response.body() ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }
@@ -51,22 +71,104 @@ class RetrofitRepositoryImpl : RetrofitRepository {
         }
     }
 
-    override fun getItemByBarcode(
-        barcode: String,
-        callback: RetrofitRepository.Callback<Nomenclature>
-    ) {
-        ApiUtils.getApiService()?.getItemByBarcode(barcode)?.enqueue(getCallbackHandler(callback))
-    }
+//    override fun getItemByBarcode(
+//        barcode: String,
+//        callback: RetrofitRepository.Callback<Nomenclature>
+//    ) {
+//        ApiUtils.getApiService()?.getItemByBarcode(barcode)?.enqueue(getCallbackHandler(callback))
+//    }
 
-    override suspend fun getCellsList(warehouseGuid: String): List<Cell> {
+    override suspend fun getItemByBarcode(barcode: String): Nomenclature {
         try {
             if (ApiUtils.getApiService() != null) {
                 val response =
-                    ApiUtils.getApiService()!!.getCellsList(warehouseGuid)
+                    ApiUtils.getApiService()!!.getItemByBarcode(barcode)
                 if (!response.isSuccessful) {
-                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                return response.body() ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+            } else {
+                throw ApiServiceError("API service not ready")
+            }
+        } catch (e: IOException) {
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
+        }
+    }
+
+    override suspend fun getItemByTitleOrCode(partNameCode: String): List<Nomenclature> {
+        try {
+            if (ApiUtils.getApiService() != null) {
+                val response =
+                    ApiUtils.getApiService()!!.getItemByTitleOrCode(partNameCode)
+                if (!response.isSuccessful) {
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+                }
+                return response.body() ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+            } else {
+                throw ApiServiceError("API service not ready")
+            }
+        } catch (e: IOException) {
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
+        }
+    }
+
+    override suspend fun getGvzoByTitle(partNameCode: String): List<Gvzo> {
+        try {
+            if (ApiUtils.getApiService() != null) {
+                val response =
+                    ApiUtils.getApiService()!!.getGvzoByTitle(partNameCode)
+                if (!response.isSuccessful) {
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+                }
+                return response.body() ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+            } else {
+                throw ApiServiceError("API service not ready")
+            }
+        } catch (e: IOException) {
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
+        }
+    }
+
+    override suspend fun getNomenclatureStocks(
+        warehouseGuid: String,
+        nomenclatureGuid: String,
+        cellGuid: String,
+        byCell: Boolean,
+        gvzoGuid: String,
+    ): List<NomenclatureStocks> {
+        try {
+            if (ApiUtils.getApiService() != null) {
+                val response =
+                    ApiUtils.getApiService()!!.getNomenclatureStocks(warehouseGuid = warehouseGuid, nomenclatureGuid =  nomenclatureGuid, cellGuid = cellGuid, byCell = byCell, gvzoGuid = gvzoGuid)
+                if (!response.isSuccessful) {
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+                }
+                return response.body() ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+            } else {
+                throw ApiServiceError("API service not ready")
+            }
+        } catch (e: IOException) {
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
+        }
+    }
+
+    override suspend fun getCellsList(warehouseGuid: String, partNameCode: String): List<Cell> {
+        try {
+            if (ApiUtils.getApiService() != null) {
+                val response =
+                    ApiUtils.getApiService()!!.getCellsList(warehouseGuid = warehouseGuid, partNameCode = partNameCode)
+                if (!response.isSuccessful) {
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+                }
+                return response.body() ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }
@@ -83,9 +185,9 @@ class RetrofitRepositoryImpl : RetrofitRepository {
                 val response =
                     ApiUtils.getApiService()!!.getCellByGuid(cellGuid)
                 if (!response.isSuccessful) {
-                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                return response.body() ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }
