@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.widget.AutoCompleteTextView
@@ -14,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentTransaction
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -24,6 +26,8 @@ import ru.tn.shinglass.activity.utilites.AndroidUtils
 import ru.tn.shinglass.activity.utilites.SoundPlayer
 import ru.tn.shinglass.activity.utilites.SoundType
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
+import ru.tn.shinglass.activity.utilites.dialogs.HeadersDialogFragment
+import ru.tn.shinglass.activity.utilites.dialogs.HeadersDialogFragmentDirections
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.databinding.FragmentTableScanBinding
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
@@ -32,6 +36,7 @@ import ru.tn.shinglass.adapters.OnTableScanItemInteractionListener
 import ru.tn.shinglass.adapters.TableScanAdapter
 import ru.tn.shinglass.auth.AppAuth
 import ru.tn.shinglass.databinding.DocumentsHeadersInitDialogBinding
+import ru.tn.shinglass.dto.models.DocHeaders
 import ru.tn.shinglass.dto.models.DocumentHeaders
 import ru.tn.shinglass.dto.models.HeaderFields
 import ru.tn.shinglass.dto.models.User1C
@@ -51,19 +56,10 @@ class TableScanFragment : Fragment() {
     private val retrofitViewModel: RetrofitViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
 
-    private val dataListWarehouses: ArrayList<Warehouse> = arrayListOf()
-    private val dataListWarehousesReceiver: ArrayList<WarehouseReceiver> = arrayListOf()
-    private val dataListPhysicalPersons: ArrayList<PhysicalPerson> = arrayListOf()
-    private val dataListEmployees: ArrayList<Employee> = arrayListOf()
-    private val dataListDivisions: ArrayList<Division> = arrayListOf()
-    private val dataListCounterparties: ArrayList<Counterparty> = arrayListOf()
-
     private lateinit var selectedOption: Option
     private lateinit var user1C: User1C
-    //private var user1C: User1C? = null
 
 
-    //private lateinit var itemList: List<TableScan>
     private lateinit var dlgBinding: DocumentsHeadersInitDialogBinding
     private var dlgHeadersAndOther: AlertDialog? = null
 
@@ -92,9 +88,9 @@ class TableScanFragment : Fragment() {
 //        setFragmentResult("requestUserData", bundleOf("userData" to user1C))
 
         user1C = AppAuth.getInstance().getAuthData()
-
         AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) { authState ->
             user1C = authState.user1C
+            if (user1C.getUserGUID().isEmpty()) findNavController().navigate(R.id.authFragment)
         }
 
         viewModel.reloadTableScan(user1C.getUserGUID(), selectedOption.id)
@@ -158,9 +154,8 @@ class TableScanFragment : Fragment() {
 //        binding.infoTextView.setOnClickListener {
 //            dlgHeaders = getDocumentHeadersDialog(forceOpen = true, tableIsEmpty = itemList.isEmpty())
 //        }
-        binding.documentDetailsImageButton.setOnClickListener {
-            dlgHeadersAndOther =
-                getDocumentHeadersDialog(forceOpen = true)
+        binding.documentDetailsButton.setOnClickListener {
+            getDocumentHeadersDialog(forceOpen = true)
         }
 
         val adapter = TableScanAdapter(
@@ -184,13 +179,14 @@ class TableScanFragment : Fragment() {
                             override fun onNegativeClickButton() {
                                 refreshing = true
                                 if (itemList.filter { filterRecord -> filterRecord.ItemGUID == item.ItemGUID && filterRecord.ItemMeasureOfUnitGUID == item.ItemMeasureOfUnitGUID }.size == 1 && isExternalDocument) {
-                                    val isToirRepairEstimate = selectedOption.docType == DocType.TOIR_REPAIR_ESTIMATE //Это смета
+                                    val isToirRepairEstimate =
+                                        selectedOption.docType == DocType.TOIR_REPAIR_ESTIMATE //Это смета
                                     viewModel.saveRecord(
                                         item.copy(
-                                            ItemGUID = if(isToirRepairEstimate) "" else item.ItemGUID,
-                                            ItemTitle = if(isToirRepairEstimate) "" else item.ItemTitle,
-                                            ItemMeasureOfUnitGUID = if(isToirRepairEstimate) "" else item.ItemMeasureOfUnitGUID,
-                                            ItemMeasureOfUnitTitle = if(isToirRepairEstimate) "" else item.ItemMeasureOfUnitTitle,
+                                            ItemGUID = if (isToirRepairEstimate) "" else item.ItemGUID,
+                                            ItemTitle = if (isToirRepairEstimate) "" else item.ItemTitle,
+                                            ItemMeasureOfUnitGUID = if (isToirRepairEstimate) "" else item.ItemMeasureOfUnitGUID,
+                                            ItemMeasureOfUnitTitle = if (isToirRepairEstimate) "" else item.ItemMeasureOfUnitTitle,
                                             cellGuid = "",
                                             cellTitle = "",
                                             Count = 0.0,
@@ -279,6 +275,7 @@ class TableScanFragment : Fragment() {
                         || selectedOption.option == OptionType.SELECTION || selectedOption.option == OptionType.MOVEMENTS
                     ) {
                         currentDialog?.dismiss()
+                        BarcodeScannerReceiver.setEnabled(false)
                         currentDialog = DialogScreen.showDialog(
                             requireContext(),
                             DialogScreen.IDD_QUESTION,
@@ -288,7 +285,13 @@ class TableScanFragment : Fragment() {
                             onDialogsInteractionListener = object :
                                 OnDialogsInteractionListener {
                                 override fun onPositiveClickButton() {
+                                    BarcodeScannerReceiver.setEnabled()
                                     createDocumentIn1C()
+                                }
+
+                                override fun onNegativeClickButton() {
+                                    BarcodeScannerReceiver.setEnabled()
+                                    super.onNegativeClickButton()
                                 }
                             }
                         )
@@ -308,11 +311,18 @@ class TableScanFragment : Fragment() {
             //Toast.makeText(requireContext(),"Документ отправлен!", Toast.LENGTH_LONG).show()
             currentDialog?.dismiss()
             //currentDialog =
+            BarcodeScannerReceiver.setEnabled(false)
             DialogScreen.showDialog(
                 requireContext(),
                 DialogScreen.IDD_SUCCESS,
                 "Документ в 1С успешно создан.\nНомер: ${it.docNumber}\nДетали:${if (it.details.isNotEmpty()) "\n${it.details}" else "[нет]"}",
-                it.docTitle
+                it.docTitle,
+                onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                    override fun onPositiveClickButton() {
+                        BarcodeScannerReceiver.setEnabled()
+                        super.onPositiveClickButton()
+                    }
+                }
             )
             viewModel.resetTheDocumentCreatedFlag()
             //viewModel.deleteRecordsByOwnerAndOperationId(user1C.getUserGUID(), selectedOption.id)
@@ -327,7 +337,15 @@ class TableScanFragment : Fragment() {
                     checkScanTableForExternalDocument(it) && itemList.isNotEmpty()
             } else {
                 binding.completeAndSendBtn.isEnabled = it.isNotEmpty()
+                if (it.isEmpty()) {
+                    if (checkHeadersDataFail() && selectedOption.docType == DocType.DISPOSABLE_PPE) {
+                        DocumentHeaders.setDivision(null)
+                        //getDocumentHeadersDialog()
+                        return@observe
+                    }
+                }
             }
+
 
 //            val list = it.map { record ->
 //                record.copy(
@@ -422,15 +440,14 @@ class TableScanFragment : Fragment() {
         }
 
         BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) { dataScanPair ->
-
-
-            val showingDialog = (dlgHeadersAndOther?.isShowing ?: false)
-            //if (dlgHeadersAndOther != null)
-
-            if (showingDialog) {
-                SoundPlayer(requireContext(), SoundType.SMALL_ERROR).playSound()
-                return@observe
-            }
+            if (!BarcodeScannerReceiver.isEnabled() || dataScanPair == Pair("", "")) return@observe
+//            val showingDialog = (dlgHeadersAndOther?.isShowing ?: false)
+//            //if (dlgHeadersAndOther != null)
+//
+//            if (showingDialog) {
+//                SoundPlayer(requireContext(), SoundType.SMALL_ERROR).playSound()
+//                return@observe
+//            }
 
             //val dataScanPair = BarcodeScannerReceiver.dataScan.value
             val dataScanBarcode = dataScanPair.first
@@ -457,17 +474,16 @@ class TableScanFragment : Fragment() {
                     openExternalDocumentFragment()
                     return@observe
                 }
-
             }
 
             if (itemList.isEmpty()) {
                 //if (DocumentHeaders.getWarehouse() == null || DocumentHeaders.getPhysicalPerson() == null) {
                 if (checkHeadersDataFail()) {
 
-                    if (!showingDialog) {
-                        dlgHeadersAndOther = getDocumentHeadersDialog(args)
-                        return@observe
-                    }
+                    //if (!showingDialog) {
+                    getDocumentHeadersDialog(args)
+                    return@observe
+                    //}
                 } else {
                     openDetailScanFragment(args)
                     return@observe
@@ -477,10 +493,10 @@ class TableScanFragment : Fragment() {
                 //binding.infoTextView.text = "Чтобы начать, отсканируйте ячейку или номенклатуру.\nТекущая ячейка: ${itemList[lastIndex].cellTitle}"
                 if (thisOnePositionAndEmpty(itemList)) {
                     if (checkHeadersDataFail()) {
-                        if (!showingDialog) {
-                            dlgHeadersAndOther = getDocumentHeadersDialog(args)
-                            return@observe
-                        }
+                        //if (!showingDialog) {
+                        getDocumentHeadersDialog(args)
+                        return@observe
+                        //}
                     }
                     //openDetailScanFragment(args)
                     args.putSerializable(
@@ -508,6 +524,11 @@ class TableScanFragment : Fragment() {
                 }
             }
 
+            if (selectedOption.docType == DocType.DISPOSABLE_PPE && itemList.isEmpty()) {
+                getDocumentHeadersDialog()
+                return@observe
+            }
+
             args.putSerializable(
                 "editRecord",
                 TableScan(
@@ -528,144 +549,33 @@ class TableScanFragment : Fragment() {
             )
         }
 
-
-//        retrofitViewModel.listDataWarehouses.observe(viewLifecycleOwner) {
-//            if (it.isEmpty()) return@observe
-//
-//            viewModel.saveWarehouses(it)
-//            setWarehousesAdapter(dlgBinding)
-//        }
-
         viewModel.dataState.observe(viewLifecycleOwner)
         {
             if (it.loading) {
-                if (currentDialog?.isShowing == false || currentDialog == null)
-                    currentDialog =
-                        DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
-            } else
-                currentDialog?.dismiss()
+                if (DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.isShowing == false || DialogScreen.getDialog(
+                        DialogScreen.IDD_PROGRESS
+                    ) == null
+                )
+                    DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+            } else {
+                DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+            }
 
             if (it.error) {
                 //DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR, title = it.errorMessage)
-                currentDialog?.dismiss()
-                currentDialog = DialogScreen.showDialog(
+                DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+                DialogScreen.showDialog(
                     requireContext(),
                     DialogScreen.IDD_ERROR,
                     it.errorMessage,
                     onDialogsInteractionListener = object : OnDialogsInteractionListener {
                         override fun onPositiveClickButton() {
                             when (it.requestName) {
-                                "getAllWarehousesList" -> {
-                                    viewModel.getAllWarehousesList()
-                                }
-                                "getAllWarehousesReceiverList" -> {
-                                    viewModel.getAllWarehousesList(receiver = true)
-                                }
-                                "getAllPhysicalPerson" -> {
-                                    viewModel.getAllPhysicalPerson()
-                                }
                                 "createDocumentIn1C" ->
                                     createDocumentIn1C()
-                                "getCounterpartiesList" -> viewModel.getCounterpartiesList(
-                                    dlgBinding.counterpartyTextEdit.text.toString()
-                                )
                             }
                         }
                     })
-            }
-        }
-
-        viewModel.divisionsList.observe(viewLifecycleOwner)
-        {
-            if (it.isEmpty()) return@observe
-
-            dataListDivisions.clear()
-            dataListDivisions.add(Division(getString(R.string.not_chosen_text), "", ""))
-
-            it.forEach { division ->
-                dataListDivisions.add(division)
-            }
-        }
-
-        viewModel.warehousesList.observe(viewLifecycleOwner)
-        {
-            if (it.isEmpty()) return@observe
-
-            dataListWarehouses.clear()
-            dataListWarehouses.add(Warehouse(getString(R.string.not_chosen_text), "", "", ""))
-
-            it.forEach { warehouse ->
-                dataListWarehouses.add(warehouse)
-            }
-        }
-
-        viewModel.warehousesReceiverList.observe(viewLifecycleOwner)
-        {
-            if (it.isEmpty()) return@observe
-
-            dataListWarehousesReceiver.clear()
-            dataListWarehousesReceiver.add(
-                WarehouseReceiver(
-                    getString(R.string.not_chosen_text),
-                    "",
-                    "",
-                    ""
-                )
-            )
-
-            it.forEach { warehouseReceiver ->
-                dataListWarehousesReceiver.add(warehouseReceiver)
-            }
-        }
-
-        viewModel.physicalPersons.observe(viewLifecycleOwner)
-        {
-            if (it.isEmpty()) return@observe
-
-            dataListPhysicalPersons.clear()
-            dataListPhysicalPersons.add(PhysicalPerson(getString(R.string.not_chosen_text), ""))
-
-            it.forEach { person ->
-                dataListPhysicalPersons.add(person)
-            }
-        }
-
-        viewModel.employees.observe(viewLifecycleOwner)
-        {
-            if (it.isEmpty()) return@observe
-
-            dataListEmployees.clear()
-            dataListEmployees.add(Employee(getString(R.string.not_chosen_text), ""))
-
-            it.forEach { employee ->
-                dataListEmployees.add(employee)
-            }
-        }
-
-        viewModel.counterpartiesList.observe(viewLifecycleOwner)
-        {
-            dataListCounterparties.clear()
-            it.forEach { counterparty ->
-                dataListCounterparties.add(counterparty)
-            }
-
-            val adapter = DynamicListAdapter<Counterparty>(
-                requireContext(),
-                R.layout.counterparty_item_layout,
-                dataListCounterparties
-            )
-            (dlgBinding.counterpartyTextEdit as? AutoCompleteTextView)?.setAdapter(adapter)
-            if ((dlgHeadersAndOther?.isShowing == true) && dataListCounterparties.isEmpty()) {
-                currentDialog?.dismiss()
-                currentDialog = DialogScreen.showDialog(
-                    requireContext(),
-                    DialogScreen.IDD_SUCCESS,
-                    getString(R.string.specify_name_or_inn_text),
-                    getString(R.string.nothing_found_text),
-                    titleIcon = R.drawable.ic_baseline_search_off_24
-                )
-            } else {
-                dlgBinding.counterpartyTextEdit.showDropDown()
             }
         }
 
@@ -761,8 +671,7 @@ class TableScanFragment : Fragment() {
         args.putSerializable("userData", user1C)
         args.putSerializable("selectedOption", selectedOption)
         args.putBoolean("isNew", isNew)
-        //progressDialog?.dismiss()
-        //progressDialog?.dismiss()
+
         findNavController().navigate(
             R.id.action_tableScanFragment_to_documentSelectFragment,
             args
@@ -797,440 +706,22 @@ class TableScanFragment : Fragment() {
         val docHeadersFields = selectedOption.subOption?.headerFields
         if (docHeadersFields?.isEmpty() == true) return null
 
-        with(dlgBinding) {
-
-            if (docHeadersFields?.contains(HeaderFields.DIVISION) == true) {
-                val divisionGuidByPrefs =
-                    settingsViewModel.getPreferenceByKey<String>("division_guid", "")
-                if (divisionGuidByPrefs.isNullOrBlank())
-                    divisionTextInputLayout.error = "Подразделение не задано в настройках!"
-
-                val divisionAdapter = DynamicListAdapter<Division>(
-                    requireContext(),
-                    R.layout.dynamic_prefs_layout,
-                    dataListDivisions,
-                    filterOff = true
-                )
-
-                divisionTextView.isEnabled = tableIsEmpty
-
-                if (!tableIsEmpty) divisionTextInputLayout.endIconMode =
-                    TextInputLayout.END_ICON_NONE
-
-                divisionTextView.setAdapter(divisionAdapter)
-
-
-
-                if (!isExternalDocument) {
-                    var division = settingsViewModel.getDivisionByGuid(divisionGuidByPrefs ?: "")
-                    if (division == null)
-                        division = viewModel.getDivisionByGuid(user1C.getDefaultDivisionGUID())
-                    if (DocumentHeaders.getDivision() == null) {
-                        DocumentHeaders.setDivision(division)
-                        val position = divisionAdapter.getPosition(division)
-                        if (position != -1)
-                        //divisionTextView.setSelection(position)
-                            divisionTextView.listSelection = position
-                    }
-                }
-                divisionTextView.setText(DocumentHeaders.getDivision()?.divisionTitle)
-                divisionTextInputLayout.error = null
-
-                divisionTextView.setOnClickListener {
-                    if (divisionTextView.adapter == null || divisionTextView.adapter.count == 0) {
-                        viewModel.getAllDivisions()
-                    }
-                }
-
-                divisionTextView.setOnItemClickListener { adapterView, _, position, _ ->
-                    val divisionItem = adapterView.getItemAtPosition(position) as Division
-                    if (divisionItem.divisionGuid == "") {
-                        DocumentHeaders.setDivision(null)
-                    } else {
-                        DocumentHeaders.setDivision(divisionItem)
-                    }
-
-
-//                    fillResponsible(
-//                        DocumentHeaders.getDivision()?.responsibleGuid ?: "",
-//                        dlgBinding.physicalPersonTextView
-//                    )
-                    divisionTextView.setText(divisionItem?.divisionTitle)
-                    divisionTextInputLayout.error = null
-                    AndroidUtils.hideKeyboard(dlgBinding.root)
-                }
-            } else {
-                divisionTextInputLayout.isVisible = false
-            }
-
-            if (docHeadersFields?.contains(HeaderFields.WAREHOUSE) == true) {
-                val warehouseGuidByPrefs =
-                    settingsViewModel.getPreferenceByKey<String>("warehouse_guid", "")
-                if (warehouseGuidByPrefs.isNullOrBlank())
-                    warehouseTextInputLayout.error = "Склад не задан в настройках!".toString()
-
-                val warehousesAdapter = DynamicListAdapter<Warehouse>(
-                    requireContext(),
-                    R.layout.dynamic_prefs_layout,
-                    dataListWarehouses
-                )
-
-                warehouseTextView.isEnabled = tableIsEmpty
-
-                if (!tableIsEmpty) warehouseTextInputLayout.endIconMode =
-                    TextInputLayout.END_ICON_NONE
-
-                warehouseTextView.setAdapter(warehousesAdapter)
-
-                if (!isExternalDocument) {
-                    val warehouse = settingsViewModel.getWarehouseByGuid(warehouseGuidByPrefs ?: "")
-                    if (DocumentHeaders.getWarehouse() == null)
-                        DocumentHeaders.setWarehouse(warehouse)
-                }
-                warehouseTextView.setText(DocumentHeaders.getWarehouse()?.warehouseTitle)
-                warehouseTextInputLayout.error = null
-
-                warehouseTextView.setOnClickListener {
-                    if (warehouseTextView.adapter == null || warehouseTextView.adapter.count == 0) {
-                        viewModel.getAllWarehousesList()
-                    }
-                }
-
-                warehouseTextView.setOnItemClickListener { adapterView, _, position, _ ->
-                    val warehouseItem = adapterView.getItemAtPosition(position) as Warehouse
-                    if (warehouseItem.warehouseGuid == "") {
-                        DocumentHeaders.setWarehouse(null)
-                    } else {
-                        DocumentHeaders.setWarehouse(warehouseItem)
-                    }
-                    //if (physicalPersonTextView.text.isNullOrBlank()) {
-                    fillResponsible(
-                        DocumentHeaders.getWarehouse()?.warehouseResponsibleGuid ?: "",
-                        dlgBinding.physicalPersonTextView
-                    )
-                    //}
-                    warehouseTextView.setText(warehouseItem?.warehouseTitle)
-                    warehouseTextInputLayout.error = null
-                    AndroidUtils.hideKeyboard(dlgBinding.root)
-                }
-            } else {
-                warehouseTextInputLayout.isVisible = false
-            }
-
-            if (docHeadersFields?.contains(HeaderFields.WAREHOUSE_RECEIVER) == true) {
-                val warehousesReceiverAdapter = DynamicListAdapter<WarehouseReceiver>(
-                    requireContext(),
-                    R.layout.dynamic_prefs_layout,
-                    dataListWarehousesReceiver
-                )
-
-                warehouseReceiverTextView.isEnabled = tableIsEmpty
-
-                if (!tableIsEmpty) warehouseReceiverTextInputLayout.endIconMode =
-                    TextInputLayout.END_ICON_NONE
-
-                warehouseReceiverTextView.setAdapter(warehousesReceiverAdapter)
-
-                warehouseReceiverTextView.setText(DocumentHeaders.getWarehouseReceiver()?.warehouseReceiverTitle)
-                warehouseReceiverTextInputLayout.error = null
-
-                warehouseReceiverTextView.setOnClickListener {
-                    if (warehouseReceiverTextView.adapter == null || warehouseReceiverTextView.adapter.count == 0) {
-                        viewModel.getAllWarehousesList(receiver = true)
-                    }
-                }
-
-                warehouseReceiverTextView.setOnItemClickListener { adapterView, _, position, _ ->
-                    val warehouseReceiverItem =
-                        adapterView.getItemAtPosition(position) as WarehouseReceiver
-                    if (warehouseReceiverItem.warehouseReceiverGuid == "") {
-                        DocumentHeaders.setWarehouseReceiver(null)
-                    } else {
-                        DocumentHeaders.setWarehouseReceiver(warehouseReceiverItem)
-                    }
-                    warehouseReceiverTextView.setText(warehouseReceiverItem?.warehouseReceiverTitle)
-                    warehouseReceiverTextInputLayout.error = null
-                    AndroidUtils.hideKeyboard(dlgBinding.root)
-                }
-            } else {
-                warehouseReceiverTextInputLayout.isVisible = false
-            }
-
-            if (docHeadersFields?.contains(HeaderFields.PHYSICAL_PERSON) == true) {
-                val physicalPersonAdapter = DynamicListAdapter<PhysicalPerson>(
-                    requireContext(),
-                    R.layout.dynamic_prefs_layout,
-                    dataListPhysicalPersons
-                )
-
-                physicalPersonTextView.isEnabled = tableIsEmpty
-
-                if (!tableIsEmpty) physicalPersonTextInputLayout.endIconMode =
-                    TextInputLayout.END_ICON_NONE
-
-                physicalPersonTextView.setAdapter(physicalPersonAdapter)
-
-                physicalPersonTextInputLayout.hint = "МОЛ"
-                if (DocumentHeaders.getPhysicalPerson() != null)
-                    physicalPersonTextView.setText(DocumentHeaders.getPhysicalPerson()?.physicalPersonFio)
-                physicalPersonTextView.setOnClickListener {
-                    if (physicalPersonTextView.adapter == null || physicalPersonTextView.adapter.count == 0) {
-                        //getPhysicalPersonList()
-                        viewModel.getAllPhysicalPerson()
-//                    progressDialog =
-//                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
-                    }
-                }
-                physicalPersonTextView.setOnItemClickListener { adapterView, _, position, _ ->
-                    val physicalPerson = adapterView.getItemAtPosition(position) as PhysicalPerson
-                    if (physicalPerson.physicalPersonGuid == "") {
-                        DocumentHeaders.setPhysicalPerson(null)
-                    } else {
-                        DocumentHeaders.setPhysicalPerson(physicalPerson)
-                    }
-                    physicalPersonTextView.setText(physicalPerson?.physicalPersonFio)
-                    physicalPersonTextInputLayout.error = null
-                    AndroidUtils.hideKeyboard(dlgBinding.root)
-                }
-
-                fillResponsible(
-                    DocumentHeaders.getWarehouse()?.warehouseResponsibleGuid ?: "",
-                    dlgBinding.physicalPersonTextView
-                )
-            } else {
-                physicalPersonTextInputLayout.isVisible = false
-            }
-
-            if (docHeadersFields?.contains(HeaderFields.EMPLOYEE) == true) {
-                val employeeAdapter = DynamicListAdapter<Employee>(
-                    requireContext(),
-                    R.layout.dynamic_prefs_layout,
-                    dataListEmployees
-                )
-
-                employeeTextView.isEnabled = tableIsEmpty
-
-                if (!tableIsEmpty) employeeTextInputLayout.endIconMode =
-                    TextInputLayout.END_ICON_NONE
-
-                employeeTextView.setAdapter(employeeAdapter)
-
-                if (DocumentHeaders.getEmployee() != null)
-                    employeeTextView.setText(DocumentHeaders.getEmployee()?.employeeFio)
-                employeeTextView.setOnClickListener {
-                    if (employeeTextView.adapter == null || employeeTextView.adapter.count == 0) {
-                        //getPhysicalPersonList()
-                        viewModel.getAllEmployees()
-//                    progressDialog =
-//                        DialogScreen.getDialog(requireContext(), DialogScreen.IDD_PROGRESS)
-                    }
-                }
-                employeeTextView.setOnItemClickListener { adapterView, _, position, _ ->
-                    val employee = adapterView.getItemAtPosition(position) as Employee
-                    if (employee.employeeGuid == "") {
-                        DocumentHeaders.setEmployee(null)
-                    } else {
-                        DocumentHeaders.setEmployee(employee)
-                    }
-                    employeeTextView.setText(employee?.employeeFio)
-                    employeeTextInputLayout.error = null
-                    AndroidUtils.hideKeyboard(dlgBinding.root)
-                }
-            } else {
-                employeeTextInputLayout.isVisible = false
-            }
-
-            if (docHeadersFields?.contains(HeaderFields.COUNTERPARTY) == false) {
-                counterpartyTextInputLayout.isVisible = false
-            } else {
-
-                counterpartyTextInputLayout.isEnabled = itemList.isEmpty()
-                val counterparty =
-                    if (itemList.isNotEmpty()) itemList[0].docHeaders.getCounterparty() else null
-                if (DocumentHeaders.getCounterparty() == null)
-                    DocumentHeaders.setCounterparty(counterparty)
-                counterpartyTextEdit.setText(DocumentHeaders.getCounterparty()?.title)
-                counterpartyTextInputLayout.helperText =
-                    getCounterpartyHelperText(DocumentHeaders.getCounterparty())
-
-                counterpartyTextEdit.addTextChangedListener(object : TextWatcher {
-                    override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                    }
-
-                    override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
-                        counterpartyTextInputLayout.error = null
-                        counterpartyTextInputLayout.helperText = null
-                    }
-
-                    override fun afterTextChanged(p0: Editable?) {
-                    }
-
-                })
-
-                counterpartyTextInputLayout.setEndIconOnClickListener {
-                    AndroidUtils.hideKeyboard(counterpartyTextEdit)
-                    if (counterpartyTextEdit.inputType != InputType.TYPE_NULL) {
-                        viewModel.getCounterpartiesList(counterpartyTextEdit.text.toString())
-                    } else {
-                        DocumentHeaders.setCounterparty(null)
-                        counterpartyTextEdit.text = null
-                        counterpartyTextInputLayout.helperText = null
-                        counterpartyTextEdit.inputType = InputType.TYPE_CLASS_TEXT
-                        counterpartyTextInputLayout.endIconMode = TextInputLayout.END_ICON_CUSTOM
-                        counterpartyTextInputLayout.endIconDrawable =
-                            AppCompatResources.getDrawable(
-                                requireContext(),
-                                R.drawable.ic_baseline_search_24
-                            )
-                        counterpartyTextInputLayout.endIconContentDescription =
-                            getString(R.string.find_text)
-                    }
-                }
-
-//                counterpartyTextEdit.setOnKeyListener { _, keyCode, _ ->
-//                    when (keyCode) {
-//                        KeyEvent.KEYCODE_DEL -> {
-//                            dataListCounterparties.clear()
-//                            counterpartyTextInputLayout.helperText = null
-//                        }
-//                    }
-//                    return@setOnKeyListener false
-//                }
-                counterpartyTextEdit.setOnItemClickListener { adapterView, _, position, _ ->
-                    AndroidUtils.hideKeyboard(counterpartyTextEdit)
-                    val counterparty = adapterView.getItemAtPosition(position) as Counterparty
-                    DocumentHeaders.setCounterparty(counterparty)
-                    counterpartyTextEdit.setText(counterparty?.title)
-                    counterpartyTextEdit.inputType = InputType.TYPE_NULL
-                    counterpartyTextInputLayout.endIconDrawable = AppCompatResources.getDrawable(
-                        requireContext(),
-                        R.drawable.ic_baseline_clear_24
-                    )
-                    counterpartyTextInputLayout.endIconContentDescription =
-                        getString(R.string.clear_text)
-                    counterpartyTextInputLayout.error = null
-                    counterpartyTextInputLayout.helperText = getCounterpartyHelperText(counterparty)
-
-                }
-            }
-
-            if (docHeadersFields?.contains(HeaderFields.INCOMING_DATE) == false) {
-                incomingDateTextInputLayout.isVisible = false
-            } else {
-                incomingDateTextInputLayout.isEnabled = itemList.isEmpty()
-                val incomingDate =
-                    if (itemList.isNotEmpty()) itemList[0].docHeaders.getIncomingDate() else null
-                if (DocumentHeaders.getIncomingDate() == null)
-                    DocumentHeaders.setIncomingDate(incomingDate)
-                val userDateAlready = DocumentHeaders.getIncomingDate() != null
-                val userDate =
-                    if (userDateAlready) DocumentHeaders.getIncomingDate() else MaterialDatePicker.todayInUtcMilliseconds()
-                val sdf = SimpleDateFormat("dd.MM.yyyy")
-                incomingDateEditText.setText(if (userDateAlready) sdf.format(Date(userDate!!)) else null)
-                incomingDateTextInputLayout.setEndIconOnClickListener {
-                    if (incomingDateTextInputLayout.endIconContentDescription == getString(R.string.clear_text)) {
-                        DocumentHeaders.setIncomingDate(null)
-                        incomingDateEditText.text = null
-                        incomingDateTextInputLayout.endIconDrawable =
-                            AppCompatResources.getDrawable(
-                                requireContext(),
-                                R.drawable.ic_baseline_calendar_24
-                            )
-                        incomingDateTextInputLayout.endIconContentDescription =
-                            getString(R.string.incoming_date_text)
-                        return@setEndIconOnClickListener
-                    }
-                    val datePicker = MaterialDatePicker.Builder.datePicker()
-                        .setTitleText(R.string.incoming_date_text)
-                        .setSelection(userDate)
-                        .build()
-                    datePicker.show(requireActivity().supportFragmentManager, "datePicker")
-                    datePicker.addOnPositiveButtonClickListener {
-                        DocumentHeaders.setIncomingDate(it)
-                        incomingDateEditText.setText(sdf.format(Date(it)))
-                        incomingDateTextInputLayout.endIconDrawable =
-                            AppCompatResources.getDrawable(
-                                requireContext(),
-                                R.drawable.ic_baseline_clear_24
-                            )
-                        incomingDateTextInputLayout.endIconContentDescription =
-                            getString(R.string.clear_text)
-                    }
-                }
-            }
-
-            if (docHeadersFields?.contains(HeaderFields.INCOMING_NUMBER) == false) {
-                incomingNumberTextInputLayout.isVisible = false
-            } else {
-                incomingNumberTextInputLayout.isEnabled = itemList.isEmpty()
-                val incomingNumber =
-                    if (itemList.isNotEmpty()) itemList[0].docHeaders.getIncomingNumber() else ""
-                if (DocumentHeaders.getIncomingNumber() == "")
-                    DocumentHeaders.setIncomingNumber(incomingNumber)
-                incomingNumberEditText.setText(DocumentHeaders.getIncomingNumber())
-                incomingNumberEditText.addTextChangedListener(
-                    object : TextWatcher {
-                        override fun beforeTextChanged(
-                            s: CharSequence?,
-                            start: Int,
-                            count: Int,
-                            after: Int
-                        ) {
-                        }
-
-                        override fun onTextChanged(
-                            s: CharSequence?,
-                            start: Int,
-                            before: Int,
-                            count: Int
-                        ) {
-                            DocumentHeaders.setIncomingNumber(s.toString())
-                        }
-
-                        override fun afterTextChanged(s: Editable?) {
-//                            if (s != null && s.isNotEmpty()) {
-//
-//                            }
-                        }
-                    }
-                )
-            }
-
-        }
-
-
         var dialogHeadersNeedOpen = checkHeadersDataFail()
 
-        //if (DocumentHeaders.getWarehouse() == null || DocumentHeaders.getPhysicalPerson() == null || forceOpen) {
-        if (dialogHeadersNeedOpen || forceOpen) {
-            dlgHeadersAndOther = DialogScreen.showDialog(
-                requireContext(),
-                DialogScreen.IDD_INPUT,
-                isCancelable = cancellable,
-                customView = dlgBinding.root,
-                positiveButtonTitle = getString(R.string.save_text),
-            )
-        }
-
-        dlgHeadersAndOther?.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
-            if (!checkHeadersDataFail()) {
-                if (args != null) {
-                    openDetailScanFragment(args)
-                } else {
-                    dlgHeadersAndOther?.dismiss()
-                }
-            }
-        }
-
+        dlgHeadersAndOther = null
+        val direction = HeadersDialogFragmentDirections.actionGlobalHeadersDialogFragment(
+            user1C = user1C,
+            tableIsEmpty = tableIsEmpty,
+            isExternalDocument = isExternalDocument,
+            selectedOption = selectedOption,
+            itemList = itemList.toTypedArray()
+        ) //, headerFields = docHeadersFields!!, )
+        findNavController().navigate(direction)
         return dlgHeadersAndOther
     }
 
-    private fun getCounterpartyHelperText(counterparty: Counterparty?): CharSequence? {
-        return if (counterparty == null) null else "ИНН: ${counterparty.inn}. КПП: ${counterparty.kpp}"
-    }
-
     //true  - не все заполнено
-//false - все заполнено
+    //false - все заполнено
     private fun checkHeadersDataFail(): Boolean {
         var isNotCorrect = false
         var fieldValueIsNotCorrect = false
@@ -1242,78 +733,26 @@ class TableScanFragment : Fragment() {
             if (it == HeaderFields.DIVISION) {
                 fieldValueIsNotCorrect = DocumentHeaders.getDivision() == null
                 isNotCorrect = (fieldValueIsNotCorrect || isNotCorrect)
-                val divisionTextInputLayout =
-                    dlgHeadersAndOther?.findViewById<TextInputLayout>(HeaderFields.DIVISION.viewId)
-                if (fieldValueIsNotCorrect) {
-                    divisionTextInputLayout?.error = getString(R.string.field_must_be_filled_text)
-                    return@forEach
-                    //return isNotCorrect
-                }
-                divisionTextInputLayout?.error = null
             }
             if (it == HeaderFields.WAREHOUSE) {
                 fieldValueIsNotCorrect = DocumentHeaders.getWarehouse() == null
                 isNotCorrect = (fieldValueIsNotCorrect || isNotCorrect)
-                val warehouseTextInputLayout =
-                    dlgHeadersAndOther?.findViewById<TextInputLayout>(HeaderFields.WAREHOUSE.viewId)
-                if (fieldValueIsNotCorrect) {
-                    warehouseTextInputLayout?.error = getString(R.string.field_must_be_filled_text)
-                    return@forEach
-                    //return isNotCorrect
-                }
-                warehouseTextInputLayout?.error = null
             }
             if (it == HeaderFields.WAREHOUSE_RECEIVER) {
                 fieldValueIsNotCorrect = DocumentHeaders.getWarehouseReceiver() == null
                 isNotCorrect = (fieldValueIsNotCorrect || isNotCorrect)
-                val warehouseReceiverTextInputLayout =
-                    dlgHeadersAndOther?.findViewById<TextInputLayout>(HeaderFields.WAREHOUSE_RECEIVER.viewId)
-                if (fieldValueIsNotCorrect) {
-                    warehouseReceiverTextInputLayout?.error =
-                        getString(R.string.field_must_be_filled_text)
-                    return@forEach
-                    //return isNotCorrect
-                }
-                warehouseReceiverTextInputLayout?.error = null
             }
             if (it == HeaderFields.PHYSICAL_PERSON) {
                 fieldValueIsNotCorrect = DocumentHeaders.getPhysicalPerson() == null
                 isNotCorrect = (fieldValueIsNotCorrect || isNotCorrect)
-                val physicalPersonTextInputLayout =
-                    dlgHeadersAndOther?.findViewById<TextInputLayout>(HeaderFields.PHYSICAL_PERSON.viewId)
-                if (fieldValueIsNotCorrect) {
-                    physicalPersonTextInputLayout?.error =
-                        getString(R.string.field_must_be_filled_text)
-                    return@forEach
-                    //return isNotCorrect
-                }
-                physicalPersonTextInputLayout?.error = null
             }
             if (it == HeaderFields.EMPLOYEE) {
                 fieldValueIsNotCorrect = DocumentHeaders.getEmployee() == null
                 isNotCorrect = (fieldValueIsNotCorrect || isNotCorrect)
-                val employeeTextInputLayout =
-                    dlgHeadersAndOther?.findViewById<TextInputLayout>(HeaderFields.EMPLOYEE.viewId)
-                if (fieldValueIsNotCorrect) {
-                    employeeTextInputLayout?.error =
-                        getString(R.string.field_must_be_filled_text)
-                    return@forEach
-                    //return isNotCorrect
-                }
-                employeeTextInputLayout?.error = null
             }
             if (it == HeaderFields.COUNTERPARTY) {
                 fieldValueIsNotCorrect = DocumentHeaders.getCounterparty() == null
                 isNotCorrect = (fieldValueIsNotCorrect || isNotCorrect)
-                val counterpartyTextInputLayout =
-                    dlgHeadersAndOther?.findViewById<TextInputLayout>(HeaderFields.COUNTERPARTY.viewId)
-                if (fieldValueIsNotCorrect) {
-                    counterpartyTextInputLayout?.error =
-                        getString(R.string.field_must_be_filled_text)
-                    return@forEach
-                    //return isNotCorrect
-                }
-                counterpartyTextInputLayout?.error = null
             }
         }
         return isNotCorrect
@@ -1360,7 +799,10 @@ class TableScanFragment : Fragment() {
                     )
                 )
             }
-            dlgHeadersAndOther?.dismiss()
+            //dlgHeadersAndOther?.dismiss()
+            DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+            DialogScreen.getDialog(DialogScreen.IDD_INPUT)?.dismiss()
+            DialogScreen.getDialog()?.dismiss()
             findNavController().navigate(
                 R.id.action_tableScanFragment_to_detailScanFragment,
                 args
@@ -1374,7 +816,7 @@ class TableScanFragment : Fragment() {
 //            if (DocumentHeaders.getWarehouse() == null || DocumentHeaders.getPhysicalPerson() == null)
 //                dlgHeaders = getDocumentHeadersDialog()
             if (checkHeadersDataFail() && (dlgHeadersAndOther?.isShowing == false))
-                dlgHeadersAndOther = getDocumentHeadersDialog()
+                getDocumentHeadersDialog()
         }
         super.onResume()
     }
@@ -1389,10 +831,18 @@ class TableScanFragment : Fragment() {
             DocumentHeaders.setIncomingNumber("")
         }
 
+        closeAllDialogs()
         //dlgHeadersAndOther?.dismiss()
         //dialog?.dismiss()
 
         super.onDestroy()
+    }
+
+    private fun closeAllDialogs() {
+        DialogScreen.getDialog()?.dismiss()
+        DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+        DialogScreen.getDialog(DialogScreen.IDD_INPUT)?.dismiss()
+        BarcodeScannerReceiver.setEnabled()
     }
 
     override fun onDestroyView() {

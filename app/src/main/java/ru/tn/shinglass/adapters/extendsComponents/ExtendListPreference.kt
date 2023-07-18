@@ -67,6 +67,7 @@ class ExtendListPreference<T>(context: Context, attrs: AttributeSet? = null) :
     }
 
     fun setDataListArray(dataList: ArrayList<T>) {
+        clearAdapterData()
         this.dataList = dataList
         updateDataList()
     }

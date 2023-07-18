@@ -11,15 +11,34 @@
         <item name="colorOnSecondary">@color/black</item>
         <item name="colorControlNormal">@android:color/white</item>
         <item name="android:textColorSecondary">@color/black</item>
+        <item name="colorSecondaryContainer">@color/blue_gray_200</item>
 
         <!-- Status bar color. -->
         <item name="android:statusBarColor" >?attr/colorPrimaryVariant</item>
         <!-- Customize your theme here. -->
+        <item name="shapeAppearanceSmallComponent">@style/Widget.TNShinglass.SmallShapeAppearance</item>
+<!--        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.TNShiglass.Chip</item>-->
+        <item name="chipStyle">@style/Widget.TNShinglass.Chip</item>
+        <item name="tnChipTextSize">11sp</item>
+        <item name="shapeAppearanceLargeComponent">@style/Widget.TNShinglass.LargeComponent</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.TNShinglass.AlertDialogMaterialTheme</item>
+        <item name="floatingActionButtonSmallStyle">@style/Widget.TNShinglass.FloatingActionButton</item>
+        <item name="materialCalendarTheme">@style/ThemeOverlay.TNShinglass.MaterialCalendar</item>
+    </style>
+
+    <style name="ThemeOverlay.TNShinglass.AlertDialogMaterialTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.TNShiglass.MaterialDialog</item>
+    </style>
+
+    <style name="ThemeOverlay.TNShinglass.MaterialCalendar" parent="ThemeOverlay.Material3.MaterialCalendar">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.TNShiglass.MaterialDialog</item>
     </style>
 
     <style name="ThemeOverlay.TNShinglass.FullscreenContainer" parent="">
         <item name="fullscreenBackgroundColor">@color/light_blue_600</item>
         <item name="fullscreenTextColor">@color/light_blue_A200</item>
     </style>
+
+
 
 </resources>

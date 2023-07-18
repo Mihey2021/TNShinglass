@@ -1,13 +1,14 @@
 package ru.tn.shinglass.activity.utilites.dialogs
 
 import android.content.Context
+import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.SoundPlayer
 import ru.tn.shinglass.activity.utilites.SoundType
-import java.lang.Exception
+import kotlin.Exception
 
 object DialogScreen {
     const val IDD_ERROR = 1
@@ -165,6 +166,8 @@ object DialogScreen {
         if (ID == IDD_QUESTION) playSound(context, SoundType.ATTENTION)
         //}
 
+        if(ID == IDD_ERROR_SINGLE_BUTTON) Log.d("TTT", "[DialogScreen] Create and show ErrorDialog: $generatedDialog")
+        if(ID == IDD_PROGRESS) Log.d("TTT", "[DialogScreen] Create and show ProgressDialog: $generatedDialog")
         return generatedDialog!!
     }
 

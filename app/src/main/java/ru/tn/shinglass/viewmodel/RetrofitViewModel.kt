@@ -155,7 +155,8 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
                 _dataState.value = ModelState(
                     error = true,
                     errorMessage = e.message.toString(),
-                    requestName = "getCellByGuid"
+                    requestName = "getCellByGuid",
+                    additionalRequestProperties = listOf(AdditionalRequestOptions("cellGuid", cellGuid))
                 )
             }
         }
@@ -172,7 +173,7 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
                     error = true,
                     errorMessage = e.message.toString(),
                     requestName = "getItemByBarcode",
-                    barcode = barcode
+                    additionalRequestProperties = listOf(AdditionalRequestOptions("barcode", barcode))
                 )
             }
         }

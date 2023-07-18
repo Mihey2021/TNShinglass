@@ -201,7 +201,8 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
                 _dataState.value = ModelState(
                     error = true,
                     errorMessage = e.message.toString(),
-                    requestName = "getCounterpartiesList"
+                    requestName = "getCounterpartiesList",
+                    additionalRequestProperties = listOf(AdditionalRequestOptions("title", title))
                 )
             }
         }

@@ -1,9 +1,12 @@
 package ru.tn.shinglass.models
 
+import android.os.Parcelable
 import androidx.room.Embedded
+import kotlinx.parcelize.Parcelize
 import ru.tn.shinglass.dto.models.DocumentHeaders
 import java.io.Serializable
 
+@Parcelize
 data class TableScan (
     val id: Long = 0L,
     val OperationId: Long = 0L,
@@ -36,4 +39,4 @@ data class TableScan (
     val refreshing: Boolean = false,
     val replacement: Boolean = false,
     var lastModified: Long = System.currentTimeMillis(),
-) : Serializable
+) : Serializable, Parcelable

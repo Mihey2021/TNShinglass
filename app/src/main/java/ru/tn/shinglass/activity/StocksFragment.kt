@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -13,10 +14,15 @@ import android.widget.AutoCompleteTextView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputLayout
 import ru.tn.shinglass.R
@@ -34,6 +40,13 @@ import ru.tn.shinglass.models.*
 import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
 
+enum class ChipType(val tag: String) {
+    CELL_CHIP("cellChip"),
+    NOMENCLATURE_CHIP("nomenclatureChip"),
+    GVZO_CHIP("gvzoChip"),
+    GVZO_FILTER_CHIP("byGvzo"),
+}
+
 class StocksFragment : Fragment() {
 
     private val retrofitViewModel: RetrofitViewModel by viewModels()
@@ -46,6 +59,7 @@ class StocksFragment : Fragment() {
     private var warehouse: Warehouse? = null
 
     private var byGvzo: Boolean = false
+    private var chipCloseClick: Boolean = false
 
     private var stocksAdapter =
         NomenclatureStocksAdapter(onStocksItemInteractionListener = getItemClickListener())
@@ -81,7 +95,7 @@ class StocksFragment : Fragment() {
                                     "Код: ${nomenclature?.code ?: ""}"
                                 clearSearchParamsInForm(isNomenclature = false)
                                 setClearEndIcon(isNomenclature = true)
-                                setCellHelperText()
+                                prepareChips()
                                 gvzoSwitcher.isChecked = false
                                 getNomenclatureStocks(recyclerView)
                                 super.onPositiveClickButton()
@@ -109,21 +123,8 @@ class StocksFragment : Fragment() {
                                 //clearSearchParamsInForm(isNomenclature = true, clearTextField = true, clearGvzo = true)
 
                                 setClearEndIcon(isNomenclature = false)
-                                if (byGvzo) {
-                                    clearSearchParamsInForm(
-                                        isNomenclature = true,
-                                        clearTextField = false,
-                                        clearGvzo = false
-                                    )
-                                    setClearEndIcon(isNomenclature = true)
-                                } else {
-                                    clearSearchParamsInForm(
-                                        isNomenclature = true,
-                                        clearTextField = true,
-                                        clearGvzo = true
-                                    )
-                                }
-                                setCellHelperText()
+                                refreshSearchParamsByCellChange()
+                                prepareChips()
                                 getNomenclatureStocks(recyclerView)
                                 super.onPositiveClickButton()
                             }
@@ -137,6 +138,23 @@ class StocksFragment : Fragment() {
                 }
             }
         }
+
+    private fun refreshSearchParamsByCellChange() {
+        if (byGvzo) {
+            clearSearchParamsInForm(
+                isNomenclature = true,
+                clearTextField = false,
+                clearGvzo = false
+            )
+            setClearEndIcon(isNomenclature = true)
+        } else {
+            clearSearchParamsInForm(
+                isNomenclature = true,
+                clearTextField = true,
+                clearGvzo = true
+            )
+        }
+    }
 
     private fun getSearchGroupingState(): Boolean =
         (nomenclature?.itemGuid.isNullOrBlank() && !cell?.guid.isNullOrBlank())
@@ -155,8 +173,22 @@ class StocksFragment : Fragment() {
             headerTitle = tableScanHeaders.headerTitleTextView
             headerCell = tableScanHeaders.headerCellTextView
 
+            searchGroupButton.setOnClickListener {
+                setChipsGroupVisibility()
+            }
+
+            warehouseChip.setOnClickListener {
+                if (warehouse == null)
+                    findNavController().navigate(R.id.action_global_settingsFragment)
+            }
+
             gvzoSwitcher.setOnCheckedChangeListener { buttonView, isChecked ->
                 AndroidUtils.hideKeyboard(nomenclatureTextEdit)
+                if (isChecked)
+                    addNewChip(ChipType.GVZO_FILTER_CHIP, getString(R.string.by_gvzo_text))
+                else
+                    deleteChip(ChipType.GVZO_FILTER_CHIP)
+                //setGvzoChipText()
                 var text = getString(R.string.nomenclature_title)
                 if (isChecked) text = getString(R.string.gvzo_text)
                 nomenclatureTextInputLayout.hint = text
@@ -177,7 +209,7 @@ class StocksFragment : Fragment() {
                     else
                         getNomenclatureStocks(list)
                 }
-                setCellHelperText()
+                prepareChips()
                 //getNomenclatureStocks(list)
             }
             retrofitViewModel.getWarehousesListByGuid(getWarehouseFromSettings())
@@ -188,6 +220,7 @@ class StocksFragment : Fragment() {
                 override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                     nomenclatureTextInputLayout.error = null
                     nomenclatureTextInputLayout.helperText = null
+                    //if (!chipCloseClick) deleteChip(ChipType.NOMENCLATURE_OR_GVZO_CHIP)
                 }
 
                 override fun afterTextChanged(p0: Editable?) {
@@ -215,7 +248,7 @@ class StocksFragment : Fragment() {
                         clearSearchParamsInForm(isNomenclature = true, clearGvzo = true)
                     else
                         clearSearchParamsInForm(isNomenclature = true)
-                    setCellHelperText()
+                    prepareChips()
                     getNomenclatureStocks(binding.list)
                 }
             }
@@ -231,7 +264,7 @@ class StocksFragment : Fragment() {
 //                    nomenclatureTextInputLayout.helperText = "Код: ${gvzo?.code ?: ""}"
 //                    val detailHelperText = cellTextInputLayout.helperText
 //                    cellTextInputLayout.helperText = "${detailHelperText}\tГВЗО: ${gvzo?.title}"
-                    setCellHelperText()
+                    prepareChips()
                 } else {
                     nomenclature = adapterView.getItemAtPosition(position) as Nomenclature
                     setNomenclatureSelectedAndGetStocks(nomenclature)
@@ -239,6 +272,7 @@ class StocksFragment : Fragment() {
 //                    nomenclatureTextEdit.setText(nomenclature?.itemTitle ?: "")
 //                    nomenclatureTextInputLayout.error = null
 //                    nomenclatureTextInputLayout.helperText = "Код: ${nomenclature?.code ?: ""}"
+                    prepareChips()
                 }
                 setClearEndIcon(isNomenclature = true)
                 getNomenclatureStocks(binding.list)
@@ -251,6 +285,7 @@ class StocksFragment : Fragment() {
                 override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                     cellTextInputLayout.error = null
                     //cellTextInputLayout.helperText = null
+                    //if (!chipCloseClick) deleteChip(ChipType.CELL_CHIP)
                 }
 
                 override fun afterTextChanged(p0: Editable?) {
@@ -266,6 +301,7 @@ class StocksFragment : Fragment() {
                     )
                 } else {
                     clearSearchParamsInForm()
+                    prepareChips()
                     getNomenclatureStocks(binding.list)
                 }
             }
@@ -274,6 +310,7 @@ class StocksFragment : Fragment() {
                 AndroidUtils.hideKeyboard(cellTextEdit)
                 cell = adapterView.getItemAtPosition(position) as Cell
                 cellTextEdit.setText(cell?.title ?: "")
+                prepareChips()
                 setClearEndIcon()
                 cellTextInputLayout.error = null
 //                cellTextInputLayout.helperText =
@@ -343,11 +380,12 @@ class StocksFragment : Fragment() {
         retrofitViewModel.listDataWarehouses.observe(viewLifecycleOwner) {
             warehouse = it.firstOrNull()
             if (it.count() > 1) warehouse = null
-            setCellHelperText()
+            prepareChips()
         }
 
         retrofitViewModel.itemData.observe(viewLifecycleOwner) {
             nomenclature = it
+            val oldNomenclatureText = binding.nomenclatureTextEdit.text
             binding.nomenclatureTextEdit.setText(nomenclature?.itemTitle ?: "")
             binding.nomenclatureTextInputLayout.helperText =
                 if (nomenclature?.code.isNullOrBlank()) null else "Код: ${nomenclature?.code}"
@@ -361,7 +399,7 @@ class StocksFragment : Fragment() {
                     requireContext(),
                     DialogScreen.IDD_ERROR_SINGLE_BUTTON,
                     title = getString(R.string.nomenclature_not_found_text),
-                    message = getString(R.string.check_label_scan_again_text),
+                    message = "${getString(R.string.check_label_scan_again_text)} [$oldNomenclatureText]",
                     positiveButtonTitle = getString(R.string.ok_text),
                     onDialogsInteractionListener = object : OnDialogsInteractionListener {
                         override fun onPositiveClickButton() {
@@ -537,6 +575,7 @@ class StocksFragment : Fragment() {
             (binding.nomenclatureTextEdit as? AutoCompleteTextView)?.setAdapter(nomenclatureAdapter)
             if (it?.isEmpty() != false) {
                 //stocksAdapter.submitList(listOf<NomenclatureStocks>())
+                val oldNomenclatureText = binding.nomenclatureTextEdit.text
                 if (byGvzo) gvzo = null else nomenclature = null
                 if (it != null) {
                     setClearEndIcon(isNomenclature = true)
@@ -545,7 +584,7 @@ class StocksFragment : Fragment() {
                         requireContext(),
                         DialogScreen.IDD_ERROR_SINGLE_BUTTON,
                         title = getString(R.string.search_text),
-                        message = getString(R.string.nomenclature_not_found_text),
+                        message = "${getString(R.string.nomenclature_not_found_text)} [$oldNomenclatureText]",
                         positiveButtonTitle = getString(R.string.ok_text),
                         onDialogsInteractionListener = object : OnDialogsInteractionListener {
                             override fun onPositiveClickButton() {
@@ -595,11 +634,54 @@ class StocksFragment : Fragment() {
                 }
                 getNomenclatureStocks(binding.list)
             } else {
-                binding.cellTextEdit.showDropDown()
+                try {
+                    binding.cellTextEdit.showDropDown()
+                } catch (e: Exception) {
+                    Log.d("TN_ERROR", "${e.message.toString()}: ${e.printStackTrace()}")
+                }
+
             }
         }
 
         return binding.root
+    }
+
+    private fun setChipsGroupVisibility() {
+        val searchGroupButton = requireView().findViewById<MaterialButton>(R.id.searchGroupButton)
+        val searchGroup = requireView().findViewById<Group>(R.id.searchGroup)
+        //val chipsDetailGroup = requireView().findViewById<ChipGroup>(R.id.chipsDetailGroup)
+        if (searchGroupButton.isChecked) {
+            searchGroup.visibility = View.GONE
+            //chipsDetailGroup.visibility = View.VISIBLE
+        } else {
+            searchGroup.visibility = View.VISIBLE
+            //chipsDetailGroup.visibility = View.GONE
+        }
+
+        setDetailChipsVisibility(searchGroupButton.isChecked)
+
+    }
+
+    private fun setDetailChipsVisibility(visibility: Boolean) {
+        val chipGroup = requireView().findViewById<ChipGroup>(R.id.chipGroup)
+        val chipsCount = chipGroup.childCount
+        val chips: MutableList<View> = mutableListOf()
+        val visibilityState = if (visibility) View.VISIBLE else View.GONE
+        for (i in 0..chipsCount) {
+            val chip = chipGroup.getChildAt(i)
+            if (chip != null && chip.id != R.id.warehouseChip) {
+                chip.visibility = visibilityState
+            }
+        }
+    }
+
+    private fun setGvzoChipText() {
+        //val gvzoChip = requireView().findViewById<Chip>(R.id.gvzoChip)
+//        val text = getString(R.string.by_gvzo_text)
+//        gvzoChip.text = if (gvzoChip.isChecked) "$text: ${getString(R.string.text_yes)}" else "$text: ${getString(R.string.text_no)}"
+        //val text = if (gvzoChip.isChecked) getString(R.string.by_gvzo_text) else getString(R.string.by_nomenclature_text)
+        //val text = getString(R.string.by_gvzo_text)
+        //gvzoChip.text = text
     }
 
     private fun <T> setNomenclatureSelectedAndGetStocks(item: T) {
@@ -624,17 +706,16 @@ class StocksFragment : Fragment() {
             nomenclatureTextInputLayout.helperText = "Код: ${nomenclature?.code ?: ""}"
         }
         setClearEndIcon(isNomenclature = true)
-        setCellHelperText()
+        prepareChips()
         getNomenclatureStocks(recyclerView)
     }
 
-    private fun setCellHelperText() {
-        val cellTextInputLayout =
-            requireView().findViewById<TextInputLayout>(R.id.cellTextInputLayout)
-        val nomenclatureTextInputLayout =
-            requireView().findViewById<TextInputLayout>(R.id.nomenclatureTextInputLayout)
+    private fun prepareChips() {
+        val chipWarehouse = requireView().findViewById<Chip>(R.id.warehouseChip)
+        chipWarehouse.text = warehouse?.warehouseTitle ?: getString(R.string.failed_get_warehouse)
+
         if (warehouse == null)
-            cellTextInputLayout.setHelperTextColor(
+            chipWarehouse.setTextColor(
                 ColorStateList.valueOf(
                     ContextCompat.getColor(
                         requireContext(),
@@ -643,7 +724,7 @@ class StocksFragment : Fragment() {
                 )
             )
         else
-            cellTextInputLayout.setHelperTextColor(
+            chipWarehouse.setTextColor(
                 ColorStateList.valueOf(
                     ContextCompat.getColor(
                         requireContext(),
@@ -652,19 +733,120 @@ class StocksFragment : Fragment() {
                 )
             )
 
-        cellTextInputLayout.helperText =
-            warehouse?.warehouseTitle ?: getString(R.string.failed_get_warehouse)
-
         if (byGvzo) {
-            cellTextInputLayout.helperText =
-                "${cellTextInputLayout.helperText} \tГВЗО: ${gvzo?.title ?: "[Не указана]"} "
             if (gvzo != null)
-                nomenclatureTextInputLayout.helperText =
-                    "${getString(R.string.code_text)}: ${gvzo?.code ?: "[Не определен]"}"
+                addNewChip(ChipType.GVZO_CHIP, gvzo!!.title)
+            else
+                deleteChip(ChipType.GVZO_CHIP)
+//            searchStatusText.text =
+//                "${searchStatusText.text} \tГВЗО: ${gvzo?.title ?: "[Не указана]"} "
+            if (gvzo != null)
+                if (nomenclature != null) addNewChip(
+                    ChipType.NOMENCLATURE_CHIP,
+                    nomenclature!!.itemTitle
+                )
+                else
+                    deleteChip(ChipType.NOMENCLATURE_CHIP)
+//                nomenclatureTextInputLayout.helperText =
+//                    "${getString(R.string.code_text)}: ${gvzo?.code ?: "[Не определен]"}"
         } else {
             if (nomenclature != null)
-                nomenclatureTextInputLayout.helperText =
-                    "${getString(R.string.code_text)}: ${nomenclature?.code ?: "[Не определен]"}"
+                addNewChip(ChipType.NOMENCLATURE_CHIP, nomenclature!!.itemTitle)
+            else
+                deleteChip(ChipType.NOMENCLATURE_CHIP)
+
+            if (!byGvzo) deleteChip(ChipType.GVZO_CHIP)
+//                nomenclatureTextInputLayout.helperText =
+//                    "${getString(R.string.code_text)}: ${nomenclature?.code ?: "[Не определен]"}"
+        }
+
+        if (cell != null)
+            addNewChip(ChipType.CELL_CHIP, cell!!.title)
+        else
+            deleteChip(ChipType.CELL_CHIP)
+    }
+
+    private fun addNewChip(type: ChipType, text: String): Chip {
+        deleteChip(type)
+        chipCloseClick = false
+        val newChip = Chip(requireContext())
+        newChip.id = ViewCompat.generateViewId()
+        //newChip.chipMinHeight= 0f
+        newChip.setEnsureMinTouchTargetSize(false)
+        newChip.chipStrokeColor =
+            ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.red_400))
+        newChip.closeIconTint =
+            ColorStateList.valueOf(ContextCompat.getColor(requireContext(), R.color.red_900))
+        newChip.tag = type.tag
+        newChip.text = text
+        newChip.isCloseIconVisible = true
+        newChip.isChecked = true
+        newChip.setOnCloseIconClickListener {
+            chipCloseClick = true
+            deleteChip(type)
+        }
+
+        val chipGroup = requireView().findViewById<ChipGroup>(R.id.chipGroup)
+        chipGroup.addView(newChip)
+
+        setChipsGroupVisibility()
+
+        return newChip
+    }
+
+    private fun deleteChip(type: ChipType) {
+        val chipGroup = requireView().findViewById<ChipGroup>(R.id.chipGroup)
+        val chipsCount = chipGroup.childCount
+        val chips: MutableList<View> = mutableListOf()
+        for (i in 0..chipsCount) {
+            val chip = chipGroup.getChildAt(i)
+            if (chip != null) chips.add(chip)
+        }
+
+//        val chips = chipGroup.checkedChipIds
+        chips.forEach { chip ->
+            if (chip.tag == type.tag) {
+                when (type) {
+                    ChipType.GVZO_FILTER_CHIP -> {
+                        requireView().findViewById<MaterialSwitch>(R.id.gvzoSwitcher).isChecked =
+                            false
+                    }
+                    ChipType.GVZO_CHIP -> {
+                        if (chipCloseClick) {
+                            clearSearchParamsInForm(
+                                isNomenclature = true,
+                                clearGvzo = true,
+                                clearTextField = true
+                            )
+                            chipCloseClick = false
+                        }
+                        val stocksList = requireView().findViewById<RecyclerView>(R.id.list)
+                        getNomenclatureStocks(stocksList)
+                    }
+                    ChipType.NOMENCLATURE_CHIP -> {
+                        if (chipCloseClick) {
+                            clearSearchParamsInForm(
+                                isNomenclature = true,
+                                clearGvzo = false,
+                                clearTextField = true
+                            )
+                            chipCloseClick = false
+                        }
+                        val stocksList = requireView().findViewById<RecyclerView>(R.id.list)
+                        getNomenclatureStocks(stocksList)
+                    }
+                    ChipType.CELL_CHIP -> {
+                        if (chipCloseClick) {
+                            clearSearchParamsInForm()
+                            chipCloseClick = false
+                        }
+                        //refreshSearchParamsByCellChange()
+                        val stocksList = requireView().findViewById<RecyclerView>(R.id.list)
+                        getNomenclatureStocks(stocksList)
+                    }
+                }
+                chipGroup.removeView(chip)
+            }
         }
     }
 

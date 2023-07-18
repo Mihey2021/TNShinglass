@@ -133,4 +133,7 @@
     <string name="failed_get_warehouse">Не удалось получить склад</string>
     <string name="gvzo_text">ГВЗО</string>
     <string name="gvzo_not_found">ГВЗО не найдена</string>
+    <string name="by_gvzo_text">По ГВЗО</string>
+    <string name="by_nomenclature_text">По номенклатуре</string>
+    <string name="no_data">[Нет данных]</string>
 </resources>

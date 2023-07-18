@@ -99,8 +99,13 @@ class SettingsFragment : PreferenceFragmentCompat() {
         warehouseListPreference.setDialogTitle(getString(R.string.warehouse_list_description))
 
         //Заполним список складов сразу при открытии
-        if (warehouseListPreference.getDataListArray().isEmpty()) {
+        //if (warehouseListPreference.getDataListArray().isEmpty()) {
             settingsViewModel.getAllWarehouses()
+        //}
+
+        warehouseListPreference.setOnPreferenceClickListener {
+            settingsViewModel.getAllWarehouses()
+            false
         }
 
         categoryDocSettings.addPreference(warehouseListPreference)
@@ -247,17 +252,22 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
 
         settingsViewModel.warehousesList.observe(viewLifecycleOwner) {
-            if (it.isEmpty()) return@observe
+            //if (it.isEmpty()) return@observe
 
             val dataList = ArrayList<Warehouse>()
-            dataList.add(Warehouse(getString(R.string.not_chosen_text), "", "", ""))
+            if (it.isEmpty())
+                dataList.add(Warehouse(getString(R.string.no_data), "", "", ""))
+            else
+                dataList.add(Warehouse(getString(R.string.not_chosen_text), "", "", ""))
+
             it.forEach { warehouse ->
                 dataList.add(warehouse)
             }
             //progressDialog?.dismiss()
 
-            if (warehouseListPreference.getDataListArray().isEmpty())
-                warehouseListPreference.setDataListArray(dataList)
+            //if (warehouseListPreference.getDataListArray().isEmpty())
+            //warehouseListPreference.clearAdapterData()
+            warehouseListPreference.setDataListArray(dataList)
         }
 
         settingsViewModel.divisionsList.observe(viewLifecycleOwner) {
@@ -285,9 +295,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
             } else {
                 DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
-                //progressDialog?.dismiss()
+            //progressDialog?.dismiss()
             }
-
 
             if (it.error) {
                 DialogScreen.getDialog()?.dismiss()
@@ -300,8 +309,47 @@ class SettingsFragment : PreferenceFragmentCompat() {
                             when (it.requestName) {
                                 "getAllWarehousesList" -> settingsViewModel.getAllWarehouses()
                                 "getAllDivisions" -> settingsViewModel.getAllDivisions()
+                                "getCellByGuid" -> {
+                                    val requestParam = it.additionalRequestProperties.firstOrNull()
+                                    if (requestParam?.propertyName == "cellGuid")
+                                        retrofitViewModel.getCellByGuid(requestParam.propertyValue)
+                                }
                             }
+                        }
+                    }
+                )
+            }
+        }
 
+        retrofitViewModel.dataState.observe(viewLifecycleOwner) {
+            if (it.loading) {
+                //if (progressDialog?.isShowing == false || progressDialog == null)
+                if (DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.isShowing == false || DialogScreen.getDialog(
+                        DialogScreen.IDD_PROGRESS
+                    ) == null
+                )
+                //progressDialog =
+                    DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+            } else {
+                DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+                //progressDialog?.dismiss()
+            }
+
+            if (it.error) {
+                DialogScreen.getDialog()?.dismiss()
+                DialogScreen.showDialog(
+                    requireContext(),
+                    DialogScreen.IDD_ERROR,
+                    message = it.errorMessage,
+                    onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                        override fun onPositiveClickButton() {
+                            when (it.requestName) {
+                                "getCellByGuid" -> {
+                                    val requestParam = it.additionalRequestProperties.firstOrNull()
+                                    if (requestParam?.propertyName == "cellGuid")
+                                        retrofitViewModel.getCellByGuid(requestParam.propertyValue)
+                                }
+                            }
                         }
                     }
                 )

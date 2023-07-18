@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.SpannableStringBuilder
 import android.text.TextWatcher
+import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.widget.CheckBox
@@ -76,7 +77,7 @@ class DetailScanFragment : Fragment() {
 
         AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) { authState ->
             user1C = authState.user1C
-            if (user1C.getUserGUID() == "") findNavController().navigate(R.id.authFragment)
+            if (user1C.getUserGUID().isEmpty()) findNavController().navigate(R.id.authFragment)
         }
 
         var barcode = arguments?.getString("barcode")
@@ -236,7 +237,7 @@ class DetailScanFragment : Fragment() {
 
         BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) { dataScanPair ->
 
-            if (scannerIsBlocked) {
+            if (!BarcodeScannerReceiver.isEnabled()) {
                 SoundPlayer(requireContext(), SoundType.SMALL_ERROR).playSound()
                 return@observe
             }
@@ -291,11 +292,27 @@ class DetailScanFragment : Fragment() {
 
         retrofitViewModel.cellData.observe(viewLifecycleOwner) {
             if (it == null) return@observe
+
             if (it.guid.isBlank()) {
                 val warehouse = editRecord.docHeaders.getWarehouse()
-                scannerIsBlocked = true
+                if (cellReceiverDialogBinding != null) {
+                    cellReceiverDialogBinding!!.cellReceiverTextView.setText("")
+                    cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error =
+                        "Ячейка не задана"
+                    tempScanRecord.cellReceiverGuid = ""
+                    tempScanRecord.cellReceiverTitle = ""
+                } else {
+                    binding.cellTextView.setText("")
+                    binding.cellTextInputLayout.error = "Ячейка не задана"
+                    tempScanRecord.cellGuid = ""
+                    tempScanRecord.cellTitle = ""
+                }
+                BarcodeScannerReceiver.setEnabled(false)
+                Log.d("TTT", "Close Dialog: ${DialogScreen.getDialog() ?: "[null]"}")
                 DialogScreen.getDialog()?.dismiss()
-                DialogScreen.showDialog(
+                //Thread.sleep(1500L)
+                //closeAllDialogs()
+                val ddd = DialogScreen.showDialog(
                     requireContext(),
                     DialogScreen.IDD_ERROR_SINGLE_BUTTON,
                     title = "Ячейка не найдена!",
@@ -303,26 +320,15 @@ class DetailScanFragment : Fragment() {
                     positiveButtonTitle = "Ok",
                     onDialogsInteractionListener = object : OnDialogsInteractionListener {
                         override fun onPositiveClickButton() {
-                            scannerIsBlocked = false
+                            BarcodeScannerReceiver.setEnabled()
                         }
                     }
                 )
+                if (DialogScreen.getDialog()?.isShowing == false) ddd.show()
+                Log.d("TTT", "Show ErrorDialog: $ddd")
+                //DialogScreen.showDialog(requireContext(),DialogScreen.IDD_SUCCESS, message = "KSdaklfjds fjds posdj fansfk ajpofj sd!..")
                 SoundPlayer(requireContext(), SoundType.CELL_NOT_FOUND).playSound()
-
-                if (cellReceiverDialogBinding != null) {
-                    cellReceiverDialogBinding!!.cellReceiverTextView.setText("")
-                    cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error =
-                        "Ячейка не задана"
-                    tempScanRecord.cellReceiverGuid = ""
-                    tempScanRecord.cellReceiverTitle = ""
-                    return@observe
-                } else {
-                    binding.cellTextView.setText("")
-                    binding.cellTextInputLayout.error = "Ячейка не задана"
-                    tempScanRecord.cellGuid = ""
-                    tempScanRecord.cellTitle = ""
-                    return@observe
-                }
+                return@observe
             }
             DialogScreen.getDialog()?.dismiss()
             if (cellReceiverDialogBinding != null) {
@@ -427,36 +433,39 @@ class DetailScanFragment : Fragment() {
             setWarehousesAdapter(binding)
         }
 
-        retrofitViewModel.requestError.observe(viewLifecycleOwner) { error ->
-
-            if (error == null) return@observe
-
-            //dialog?.dismiss()
-            DialogScreen.getDialog()?.dismiss()
-            DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
-            DialogScreen.showDialog(
-                requireContext(),
-                DialogScreen.IDD_ERROR,
-                error.message,
-                onDialogsInteractionListener = object : OnDialogsInteractionListener {
-                    override fun onPositiveClickButton() {
-                        when (error.requestName) {
-                            "getPhysicalPersonList" -> {
-                                DialogScreen.getDialog()?.show()//dialog?.show()
-                                getPhysicalPersonList()
-                            }
-                            "getAllWarehousesList" -> {
-                                DialogScreen.getDialog()?.show()//dialog?.show()
-                                getAllWarehousesList(binding)
-                            }
-                            "getCellByBarcode" -> {
-                                //retrofitViewModel.getCellByBarcode()
-                            }
-
-                        }
-                    }
-                })
-        }
+//        retrofitViewModel.requestError.observe(viewLifecycleOwner) { error ->
+//
+//            if (error == null) return@observe
+//
+//            //dialog?.dismiss()
+//            DialogScreen.getDialog()?.dismiss()
+//            DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+//            DialogScreen.showDialog(
+//                requireContext(),
+//                DialogScreen.IDD_ERROR,
+//                error.message,
+//                onDialogsInteractionListener = object : OnDialogsInteractionListener {
+//                    override fun onPositiveClickButton() {
+//                        when (error.requestName) {
+//                            "getPhysicalPersonList" -> {
+//                                DialogScreen.getDialog()?.show()//dialog?.show()
+//                                getPhysicalPersonList()
+//                            }
+//                            "getAllWarehousesList" -> {
+//                                DialogScreen.getDialog()?.show()//dialog?.show()
+//                                getAllWarehousesList(binding)
+//                            }
+//                            "getCellByBarcode" -> {
+//                                retrofitViewModel.getCellByBarcode(
+//                                    error.,
+//                                    editRecord.docHeaders.getWarehouse()?.warehouseGuid ?: ""
+//                                )
+//                            }
+//
+//                        }
+//                    }
+//                })
+//        }
 
         retrofitViewModel.dataState.observe(viewLifecycleOwner) {
 //            if (it.loading) {
@@ -465,6 +474,7 @@ class DetailScanFragment : Fragment() {
 //                        DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
 //            } else
 //                dialog?.dismiss()
+            Log.d("TTT", "DataState DetailFragment")
             if (it.loading) {
                 if (DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.isShowing == false || DialogScreen.getDialog(
                         DialogScreen.IDD_PROGRESS
@@ -472,6 +482,7 @@ class DetailScanFragment : Fragment() {
                 )
                     DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
             } else {
+                Log.d("TTT", "Close ProgressDialog: ${DialogScreen.getDialog(DialogScreen.IDD_PROGRESS) ?: "[null]"}")
                 DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
                 //dialog?.dismiss()
             }
@@ -485,14 +496,24 @@ class DetailScanFragment : Fragment() {
                         override fun onPositiveClickButton() {
                             when (it.requestName) {
                                 "getPhysicalPersonList" -> {
-                                    DialogScreen.getDialog()?.show()//dialog?.show()
+                                    DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.show()//dialog?.show()
                                     getPhysicalPersonList()
                                 }
                                 "getAllWarehousesList" -> {
-                                    DialogScreen.getDialog()?.show()//dialog?.show()
+                                    DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.show()//dialog?.show()
                                     getAllWarehousesList(binding)
                                 }
-
+                                "getCellByBarcode" -> {
+                                    DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.show()
+                                    val requestParam = it.additionalRequestProperties.firstOrNull()
+                                    if (requestParam?.propertyName == "barcode")
+                                        retrofitViewModel.getCellByBarcode(barcode = requestParam.propertyValue, warehouseGuid = editRecord.docHeaders.getWarehouse()?.warehouseGuid ?: "")
+                                }
+                                "getItemByBarcode" -> {
+                                    val requestParam = it.additionalRequestProperties.firstOrNull()
+                                    if (requestParam?.propertyName == "barcode")
+                                        retrofitViewModel.getItemByBarcode(barcode = requestParam.propertyValue)
+                                }
                             }
                         }
                     })
@@ -505,6 +526,7 @@ class DetailScanFragment : Fragment() {
     private fun itemNotFound(item: Nomenclature, isExternalDocument: Boolean = false) {
         val context = requireContext()
         scannerIsBlocked = true
+        Log.d("TTT", "Close Dialog [itemNotFound]: ${DialogScreen.getDialog(DialogScreen.IDD_PROGRESS) ?: "[null]"}")
         DialogScreen.getDialog()?.dismiss()
         DialogScreen.showDialog(
             context,
@@ -541,6 +563,7 @@ class DetailScanFragment : Fragment() {
             if (tempScanRecord.ItemGUID != "") {
                 if (it.itemGuid != tempScanRecord.ItemGUID) {
                     scannerIsBlocked = true
+                    Log.d("TTT", "Close Dialog [itemNotFound]: ${DialogScreen.getDialog(DialogScreen.IDD_PROGRESS) ?: "[null]"}")
                     DialogScreen.getDialog()?.dismiss()
                     DialogScreen.showDialog(
                         requireContext(),
@@ -859,10 +882,15 @@ class DetailScanFragment : Fragment() {
 
     override fun onDestroyView() {
         //dialog?.dismiss()
+        BarcodeScannerReceiver.setEnabled()
+        closeAllDialogs()
+        super.onDestroyView()
+    }
+
+    private fun closeAllDialogs() {
         DialogScreen.getDialog()?.dismiss()
         DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
         DialogScreen.getDialog(DialogScreen.IDD_INPUT)?.dismiss()
-        super.onDestroyView()
     }
 
 }

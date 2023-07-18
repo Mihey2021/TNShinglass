@@ -28,9 +28,14 @@ class WarehousesRepositoryRoomImpl(private val dao: WarehousesDao) : WarehousesR
             if(ApiUtils.getApiService() != null) {
                 val response = ApiUtils.getApiService()!!.getAllWarehousesList()
                 if (!response.isSuccessful) {
-                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                    throw ApiServiceError(
+                        "Code: ${response.code()}\n${response.message()}\n${
+                            response.errorBody()?.string() ?: ""
+                        }"
+                    )
                 }
                 val body = response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                dao.clearWarehousesTable() //очищаем старые данные, т.к. нужно чтобы были актуальные (свежие)
                 dao.saveWarehouses(body.toEntity())
             } else {
                 throw ApiServiceError("API service not ready")
@@ -48,9 +53,14 @@ class WarehousesRepositoryRoomImpl(private val dao: WarehousesDao) : WarehousesR
             if(ApiUtils.getApiService() != null) {
                 val response = ApiUtils.getApiService()!!.getAllWarehousesReceiverList()
                 if (!response.isSuccessful) {
-                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                    throw ApiServiceError(
+                        "Code: ${response.code()}\n${response.message()}\n${
+                            response.errorBody()?.string() ?: ""
+                        }"
+                    )
                 }
                 val body = response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                dao.clearWarehousesTable() //очищаем старые данные, т.к. нужно чтобы были актуальные (свежие)
                 dao.saveWarehousesReceiver(body.toWarehouseReceiverEntity())
             } else {
                 throw ApiServiceError("API service not ready")
@@ -80,6 +90,10 @@ class WarehousesRepositoryRoomImpl(private val dao: WarehousesDao) : WarehousesR
 
     override fun saveWarehouses(warehouses: List<Warehouse>) {
         //warehouses.forEach { warehouse -> dao.save(WarehousesEntity.fromDto(warehouse)) }
+    }
+
+    override fun clearWarehousesTable() {
+        dao.clearWarehousesTable()
     }
 
 }

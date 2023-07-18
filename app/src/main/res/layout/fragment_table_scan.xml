@@ -2,6 +2,7 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootTableScan"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/ic_gradient_background"
@@ -64,7 +65,8 @@
         android:layout_height="0dp"
         android:tag="TN_MAIN_MENU"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout="@layout/fragment_main_menu" />
 
     <View
         android:id="@+id/divider"
@@ -72,7 +74,8 @@
         android:layout_height="1dp"
         android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
-        android:background="@color/black"
+        android:layout_marginBottom="2dp"
+        android:background="@color/red_100"
         app:layout_constraintBottom_toTopOf="@id/externalDocumentTextView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
@@ -99,6 +102,22 @@
             layout="@layout/table_scan_headers"/>
     </FrameLayout>
 
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toTopOf="@id/divider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerInclude"
+        tools:itemCount="10"
+        tools:listitem="@layout/table_scan_group_item_layout">
+
+    </androidx.recyclerview.widget.RecyclerView>
+
     <TextView
         android:id="@+id/externalDocumentTextView"
         android:layout_width="0dp"
@@ -120,7 +139,8 @@
         android:textStyle="bold"
         android:typeface="monospace"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/infoTextView"
+
+        app:layout_constraintBottom_toTopOf="@id/documentDetailsButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         tools:visibility="visible" />
@@ -131,7 +151,6 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
         android:layout_marginBottom="8dp"
-        android:background="@drawable/my_border"
         android:ellipsize="marquee"
         android:fontFamily="monospace"
         android:padding="4dp"
@@ -139,39 +158,57 @@
         android:textSize="12sp"
         android:typeface="monospace"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/documentDetailsImageButton"
+        app:layout_constraintEnd_toStartOf="@id/documentDetailsButton"
+        app:layout_constraintTop_toBottomOf="@id/externalDocumentTextView"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <ImageButton
-        android:id="@+id/documentDetailsImageButton"
+<!--    <ImageButton-->
+<!--        android:id="@+id/documentDetailsButton"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:layout_marginStart="4dp"-->
+<!--        android:layout_marginEnd="4dp"-->
+<!--        android:layout_marginBottom="8dp"-->
+<!--        android:contentDescription="@string/document_details_text"-->
+<!--        android:minHeight="48dp"-->
+<!--        android:src="@drawable/ic_baseline_ballot_24"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toEndOf="@id/infoTextView"-->
+<!--        app:layout_constraintTop_toTopOf="@id/infoTextView" />-->
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/documentDetailsButton"
+        style="?attr/floatingActionButtonSmallStyle"
+        app:backgroundTint="@color/red_400"
+        app:borderWidth="1dp"
         android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
-        android:layout_marginBottom="8dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="4dp"
         android:contentDescription="@string/document_details_text"
         android:minHeight="48dp"
-        android:src="@drawable/ic_baseline_ballot_24"
+        app:srcCompat="@drawable/ic_baseline_ballot_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/infoTextView"
-        app:layout_constraintTop_toTopOf="@id/infoTextView" />
+         />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/list"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginEnd="4dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="@id/divider"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/headerInclude"
-        tools:itemCount="10"
-        tools:listitem="@layout/table_scan_group_item_layout">
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/list"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="0dp"-->
+<!--        android:layout_marginStart="4dp"-->
+<!--        android:layout_marginEnd="4dp"-->
+<!--        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/divider"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/headerInclude"-->
+<!--        tools:itemCount="10"-->
+<!--        tools:listitem="@layout/table_scan_group_item_layout">-->
 
-    </androidx.recyclerview.widget.RecyclerView>
+<!--    </androidx.recyclerview.widget.RecyclerView>-->
 
 <!--    <androidx.constraintlayout.widget.ConstraintLayout-->
 <!--        android:id="@+id/tableItemScanLayout"-->

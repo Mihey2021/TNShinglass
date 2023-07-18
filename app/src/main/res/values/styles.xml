@@ -13,4 +13,62 @@
         <item name="minHeight">4dp</item>
     </style>
 
+    <style name= "Widget.TNShinglass.SmallShapeAppearance" parent ="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamilyTopLeft">cut</item>
+        <item name="cornerSizeTopLeft">15dp</item>
+        <item name="cornerFamilyBottomRight">cut</item>
+        <item name="cornerSizeBottomRight">15dp</item>
+    </style>
+
+    <style name= "Widget.TNShinglass.LargeComponent" parent ="ShapeAppearance.Material3.LargeComponent">
+        <item name="cornerFamilyTopLeft">cut</item>
+        <item name="cornerSizeTopLeft">15dp</item>
+        <item name="cornerFamilyBottomRight">cut</item>
+        <item name="cornerSizeBottomRight">15dp</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay.TNShiglass.Chip" parent="ShapeAppearanceOverlay.Material3.Chip">
+        <item name="cornerFamily">cut</item>
+        <item name="cornerSize">0dp</item>
+        <item name="cornerFamilyTopLeft">cut</item>
+        <item name="cornerSizeTopLeft">10dp</item>
+        <item name="cornerFamilyBottomRight">cut</item>
+        <item name="cornerSizeBottomRight">10dp</item>
+    </style>
+
+    <attr name="tnChipTextSize" format="dimension" />
+
+    <style name="TextAppearance.TNShinglass.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">?attr/tnChipTextSize</item>
+    </style>
+
+    <style name="Widget.TNShinglass.Chip" parent="Widget.Material3.Chip.Assist">
+        <item name="shapeAppearanceSmallComponent">@style/Widget.TNShinglass.SmallShapeAppearance</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.TNShiglass.Chip</item>
+        <item name="android:textColor">@color/red_400</item>
+        <item name="android:textAppearance">@style/TextAppearance.TNShinglass.LabelSmall</item>
+<!--        <item name="strokeColor">@color/red_400</item>-->
+    </style>
+
+    <style name="Widget.TNShinglass.Chip.Suggestion" parent="Widget.Material3.Chip.Suggestion">
+        <item name="shapeAppearanceSmallComponent">@style/Widget.TNShinglass.SmallShapeAppearance</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.TNShiglass.Chip</item>
+        <item name="android:textSize">?attr/tnChipTextSize</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay.TNShiglass.MaterialDialog" parent="ShapeAppearanceOverlay.MaterialAlertDialog.Material3">
+        <item name="cornerFamily">cut</item>
+        <item name="cornerSize">0dp</item>
+        <item name="cornerFamilyTopLeft">cut</item>
+        <item name="cornerSizeTopLeft">15dp</item>
+        <item name="cornerFamilyBottomRight">cut</item>
+        <item name="cornerSizeBottomRight">15dp</item>
+    </style>
+
+    <style name="Widget.TNShinglass.FloatingActionButton" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="android:backgroundTint">@color/red_100</item>
+        <item name="tint">@color/red_700</item>
+    </style>
+
+
 </resources>

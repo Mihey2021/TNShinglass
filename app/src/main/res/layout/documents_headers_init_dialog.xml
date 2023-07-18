@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootHeadersDialog"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
@@ -18,6 +19,17 @@
         android:textStyle="bold"
         android:typeface="monospace" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/headerPositiveButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/save_text">
+
+    </com.google.android.material.button.MaterialButton>
+
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
@@ -30,7 +42,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <com.google.android.material.textfield.TextInputLayout
@@ -42,7 +54,6 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/employee_title"
-                app:errorEnabled="true"
                 app:startIconDrawable="@drawable/ic_baseline_man_24">
 
                 <AutoCompleteTextView
@@ -63,12 +74,11 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/counterparty_or_inn_text"
-                app:errorEnabled="true"
-                app:endIconMode="custom"
-                app:endIconDrawable="@drawable/ic_baseline_search_24"
                 app:endIconContentDescription="@string/counterparty_or_inn_text"
-                app:startIconDrawable="@drawable/ic_baseline_account_circle_24"
-                app:helperTextEnabled="true">
+                app:endIconDrawable="@drawable/ic_baseline_search_24"
+                app:endIconMode="custom"
+                app:helperTextEnabled="true"
+                app:startIconDrawable="@drawable/ic_baseline_account_circle_24">
 
                 <AutoCompleteTextView
                     android:id="@+id/counterpartyTextEdit"
@@ -90,7 +100,6 @@
                 android:layout_marginTop="8dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/division_title"
-                app:errorEnabled="true"
                 app:startIconDrawable="@drawable/ic_baseline_division_24">
 
                 <AutoCompleteTextView
@@ -111,7 +120,6 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/warehouse_title"
-                app:errorEnabled="true"
                 app:startIconDrawable="@drawable/ic_baseline_warehouse_24">
 
                 <AutoCompleteTextView
@@ -132,7 +140,6 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/warehouse_receiver_title"
-                app:errorEnabled="true"
                 app:startIconDrawable="@drawable/ic_baseline_warehouse_24">
 
                 <AutoCompleteTextView
@@ -153,7 +160,6 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/physical_person_title"
-                app:errorEnabled="true"
                 app:startIconDrawable="@drawable/ic_baseline_account_circle_24">
 
                 <AutoCompleteTextView
@@ -173,8 +179,7 @@
                 android:layout_marginLeft="8dp"
                 android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
-                android:hint="@string/incoming_number_text"
-                app:errorEnabled="true">
+                android:hint="@string/incoming_number_text">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/incomingNumberEditText"
@@ -195,10 +200,9 @@
                 android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/incoming_date_text"
-                app:endIconMode="custom"
-                app:endIconDrawable="@drawable/ic_baseline_calendar_24"
                 app:endIconContentDescription="@string/incoming_date_text"
-                app:errorEnabled="true">
+                app:endIconDrawable="@drawable/ic_baseline_calendar_24"
+                app:endIconMode="custom">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/incomingDateEditText"

@@ -15,4 +15,5 @@ interface WarehousesRepository {
     fun getWarehousesCountRecords(): Long
     fun getWarehousesCountRecordsByDivision(divisionGuid: String): Long
     fun saveWarehouses(warehouses: List<Warehouse>)
+    fun clearWarehousesTable()
 }

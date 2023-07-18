@@ -144,4 +144,7 @@
     <string name="failed_get_warehouse">Failed to get warehouse</string>
     <string name="gvzo_text">GVZO</string>
     <string name="gvzo_not_found">The GVZO was not found</string>
+    <string name="by_gvzo_text">By GVZO</string>
+    <string name="by_nomenclature_text">By nomenclature</string>
+    <string name="no_data">[No data]</string>
 </resources>

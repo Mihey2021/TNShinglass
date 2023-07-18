@@ -29,7 +29,11 @@ class DivisionRepositoryImpl(private val dao: DivisionsDao) : DivisionRepository
             if (ApiUtils.getApiService() != null) {
                 val response = ApiUtils.getApiService()!!.getAllDivisionsList()
                 if (!response.isSuccessful) {
-                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                    throw ApiServiceError(
+                        "Code: ${response.code()}\n${response.message()}\n${
+                            response.errorBody()?.string() ?: ""
+                        }"
+                    )
                 }
                 val body = response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
                 dao.saveDivisions(body.toEntity())

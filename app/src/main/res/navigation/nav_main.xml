@@ -16,7 +16,7 @@
             app:enterAnim="@anim/nav_default_enter_anim"
             app:exitAnim="@anim/nav_default_exit_anim"
             app:popEnterAnim="@anim/nav_default_pop_enter_anim"
-            app:popExitAnim="@anim/nav_default_pop_exit_anim"></action>
+            app:popExitAnim="@anim/nav_default_pop_exit_anim" />
         <action
             android:id="@+id/action_authFragment_to_barcodeParsingTN"
             app:destination="@id/barcodeParsingTN" />
@@ -77,5 +77,28 @@
     <action
         android:id="@+id/action_global_stocksFragment"
         app:destination="@id/stocksFragment" />
+    <dialog
+        android:id="@+id/headersDialogFragment"
+        android:name="ru.tn.shinglass.activity.utilites.dialogs.HeadersDialogFragment"
+        android:label="HeadersDialogFragment" >
+        <argument
+            android:name="tableIsEmpty"
+            app:argType="boolean"
+            android:defaultValue="false" />
+        <argument
+            android:name="isExternalDocument"
+            app:argType="boolean"
+            android:defaultValue="false" />
+        <argument
+            android:name="selectedOption"
+            app:argType="ru.tn.shinglass.models.Option" />
+        <argument
+            android:name="user1C"
+            app:argType="ru.tn.shinglass.dto.models.User1C" />
+        <argument
+            android:name="itemList"
+            app:argType="ru.tn.shinglass.models.TableScan[]" />
+    </dialog>
+    <action android:id="@+id/action_global_headersDialogFragment" app:destination="@id/headersDialogFragment" />
 
 </navigation>

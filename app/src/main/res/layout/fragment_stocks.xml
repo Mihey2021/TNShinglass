@@ -10,18 +10,19 @@
     app:layout_constraintEnd_toEndOf="parent"
     tools:context=".activity.DocumentSelectFragment">
 
-<!--    <TextView-->
-<!--        android:id="@+id/nomenclature"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:text="@string/nomenclature_title"-->
-<!--        android:textAlignment="center"-->
-<!--        android:textColor="@color/black"-->
-<!--        android:textStyle="bold"-->
-<!--        app:layout_constraintBottom_toTopOf="@id/headerInclude"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toTopOf="parent" />-->
+    <!--    <TextView-->
+    <!--        android:id="@+id/nomenclature"-->
+    <!--        android:layout_width="wrap_content"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        android:text="@string/nomenclature_title"-->
+    <!--        android:textAlignment="center"-->
+    <!--        android:textColor="@color/black"-->
+    <!--        android:textStyle="bold"-->
+    <!--        app:layout_constraintBottom_toTopOf="@id/headerInclude"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintTop_toTopOf="parent" />-->
+
     <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/gvzoSwitcher"
         android:layout_width="wrap_content"
@@ -35,6 +36,7 @@
         app:thumbIconTint="@color/switcher_thumb_selector"
         app:useMaterialThemeColors="false" />
 
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/nomenclatureTextInputLayout"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -42,25 +44,23 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:hint="@string/nomenclature_title"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/gvzoSwitcher"
-        app:errorEnabled="false"
-        app:endIconMode="custom"
-        app:endIconDrawable="@drawable/ic_baseline_search_24"
         app:endIconContentDescription="@string/nomenclature_title"
-        app:startIconDrawable="@drawable/ic_baseline_text_fields_24"
-        app:helperTextEnabled="true">
+        app:endIconDrawable="@drawable/ic_baseline_search_24"
+        app:endIconMode="custom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/gvzoSwitcher"
+        app:startIconDrawable="@drawable/ic_baseline_text_fields_24">
 
         <AutoCompleteTextView
             android:id="@+id/nomenclatureTextEdit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
+            android:gravity="center_horizontal|center_vertical"
             android:imeOptions="actionDone"
             android:inputType="text"
             android:textSize="14sp"
-            android:gravity="center_horizontal|center_vertical"
             tools:text="@tools:sample/lorem[20]" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -71,33 +71,133 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:hint="@string/cell_text"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/nomenclatureTextInputLayout"
-        app:errorEnabled="false"
-        app:endIconMode="custom"
-        app:endIconDrawable="@drawable/ic_baseline_search_24"
         app:endIconContentDescription="@string/cell_text"
-        app:startIconDrawable="@drawable/ic_baseline_text_fields_24"
-        app:helperTextEnabled="true">
+        app:endIconDrawable="@drawable/ic_baseline_search_24"
+        app:endIconMode="custom"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/nomenclatureTextInputLayout"
+        app:startIconDrawable="@drawable/ic_baseline_text_fields_24">
 
         <AutoCompleteTextView
             android:id="@+id/cellTextEdit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ellipsize="end"
+            android:gravity="center_horizontal|center_vertical"
             android:imeOptions="actionDone"
             android:inputType="text"
             android:textSize="14sp"
-            android:gravity="center_horizontal|center_vertical"
             tools:text="@tools:sample/lorem[20]" />
     </com.google.android.material.textfield.TextInputLayout>
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/searchGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        app:constraint_referenced_ids="gvzoSwitcher, nomenclatureTextInputLayout, cellTextInputLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/gvzoSwitcher"
+        app:layout_constraintBottom_toTopOf="@id/barrierSearchGroup"/>
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@+id/barrierSearchGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="nomenclatureTextInputLayout, cellTextInputLayout"
+        app:layout_constraintBottom_toTopOf="@id/chipGroup"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/searchGroup" />
+
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroup"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+    app:layout_constraintTop_toBottomOf="@id/barrierSearchGroup"
+    app:flow_horizontalAlign="start"
+    app:layout_constraintBottom_toTopOf="@id/headerInclude"
+    app:layout_constraintEnd_toStartOf="@id/searchGroupButton"
+    app:layout_constraintStart_toStartOf="parent">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/warehouseChip"
+            style="@style/Widget.TNShinglass.Chip.Suggestion"
+            app:chipMinTouchTargetSize="0dp"
+            app:chipStrokeColor="@color/detailHelperTextColor"
+            android:textColor="@color/detailHelperTextColor"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/warehouse_title"
+            android:checkable="false"/>
+    </com.google.android.material.chip.ChipGroup>
+<!--    <androidx.constraintlayout.widget.Group-->
+<!--            android:id="@+id/chipsDetailGroup"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            app:layout_constraintTop_toBottomOf="@id/barrierSearchGroup"-->
+<!--            app:flow_horizontalAlign="start"-->
+<!--            app:layout_constraintBottom_toTopOf="@id/headerInclude"-->
+<!--            app:layout_constraintEnd_toStartOf="@id/searchGroupButton"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            android:visibility="gone"/>-->
+
+
+    <!--    <com.google.android.material.chip.ChipGroup-->
+<!--        android:id="@+id/chipGroup"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="wrap_content"-->
+
+<!--        app:layout_constraintTop_toBottomOf="@id/chipBasicGroup"-->
+<!--        app:flow_horizontalAlign="start"-->
+<!--        app:layout_constraintBottom_toTopOf="@id/headerInclude"-->
+<!--        app:layout_constraintEnd_toStartOf="@id/searchGroupButton"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        android:visibility="gone">-->
+<!--&lt;!&ndash;                <com.google.android.material.chip.Chip&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:id="@+id/gvzoChip"&ndash;&gt;-->
+<!--&lt;!&ndash;                    style="@style/Widget.Material3.Chip.Input"&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:layout_width="wrap_content"&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:layout_height="wrap_content"&ndash;&gt;-->
+<!--&lt;!&ndash;                    android:text="@string/by_gvzo_text" />&ndash;&gt;-->
+<!--    </com.google.android.material.chip.ChipGroup>-->
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/searchVisibleGroup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:constraint_referenced_ids="chipGroup, searchGroupButton"
+        app:layout_constraintBottom_toBottomOf="@id/chipGroup"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/chipGroup"
+        />
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/searchGroupButton"
+        style="?attr/materialIconButtonStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:checkable="true"
+        app:backgroundTint="@color/design_default_color_background"
+        app:icon="@drawable/tn_search_group_button"
+        app:iconTint="@color/red_400"
+        app:layout_constraintBottom_toTopOf="@id/headerInclude"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/chipGroup"
+        app:layout_constraintTop_toBottomOf="@id/barrierSearchGroup" />
 
     <FrameLayout
         android:id="@+id/headerInclude"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/cellTextInputLayout">
+        app:layout_constraintTop_toBottomOf="@id/chipGroup">
 
         <include
             android:id="@+id/tableScanHeaders"
@@ -139,6 +239,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:visibility="visible"/>
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

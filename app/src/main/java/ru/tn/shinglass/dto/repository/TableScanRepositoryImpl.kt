@@ -243,7 +243,7 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                     )
                 }
                 val body = response.body()
-                    ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                    ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
 //                dao.saveDivisions(body.toEntity())
                 scanRecords.forEach { record ->
                     dao.save(
@@ -271,10 +271,10 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                 val response =
                     ApiUtils.getApiService()!!.getCounterpartiesList(title)
                 if (!response.isSuccessful) {
-                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
                 }
                 return response.body()
-                    ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                    ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }
@@ -316,10 +316,10 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                 val response =
                     ApiUtils.getApiService()!!.getInternalOrderList()
                 if (!response.isSuccessful) {
-                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
                 }
                 return response.body()
-                    ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                    ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }

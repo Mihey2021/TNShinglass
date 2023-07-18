@@ -9,6 +9,7 @@ import android.os.Looper
 import android.view.KeyEvent
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.viewModels
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.OnBackPressedListener
@@ -29,6 +30,7 @@ class AppActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO) //Отключим темную тему
         setContentView(R.layout.activity_app)
 
         val filter = IntentFilter().apply {

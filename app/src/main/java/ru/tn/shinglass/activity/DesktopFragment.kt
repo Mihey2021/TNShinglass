@@ -15,7 +15,9 @@ import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.OnOptionsInteractionListener
 import ru.tn.shinglass.adapters.OptionsMenuExpListAdapter
+import ru.tn.shinglass.auth.AppAuth
 import ru.tn.shinglass.databinding.FragmentDesktopBinding
+import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.models.Option
 import ru.tn.shinglass.models.OptionType
 import ru.tn.shinglass.viewmodel.DesktopViewModel
@@ -28,6 +30,7 @@ class DesktopFragment : Fragment(), OnBackPressedListener {
     private var dialog: AlertDialog? = null
 
     private lateinit var binding: FragmentDesktopBinding
+    private lateinit var user1C: User1C
     private val desktopViewModel: DesktopViewModel by viewModels(
         ownerProducer = ::requireParentFragment
     )
@@ -38,6 +41,12 @@ class DesktopFragment : Fragment(), OnBackPressedListener {
     ): View? {
 
         binding = FragmentDesktopBinding.inflate(inflater, container, false)
+
+        user1C = AppAuth.getInstance().getAuthData()
+        AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) { authState ->
+            user1C = authState.user1C
+            if (user1C.getUserGUID().isEmpty()) findNavController().navigate(R.id.authFragment)
+        }
 
         BarcodeScannerReceiver.setEnabled(false)
 

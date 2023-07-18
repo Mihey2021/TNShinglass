@@ -17,9 +17,9 @@ class DocumentSelectRepositoryImpl : DocumentSelectRepository {
                 val response =
                     ApiUtils.getApiService()!!.getInternalOrderList()
                 if (!response.isSuccessful) {
-                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                return response.body() ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }
@@ -37,9 +37,9 @@ class DocumentSelectRepositoryImpl : DocumentSelectRepository {
                 val response =
                     ApiUtils.getApiService()!!.getRepairEstimate()
                 if (!response.isSuccessful) {
-                    throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
                 }
-                return response.body() ?: throw ApiServiceError(response.message()) //ApiError(response.code(), response.message())
+                return response.body() ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
             } else {
                 throw ApiServiceError("API service not ready")
             }

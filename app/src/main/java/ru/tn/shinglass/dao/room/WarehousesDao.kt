@@ -2,10 +2,12 @@ package ru.tn.shinglass.dao.room
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import ru.tn.shinglass.entity.WarehousesEntity
+import ru.tn.shinglass.models.Warehouse
 
 @Dao
 interface WarehousesDao {
@@ -29,6 +31,9 @@ interface WarehousesDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun saveWarehouses(warehouses: List<WarehousesEntity>)
+
+    @Query("DELETE FROM WarehousesEntity")
+    fun clearWarehousesTable()
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun saveWarehousesReceiver(warehousesReceiver: List<WarehousesEntity>)
