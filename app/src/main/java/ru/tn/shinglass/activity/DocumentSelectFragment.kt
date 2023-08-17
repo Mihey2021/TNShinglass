@@ -38,7 +38,17 @@ class DocumentSelectFragment : Fragment() {
     private var progressDialog: AlertDialog? = null
     private val externalDocumentList: ArrayList<ExternalDocument> = arrayListOf()
     private var isNew: Boolean = false
+    private var needShowingProgressDialog = true
 
+//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+//
+//        super.onViewCreated(view, savedInstanceState)
+//    }
+
+    override fun onStart() {
+        if (isNew) getExternalDocumentsList(selectedOption.docType)
+        super.onStart()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,11 +67,16 @@ class DocumentSelectFragment : Fragment() {
 
         val binding = FragmentDocumentSelectBinding.inflate(inflater, container, false)
 
-        val adapter = TableScanAdapter(object : OnTableScanItemInteractionListener {
-            override fun selectItem(item: TableScan) {
-                super.selectItem(item)
-            }
-        }, isExternalDocument = true, isExternalDocumentDetail = true, emptyCellText = getString(R.string.not_scanned_yet))
+        val adapter = TableScanAdapter(
+            object : OnTableScanItemInteractionListener {
+                override fun selectItem(item: TableScan) {
+                    super.selectItem(item)
+                }
+            },
+            isExternalDocument = true,
+            isExternalDocumentDetail = true,
+            emptyCellText = getString(R.string.not_scanned_yet)
+        )
 
         with(binding) {
             backButton.setOnClickListener {
@@ -71,10 +86,14 @@ class DocumentSelectFragment : Fragment() {
             backButton.text = getString(R.string.back_text)
 
             list.adapter = adapter
+            needShowingProgressDialog = isNew
             if (isNew) {
                 initAutoCompleteTextView(binding.documentTextView)
-                getExternalDocumentsList(selectedOption.docType)
-                documentTextView.setText((documentTextView.adapter.getItem(0) as ExternalDocument).externalOrderDocumentTitle, false);
+                //getExternalDocumentsList(selectedOption.docType)
+                documentTextView.setText(
+                    (documentTextView.adapter.getItem(0) as ExternalDocument).externalOrderDocumentTitle,
+                    false
+                );
                 DocumentHeaders.setExternalDocumentSelected(true)
                 documentTextView.setOnClickListener {
                     if (documentTextView.adapter == null || documentTextView.adapter.count == 0) {
@@ -104,37 +123,40 @@ class DocumentSelectFragment : Fragment() {
                         binding.documentTextInputLayout.hint = getString(R.string.document_1c_text)
                         if (documentItem.externalDocumentItems != null)
                         //adapter.submitList(documentItem.externalDocumentItems)
-                            if (documentItem.externalDocumentItems.isEmpty()) saveEmptyExternalDocument(documentItem)
-                            documentItem.externalDocumentItems?.forEach { item ->
-                                DocumentHeaders.setWarehouse(item.warehouse)
-                                val physicalPerson = viewModelTableScan.getPhysicalPersonByGuid(
-                                    item.warehouse?.warehouseResponsibleGuid ?: ""
-                                )
-                                DocumentHeaders.setPhysicalPerson(physicalPerson)
-                                val sdf = SimpleDateFormat("dd.MM.yyyy")
-                                viewModelTableScan.saveRecord(
-                                    TableScan(
-                                        OperationId = selectedOption.id,
-                                        OperationTitle = selectedOption.docType?.title ?: "",
-                                        docTitle = "${documentItem.externalOrderDocumentTitle} ${documentItem.externalOrderNumber} от ${
-                                            sdf.format(
-                                                documentItem.externalOrderDate
-                                            )
-                                        }",
-                                        docGuid = documentItem.externalOrderDocumentGuid,
-                                        docCount = item.itemCount,
-                                        coefficient = item.itemCoefficient,
-                                        cellTitle = item.cellTitle,
-                                        cellGuid = item.cellGuid,
-                                        ItemTitle = item.itemTitle,
-                                        ItemGUID = item.itemGUID,
-                                        ItemMeasureOfUnitGUID = item.itemMeasureOfUnitGUID,
-                                        ItemMeasureOfUnitTitle = item.itemMeasureOfUnitTitle,
-                                        docHeaders = DocumentHeaders,
-                                        OwnerGuid = user1C.getUserGUID(),
-                                    ), false
-                                )
-                            }
+                            if (documentItem.externalDocumentItems.isEmpty()) saveEmptyExternalDocument(
+                                documentItem
+                            )
+                        documentItem.externalDocumentItems?.forEach { item ->
+                            DocumentHeaders.setWarehouse(item.warehouse)
+                            val physicalPerson = viewModelTableScan.getPhysicalPersonByGuid(
+                                item.warehouse?.warehouseResponsibleGuid ?: ""
+                            )
+                            DocumentHeaders.setPhysicalPerson(physicalPerson)
+                            val sdf = SimpleDateFormat("dd.MM.yyyy")
+                            viewModelTableScan.saveRecord(
+                                TableScan(
+                                    OperationId = selectedOption.id,
+                                    OperationTitle = selectedOption.docType?.title ?: "",
+                                    docTitle = "${documentItem.externalOrderDocumentTitle} ${documentItem.externalOrderNumber} от ${
+                                        sdf.format(
+                                            documentItem.externalOrderDate
+                                        )
+                                    }",
+                                    docGuid = documentItem.externalOrderDocumentGuid,
+                                    docCount = item.itemCount,
+                                    Count = if (selectedOption.docType == DocType.TOIR_REPAIR_ESTIMATE) item.itemCount else 0.0, //для Сметы проставляем кол-во отобранного из документа
+                                    coefficient = item.itemCoefficient,
+                                    cellTitle = item.cellTitle,
+                                    cellGuid = item.cellGuid,
+                                    ItemTitle = item.itemTitle,
+                                    ItemGUID = item.itemGUID,
+                                    ItemMeasureOfUnitGUID = item.itemMeasureOfUnitGUID,
+                                    ItemMeasureOfUnitTitle = item.itemMeasureOfUnitTitle,
+                                    docHeaders = DocumentHeaders,
+                                    OwnerGuid = user1C.getUserGUID(),
+                                ), false
+                            )
+                        }
                         viewModelTableScan.reloadTableScan(user1C.getUserGUID(), selectedOption.id)
                     }
                 }
@@ -154,6 +176,8 @@ class DocumentSelectFragment : Fragment() {
 
                 initAutoCompleteTextView(binding.documentTextView)
 
+                //DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+
 //                val internalOrderAdapter = DynamicListAdapter<ExternalDocument>(
 //                    requireContext(),
 //                    R.layout.dynamic_prefs_layout,
@@ -166,16 +190,19 @@ class DocumentSelectFragment : Fragment() {
             }
 
             viewModel.dataState.observe(viewLifecycleOwner) {
+                //val progressDialog = DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)
+                val progressDialog = getCurrentProgressDialog()
                 if (it.loading) {
-                    if (progressDialog?.isShowing == false || progressDialog == null)
-                        progressDialog =
-                            DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
-                } else
-                    progressDialog?.dismiss()
+                    needShowingProgressDialog = true
+                } else {
+                    progressDialog.dismiss()
+                    needShowingProgressDialog = false
+                }
+
 
                 if (it.error) {
                     //DialogScreen.getDialog(requireContext(), DialogScreen.IDD_ERROR, title = it.errorMessage)
-                    progressDialog?.dismiss()
+                    progressDialog.dismiss()
                     DialogScreen.showDialog(
                         requireContext(),
                         DialogScreen.IDD_ERROR,
@@ -184,9 +211,17 @@ class DocumentSelectFragment : Fragment() {
                             override fun onPositiveClickButton() {
                                 when (it.requestName) {
                                     "getInternalOrderList" -> {
+                                        DialogScreen.showDialog(
+                                            requireContext(),
+                                            DialogScreen.IDD_PROGRESS
+                                        )
                                         viewModel.getInternalOrderList()
                                     }
                                     "getRepairEstimate" -> {
+                                        DialogScreen.showDialog(
+                                            requireContext(),
+                                            DialogScreen.IDD_PROGRESS
+                                        )
                                         viewModel.getRepairEstimate()
                                     }
                                 }
@@ -241,6 +276,19 @@ class DocumentSelectFragment : Fragment() {
         }
     }
 
+    private fun getCurrentProgressDialog(): AlertDialog {
+        var progressDialog = DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)
+        if (progressDialog?.isShowing == false || progressDialog == null) {
+            progressDialog =
+                DialogScreen.showDialog(
+                    this@DocumentSelectFragment.requireContext(),
+                    DialogScreen.IDD_PROGRESS
+                )
+            progressDialog.show()
+        }
+        return progressDialog
+    }
+
     private fun saveEmptyExternalDocument(documentItem: ExternalDocument) {
 //        DocumentHeaders.setWarehouse(documentItem.externalOrderDivision?.divisionDefaultWarehouseGuid.)
 //        val physicalPerson = viewModelTableScan.getPhysicalPersonByGuid(
@@ -273,6 +321,7 @@ class DocumentSelectFragment : Fragment() {
     }
 
     private fun getExternalDocumentsList(docType: DocType?) {
+        //DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS).show()
         when (docType) {
             DocType.TOIR_REQUIREMENT_INVOICE -> {
                 viewModel.getInternalOrderList()
@@ -313,8 +362,13 @@ class DocumentSelectFragment : Fragment() {
 
     override fun onDestroyView() {
         BarcodeScannerReceiver.setEnabled()
+        DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
         progressDialog?.dismiss()
         super.onDestroyView()
     }
 
+    override fun onResume() {
+        if (needShowingProgressDialog) getCurrentProgressDialog()
+        super.onResume()
+    }
 }

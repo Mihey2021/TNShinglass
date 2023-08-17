@@ -21,6 +21,7 @@ import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.models.Option
 import ru.tn.shinglass.models.OptionType
 import ru.tn.shinglass.viewmodel.DesktopViewModel
+import ru.tn.shinglass.viewmodel.SettingsViewModel
 
 private const val ATTR_OPTION_GROUP = "option"
 private const val ATTR_SUB_OPTION_GROUP = "subOption"
@@ -32,6 +33,9 @@ class DesktopFragment : Fragment(), OnBackPressedListener {
     private lateinit var binding: FragmentDesktopBinding
     private lateinit var user1C: User1C
     private val desktopViewModel: DesktopViewModel by viewModels(
+        ownerProducer = ::requireParentFragment
+    )
+    private val settingsViewModel: SettingsViewModel by viewModels(
         ownerProducer = ::requireParentFragment
     )
 
@@ -56,7 +60,8 @@ class DesktopFragment : Fragment(), OnBackPressedListener {
         desktopViewModel.optionsData.observe(viewLifecycleOwner) { options ->
 
             val groupData = ArrayList<Map<Option, ArrayList<Option>>>()
-
+            val usedLogistics =
+                settingsViewModel.getPreferenceByKey<Boolean>("usedLogistics", true) ?: false
             for (optionType in OptionType.values()) {
                 options
                     .filter { option -> option.option == optionType && option.subOption == null }
@@ -64,7 +69,12 @@ class DesktopFragment : Fragment(), OnBackPressedListener {
                         val childDataItem = ArrayList<Option>()
                         options
                             .filter { subOption -> subOption.option == groupOption.option && subOption.subOption != null }
-                            .forEach { subOption -> childDataItem.add(subOption) }
+                            .forEach { subOption ->
+                                childDataItem.add(subOption)
+                                if (!usedLogistics && subOption.subOption?.needLogisics == true) {
+                                    childDataItem.remove(subOption)
+                                }
+                            }
                             .also { groupData.add(hashMapOf(groupOption to childDataItem)) }
                     }
             }
@@ -103,7 +113,8 @@ class DesktopFragment : Fragment(), OnBackPressedListener {
 //            if (authState.userGUID == "") findNavController().navigateUp()
 //        }
 
-        BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) {
+        BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner)
+        {
             if (it.first == "" && it.second == "") return@observe
             BarcodeScannerReceiver.clearData()
         }
@@ -117,7 +128,7 @@ class DesktopFragment : Fragment(), OnBackPressedListener {
         DialogScreen.getDialog()?.dismiss()
         BarcodeScannerReceiver.setEnabled(false)
         //dialog =
-            DialogScreen.showDialog(requireContext(), DialogScreen.IDD_QUESTION,
+        DialogScreen.showDialog(requireContext(), DialogScreen.IDD_QUESTION,
             message = resources.getString(R.string.question_exit_session_text),
             title = resources.getString(R.string.question_exit_session_title),
             onDialogsInteractionListener = object : OnDialogsInteractionListener {

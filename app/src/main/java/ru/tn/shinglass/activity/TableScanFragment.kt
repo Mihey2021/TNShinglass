@@ -71,6 +71,8 @@ class TableScanFragment : Fragment() {
 
     private var refreshing: Boolean = false
 
+    private var usedLogistics: Boolean = false
+
     @SuppressLint("SimpleDateFormat", "SetTextI18n", "ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -181,18 +183,27 @@ class TableScanFragment : Fragment() {
                                 if (itemList.filter { filterRecord -> filterRecord.ItemGUID == item.ItemGUID && filterRecord.ItemMeasureOfUnitGUID == item.ItemMeasureOfUnitGUID }.size == 1 && isExternalDocument) {
                                     val isToirRepairEstimate =
                                         selectedOption.docType == DocType.TOIR_REPAIR_ESTIMATE //Это смета
-                                    viewModel.saveRecord(
-                                        item.copy(
-                                            ItemGUID = if (isToirRepairEstimate) "" else item.ItemGUID,
-                                            ItemTitle = if (isToirRepairEstimate) "" else item.ItemTitle,
-                                            ItemMeasureOfUnitGUID = if (isToirRepairEstimate) "" else item.ItemMeasureOfUnitGUID,
-                                            ItemMeasureOfUnitTitle = if (isToirRepairEstimate) "" else item.ItemMeasureOfUnitTitle,
-                                            cellGuid = "",
-                                            cellTitle = "",
-                                            Count = 0.0,
-                                            totalCount = 0.0
-                                        ), true
-                                    )
+                                    if (isToirRepairEstimate) {
+                                        viewModel.deleteRecordById(item)
+                                    } else {
+                                        viewModel.saveRecord(
+                                            item.copy(
+//                                            ItemGUID = if (isToirRepairEstimate) "" else item.ItemGUID,
+//                                            ItemTitle = if (isToirRepairEstimate) "" else item.ItemTitle,
+//                                            ItemMeasureOfUnitGUID = if (isToirRepairEstimate) "" else item.ItemMeasureOfUnitGUID,
+//                                            ItemMeasureOfUnitTitle = if (isToirRepairEstimate) "" else item.ItemMeasureOfUnitTitle,
+                                                ItemGUID = item.ItemGUID,
+                                                ItemTitle = item.ItemTitle,
+                                                ItemMeasureOfUnitGUID = item.ItemMeasureOfUnitGUID,
+                                                ItemMeasureOfUnitTitle = item.ItemMeasureOfUnitTitle,
+                                                cellGuid = "",
+                                                cellTitle = "",
+                                                Count = 0.0,
+                                                totalCount = 0.0,
+                                                //replacement = isToirRepairEstimate,
+                                            ), true
+                                        )
+                                    }
                                     //binding.list.adapter?.notifyDataSetChanged()
                                     viewModel.reloadTableScan(
                                         user1C.getUserGUID(),
@@ -224,7 +235,7 @@ class TableScanFragment : Fragment() {
             },
             isExternalDocument = isExternalDocument,
             isExternalDocumentDetail = false,
-            emptyCellText = getString(R.string.not_scanned_yet)
+            emptyCellText = getString(R.string.blank_cell)//getString(R.string.not_scanned_yet)
         )
 
         binding.list.adapter = adapter
@@ -402,8 +413,15 @@ class TableScanFragment : Fragment() {
             itemList = it
 
             if (itemList.isNotEmpty()) {
+                //retrofitViewModel.getWarehousesListByGuid(itemList[0].warehouseGuid)
+                val infoText =
+                    "${getString(R.string.info_table_scan_continue_text)}\n${getString(R.string.current_cell_text)}:"
+                var cellTitle =
+                    if (itemList[0].cellReceiverGuid.isNullOrBlank()) itemList[0].cellTitle else itemList[0].cellReceiverTitle
+                if (cellTitle.isBlank())
+                    cellTitle = getString(R.string.blank_cell)
                 binding.infoTextView.text =
-                    "${getString(R.string.info_table_scan_continue_text)} ${if (itemList[0].cellReceiverGuid.isNullOrBlank()) itemList[0].cellTitle else itemList[0].cellReceiverTitle}"
+                    "$infoText $cellTitle"
 
                 val externalDocumentTitle = itemList[0].docTitle
                 if (externalDocumentTitle != "")
@@ -416,7 +434,17 @@ class TableScanFragment : Fragment() {
             }
         }
 
-
+//        retrofitViewModel.listDataWarehouses.observe(viewLifecycleOwner) {
+//            if (it.isNullOrEmpty()) return@observe
+//            usedLogistics = it.firstOrNull()?.usesLogistics ?: false
+//            var infoText = "${getString(R.string.info_table_scan_continue_text)}\n${getString(R.string.current_cell_text)}:"
+//            if(itemList.isNotEmpty()) {
+//                if (!usedLogistics)
+//                    infoText = getString(R.string.info_table_scan_continue_text)
+//                binding.infoTextView.text =
+//                    "$infoText ${if (itemList[0].cellReceiverGuid.isNullOrBlank()) itemList[0].cellTitle else itemList[0].cellReceiverTitle}"
+//            }
+//        }
 
         retrofitViewModel.requestError.observe(viewLifecycleOwner) { error ->
 
@@ -439,8 +467,13 @@ class TableScanFragment : Fragment() {
                 })
         }
 
-        BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) { dataScanPair ->
-            if (!BarcodeScannerReceiver.isEnabled() || dataScanPair == Pair("", "")) return@observe
+        BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) { dataScanTriple ->
+            if (!BarcodeScannerReceiver.isEnabled() || dataScanTriple == Triple(
+                    "",
+                    "",
+                    BarcodeScannerReceiver.TNBarcode()
+                )
+            ) return@observe
 //            val showingDialog = (dlgHeadersAndOther?.isShowing ?: false)
 //            //if (dlgHeadersAndOther != null)
 //
@@ -450,8 +483,9 @@ class TableScanFragment : Fragment() {
 //            }
 
             //val dataScanPair = BarcodeScannerReceiver.dataScan.value
-            val dataScanBarcode = dataScanPair.first
-            val dataScanBarcodeType = dataScanPair.second
+            val dataScanBarcode = dataScanTriple.first
+            val dataScanBarcodeType = dataScanTriple.second
+            val tnBarcode = dataScanTriple.third
 
             if (dataScanBarcode == "") return@observe
 
@@ -508,7 +542,8 @@ class TableScanFragment : Fragment() {
                             cellGuid = itemList[0].cellGuid,
                             cellTitle = itemList[0].cellTitle,
                             docHeaders = itemList[0].docHeaders,
-                            OwnerGuid = user1C.getUserGUID()
+                            OwnerGuid = user1C.getUserGUID(),
+                            warehouseGuid = itemList[0].warehouseGuid,
                         )
                     )
                     findNavController().navigate(
@@ -540,7 +575,8 @@ class TableScanFragment : Fragment() {
 //                        warehouseGuid = itemList[0].warehouseGuid,
 //                        PhysicalPersonGUID = itemList[0].PhysicalPersonGUID,
 //                        PhysicalPersonTitle = itemList[0].PhysicalPersonTitle,
-                    OwnerGuid = user1C.getUserGUID()
+                    OwnerGuid = user1C.getUserGUID(),
+                    warehouseGuid = itemList[0].warehouseGuid,
                 )
             )
             findNavController().navigate(
@@ -699,7 +735,12 @@ class TableScanFragment : Fragment() {
             LayoutInflater.from(requireContext())//.inflate(R.layout.inventory_init_dialog, null)
         dlgBinding = DocumentsHeadersInitDialogBinding.inflate(layoutInflater)
 
-        val tableIsEmpty = itemList.isEmpty()
+        var tableIsEmpty = itemList.isEmpty()
+
+        if (isExternalDocument && itemList.count() == 1) {
+            if (itemList.first().ItemGUID.isBlank())
+                tableIsEmpty = true
+        }
 
         val isExternalDocument = selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE
 
@@ -781,10 +822,13 @@ class TableScanFragment : Fragment() {
                     "editRecord",
                     TableScan(
                         //id = itemList[0].id,
+                        cellTitle = itemList[0].cellTitle,
+                        cellGuid = itemList[0].cellGuid,
                         docTitle = itemList[0].docTitle,
                         docGuid = itemList[0].docGuid,
                         OwnerGuid = user1C.getUserGUID(),
-                        docHeaders = DocumentHeaders
+                        docHeaders = DocumentHeaders,
+                        warehouseGuid = itemList[0].warehouseGuid,
                     )
                 )
             } else {
@@ -795,7 +839,7 @@ class TableScanFragment : Fragment() {
 //                    warehouseGuid = warehouseGuid,
 //                    PhysicalPersonGUID = physicalPersonGuid,
 //                    PhysicalPersonTitle = physicalPersonTitle
-                        docHeaders = DocumentHeaders
+                        docHeaders = DocumentHeaders,
                     )
                 )
             }

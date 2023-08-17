@@ -39,4 +39,5 @@ data class TableScan (
     val refreshing: Boolean = false,
     val replacement: Boolean = false,
     var lastModified: Long = System.currentTimeMillis(),
+    val warehouseGuid: String = "",
 ) : Serializable, Parcelable

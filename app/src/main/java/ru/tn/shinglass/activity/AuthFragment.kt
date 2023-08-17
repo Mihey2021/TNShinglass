@@ -352,6 +352,7 @@ class AuthFragment : Fragment() {
 
     override fun onResume() {
         clearForm()
+        BarcodeScannerReceiver.setEnabled(true)
         settingsViewModel.removePreference(PreferenceKeys.SESSION_START.key)
         super.onResume()
     }

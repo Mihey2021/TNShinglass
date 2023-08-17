@@ -132,20 +132,22 @@ class TableScanAdapter(
             val colorYellow = "#ffffcc" //"#F0E68C"
             val colorRed = "#ff9999" //"#FA8072"
             val transparent = "#80FFFFFF"
+            val totalCount = record.totalCount //if (record.isGroup) record.totalCount else record.docCount
+            val docCount = if (record.isGroup) record.totalCount else record.docCount
             with(binding) {
-                if (record.totalCount == record.docCount) {
+                if (totalCount == docCount) {
                     totalCountGroup.setBackgroundColor(Color.parseColor(colorGreen))
                     detailItemGroup.setBackgroundColor(Color.parseColor(colorGreen))
                 }
-                if (record.totalCount < record.docCount) {
+                if (totalCount < docCount) {
                     totalCountGroup.setBackgroundColor(Color.parseColor(colorYellow))
                     detailItemGroup.setBackgroundColor(Color.parseColor(colorYellow))
                 }
-                if (record.totalCount > record.docCount) {
+                if (totalCount > docCount) {
                     totalCountGroup.setBackgroundColor(Color.parseColor(colorRed))
                     detailItemGroup.setBackgroundColor(Color.parseColor(colorRed))
                 }
-                if (record.totalCount == 0.0) {
+                if (totalCount == 0.0) {
                     totalCountGroup.setBackgroundColor(Color.parseColor(transparent))
                     detailItemGroup.setBackgroundColor(Color.parseColor(transparent))
                 }

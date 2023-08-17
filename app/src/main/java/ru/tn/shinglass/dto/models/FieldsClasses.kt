@@ -9,18 +9,20 @@ enum class HeaderFields(val viewId: Int) {
     WAREHOUSE_RECEIVER(R.id.warehouseReceiverTextInputLayout),
     PHYSICAL_PERSON(R.id.physicalPersonTextInputLayout),
     EMPLOYEE(R.id.employeeTextInputLayout),
+    EMPLOYEE_TEXT_FIELD(R.id.employeeTextView),
     DIVISION(R.id.divisionTextInputLayout),
     COUNTERPARTY(R.id.counterpartyTextInputLayout),
     INCOMING_DATE(R.id.incomingDateTextInputLayout),
     INCOMING_NUMBER(R.id.incomingNumberTextInputLayout),
 }
 
-enum class DetailScanFields(val viewId: Int, val fieldType: String) {
-    CELL(R.id.cellTextInputLayout, "TextInputLayout"),
-    CELL_RECEIVER(R.id.cellReceiverTextInputLayout, "TextInputLayout"),
+enum class DetailScanFields(val viewId: Int, val fieldType: String, val usedLogistics: Boolean = false) {
+    CELL(R.id.cellTextInputLayout, "TextInputLayout", true),
+    CELL_RECEIVER(R.id.cellReceiverTextInputLayout, "TextInputLayout", true),
     ITEM(R.id.itemTextInputLayout, "TextInputLayout"),
     COUNT(R.id.countTextInputLayout, "TextInputLayout"),
     QUALITY(R.id.qualityTextInputLayout, "TextInputLayout"),
     WORKWEAR_ORDINARY(R.id.workwearOrdinaryCheckBox, "CheckBox"),
     WORKWEAR_DISPOSABLE(R.id.workwearDisposableCheckBox, "CheckBox"),
+    SERIAL_NUMBER(R.id.serialNumberTextInputLayout, "TextInputLayout"),
 }

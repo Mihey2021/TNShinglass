@@ -67,7 +67,10 @@ class TableScanRepositoryImpl(private val dao: TableScanDao) : TableScanReposito
                         overwriteRecord(existingRecord, tempRecord, count)
                     } else {
                         dao.deleteRecordById(tempRecord.id)
-                        dao.save(tempRecord)
+//                        //6 - операция Смета
+//                        if(record.OperationId != 6L) {
+                            dao.save(tempRecord)
+//                        }
                     }
                 } else {
                     dao.save(tempRecord)

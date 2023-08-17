@@ -34,7 +34,7 @@ interface ApiService {
     suspend fun getPhysicalPersonList(): Response<List<PhysicalPerson>>
 
     @GET("getPhysicalPersonList")
-    suspend fun getEmployeeList(): Response<List<Employee>>
+    suspend fun getEmployeeList(@Query("part_name") partName: String): Response<List<Employee>>
 
     @GET("getCellByBarcode")
     suspend fun getCellByBarcode(

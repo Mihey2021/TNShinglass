@@ -5,9 +5,11 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
+import android.widget.CheckBox
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.preference.CheckBoxPreference
 import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceCategory
@@ -100,7 +102,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
         //Заполним список складов сразу при открытии
         //if (warehouseListPreference.getDataListArray().isEmpty()) {
-            settingsViewModel.getAllWarehouses()
+        settingsViewModel.getAllWarehouses()
         //}
 
         warehouseListPreference.setOnPreferenceClickListener {
@@ -109,6 +111,14 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         categoryDocSettings.addPreference(warehouseListPreference)
+
+        val usedLogistics = CheckBoxPreference(requireContext())
+        usedLogistics.key = "usedLogistics"
+        usedLogistics.title = getString(R.string.warehouse_uses_logistics)
+        usedLogistics.isSelectable = false
+        //usedLogistics.isEnabled = false
+
+        categoryDocSettings.addPreference(usedLogistics)
 
         val virtualCellsListPreference = ExtendListPreference<Cell>(requireContext())
         val virtualCellsAdapter = getVirtualCellAdapter()
@@ -135,6 +145,8 @@ class SettingsFragment : PreferenceFragmentCompat() {
         }
 
         categoryDocSettings.addPreference(virtualCellsListPreference)
+
+        setLogisticsViewsParams(savedWarehouse, virtualCellsListPreference, usedLogistics)
 
         listener =
             SharedPreferences.OnSharedPreferenceChangeListener { sharedPrefs, key ->
@@ -171,11 +183,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
                             key,
                             ""
                         ).toString()
+                        val warehouse = settingsViewModel.getWarehouseByGuid(warehouseGuidPrefSaved)
+                        setLogisticsViewsParams(warehouse, virtualCellsListPreference, usedLogistics)
                         if (sharedPrefs.getString("division_guid", "").toString() == "") {
                             val division = settingsViewModel.getDivisionByGuid(
-                                settingsViewModel.getWarehouseByGuid(
-                                    warehouseGuidPrefSaved
-                                )?.warehouseDivisionGuid ?: ""
+                                warehouse?.warehouseDivisionGuid ?: ""
                             )
                             if (division != null) {
                                 divisionListPreference.value = division.divisionGuid
@@ -204,6 +216,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                                 virtualCellsListPreference.summary =
                                     getString(R.string.select_virtual_cell)
                                 retrofitViewModel.getCellsList(warehouse.warehouseGuid)
+                                setLogisticsViewsParams(warehouse, virtualCellsListPreference, usedLogistics)
                             }
 
                         }
@@ -228,6 +241,11 @@ class SettingsFragment : PreferenceFragmentCompat() {
             }
 
         preferenceManager.sharedPreferences?.registerOnSharedPreferenceChangeListener(listener)
+    }
+
+    private fun setLogisticsViewsParams(warehouse: Warehouse?, virtualCellsListPreference: ExtendListPreference<Cell>, usedLogistics: CheckBoxPreference) {
+        usedLogistics.isChecked = warehouse?.usesLogistics ?: false
+        virtualCellsListPreference.isVisible = usedLogistics.isChecked
     }
 
     private fun getCurrentApiService(newService: Boolean = false) {
@@ -295,7 +313,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
                     DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
             } else {
                 DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
-            //progressDialog?.dismiss()
+                //progressDialog?.dismiss()
             }
 
             if (it.error) {

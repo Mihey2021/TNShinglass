@@ -106,7 +106,12 @@ class HeadersDialogFragment : DialogFragment() {
                                 "getCounterpartiesList" -> {
                                     val requestParam = it.additionalRequestProperties.firstOrNull()
                                     if (requestParam?.propertyName == "title")
-                                    viewModel.getCounterpartiesList(title = requestParam.propertyValue)
+                                        viewModel.getCounterpartiesList(title = requestParam.propertyValue)
+                                }
+                                "getEmployeesFromPartName" -> {
+                                    val requestParam = it.additionalRequestProperties.firstOrNull()
+                                    if (requestParam?.propertyName == "partName")
+                                        viewModel.getEmployeesFromPartName(partName = requestParam.propertyValue)
                                 }
                             }
                         }
@@ -151,7 +156,14 @@ class HeadersDialogFragment : DialogFragment() {
             if (it.isEmpty())
                 dataListWarehouses.add(Warehouse(getString(R.string.no_data), "", "", ""))
             else
-                dataListWarehousesReceiver.add(WarehouseReceiver(getString(R.string.not_chosen_text),"","",""))
+                dataListWarehousesReceiver.add(
+                    WarehouseReceiver(
+                        getString(R.string.not_chosen_text),
+                        "",
+                        "",
+                        ""
+                    )
+                )
 
             it.forEach { warehouseReceiver ->
                 dataListWarehousesReceiver.add(warehouseReceiver)
@@ -171,8 +183,7 @@ class HeadersDialogFragment : DialogFragment() {
             }
         }
 
-        viewModel.employees.observe(viewLifecycleOwner)
-        {
+        viewModel.employeeList.observe(viewLifecycleOwner) {
             closeDialogs()
             if (it.isEmpty()) return@observe
 
@@ -182,7 +193,62 @@ class HeadersDialogFragment : DialogFragment() {
             it.forEach { employee ->
                 dataListEmployees.add(employee)
             }
+
+            val employeeAdapter = DynamicListAdapter<Employee>(
+                requireContext(),
+                R.layout.dynamic_prefs_layout,
+                dataListEmployees
+            )
+
+            (dlgBinding.employeeTextView as? AutoCompleteTextView)?.setAdapter(employeeAdapter)
+
+            if (dlgBinding.employeeTextView.text.isNotEmpty() && dataListEmployees.isEmpty()) {
+                closeDialogs()
+                DialogScreen.showDialog(
+                    requireContext(),
+                    DialogScreen.IDD_SUCCESS,
+                    getString(R.string.enter_part_of_employee_name),
+                    getString(R.string.nothing_found_text),
+                    titleIcon = R.drawable.ic_baseline_search_off_24
+                )
+            } else {
+                if (DocumentHeaders.getEmployee() == null) dlgBinding.employeeTextView.showDropDown()
+            }
         }
+
+//        viewModel.employees.observe(viewLifecycleOwner)
+//        {
+//            closeDialogs()
+//            if (it.isEmpty()) return@observe
+//
+//            dataListEmployees.clear()
+//            dataListEmployees.add(Employee(getString(R.string.not_chosen_text), ""))
+//
+//            it.forEach { employee ->
+//                dataListEmployees.add(employee)
+//            }
+//
+//            val employeeAdapter = DynamicListAdapter<Employee>(
+//                requireContext(),
+//                R.layout.dynamic_prefs_layout,
+//                dataListEmployees
+//            )
+//
+//            (dlgBinding.employeeTextView as? AutoCompleteTextView)?.setAdapter(employeeAdapter)
+//
+//            if (dlgBinding.employeeTextView.text.isNotEmpty() && dataListEmployees.isEmpty()) {
+//                closeDialogs()
+//                DialogScreen.showDialog(
+//                    requireContext(),
+//                    DialogScreen.IDD_SUCCESS,
+//                    getString(R.string.enter_part_of_employee_name),
+//                    getString(R.string.nothing_found_text),
+//                    titleIcon = R.drawable.ic_baseline_search_off_24
+//                )
+//            } else {
+//                if (DocumentHeaders.getEmployee() == null) dlgBinding.employeeTextView.showDropDown()
+//            }
+//        }
 
         viewModel.counterpartiesList.observe(viewLifecycleOwner)
         {
@@ -538,27 +604,73 @@ class HeadersDialogFragment : DialogFragment() {
                 physicalPersonTextInputLayout.isVisible = false
             }
 
-            if (docHeadersFields?.contains(HeaderFields.EMPLOYEE) == true) {
-                val employeeAdapter = DynamicListAdapter<Employee>(
-                    requireContext(),
-                    R.layout.dynamic_prefs_layout,
-                    dataListEmployees
-                )
+            if (docHeadersFields.contains(HeaderFields.EMPLOYEE)) {
+//                val employeeAdapter = DynamicListAdapter<Employee>(
+//                    requireContext(),
+//                    R.layout.dynamic_prefs_layout,
+//                    dataListEmployees
+//                )
+//
+//                employeeTextView.setAdapter(employeeAdapter)
 
                 employeeTextView.isEnabled = tableIsEmpty
+
+                if (DocumentHeaders.getEmployee() != null) {
+                    employeeTextView.inputType = android.text.InputType.TYPE_NULL
+                    employeeTextInputLayout.endIconDrawable =
+                        androidx.appcompat.content.res.AppCompatResources.getDrawable(
+                            requireContext(),
+                            R.drawable.ic_baseline_clear_24
+                        )
+                    employeeTextInputLayout.endIconContentDescription =
+                        getString(R.string.clear_text)
+                }
 
                 if (!tableIsEmpty) employeeTextInputLayout.endIconMode =
                     TextInputLayout.END_ICON_NONE
 
-                employeeTextView.setAdapter(employeeAdapter)
-
                 if (DocumentHeaders.getEmployee() != null)
                     employeeTextView.setText(DocumentHeaders.getEmployee()?.employeeFio)
+//                employeeTextView.setOnClickListener {
+//                    if (employeeTextView.adapter == null || employeeTextView.adapter.count == 0) {
+//                        viewModel.getAllEmployees()
+//                    }
+
                 employeeTextView.setOnClickListener {
-                    if (employeeTextView.adapter == null || employeeTextView.adapter.count == 0) {
-                        viewModel.getAllEmployees()
+                    if (employeeTextInputLayout.error == null || !tableIsEmpty) return@setOnClickListener
+                    employeeTextInputLayout.error = null
+                    employeeTextView.text = null
+                    employeeTextView.inputType = android.text.InputType.TYPE_CLASS_TEXT
+                    employeeTextInputLayout.endIconMode = TextInputLayout.END_ICON_CUSTOM
+                    employeeTextInputLayout.endIconDrawable =
+                        androidx.appcompat.content.res.AppCompatResources.getDrawable(
+                            requireContext(),
+                            R.drawable.ic_baseline_search_24
+                        )
+                    employeeTextInputLayout.endIconContentDescription =
+                        getString(R.string.find_text)
+                }
+
+                employeeTextInputLayout.setEndIconOnClickListener {
+                    ru.tn.shinglass.activity.utilites.AndroidUtils.hideKeyboard(employeeTextView)
+                    if (employeeTextView.inputType != android.text.InputType.TYPE_NULL) {
+                        viewModel.getEmployeesFromPartName(employeeTextView.text.toString())
+                    } else {
+                        DocumentHeaders.setEmployee(null)
+                        employeeTextView.text = null
+                        employeeTextInputLayout.helperText = null
+                        employeeTextView.inputType = android.text.InputType.TYPE_CLASS_TEXT
+                        employeeTextInputLayout.endIconMode = TextInputLayout.END_ICON_CUSTOM
+                        employeeTextInputLayout.endIconDrawable =
+                            androidx.appcompat.content.res.AppCompatResources.getDrawable(
+                                requireContext(),
+                                R.drawable.ic_baseline_search_24
+                            )
+                        employeeTextInputLayout.endIconContentDescription =
+                            getString(R.string.find_text)
                     }
                 }
+
                 employeeTextView.setOnItemClickListener { adapterView, _, position, _ ->
                     val employee = adapterView.getItemAtPosition(position) as Employee
                     if (employee.employeeGuid == "") {
@@ -567,6 +679,14 @@ class HeadersDialogFragment : DialogFragment() {
                         DocumentHeaders.setEmployee(employee)
                     }
                     employeeTextView.setText(employee?.employeeFio)
+                    employeeTextView.inputType = android.text.InputType.TYPE_NULL
+                    employeeTextInputLayout.endIconDrawable =
+                        androidx.appcompat.content.res.AppCompatResources.getDrawable(
+                            requireContext(),
+                            R.drawable.ic_baseline_clear_24
+                        )
+                    employeeTextInputLayout.endIconContentDescription =
+                        getString(R.string.clear_text)
                     employeeTextInputLayout.error = null
                     ru.tn.shinglass.activity.utilites.AndroidUtils.hideKeyboard(dlgBinding.root)
                 }

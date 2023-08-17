@@ -41,7 +41,7 @@ interface TableScanDao {
             "ItemMeasureOfUnitGUID, Count, docCount, docTitle, docGuid, coefficient, qualityGuid, qualityTitle, " +
             "WorkwearOrdinary, WorkwearDisposable, PurposeOfUseTitle, PurposeOfUse, " +
             "OwnerGuid, uploaded, docNameIn1C, incomingDate, incomingNumber , externalDocumentSelected, " +
-            "warehouseTitle, warehouseGuid, warehouseDivisionGuid, warehouseResponsibleGuid, warehouseReceiverTitle, warehouseReceiverGuid, warehouseReceiverDivisionGuid, warehouseReceiverResponsibleGuid, physicalPersonFio, " +
+            "warehouseTitle, warehouseGuid, warehouseDivisionGuid, warehouseResponsibleGuid, usesLogistics, warehouseReceiverTitle, warehouseReceiverGuid, warehouseReceiverDivisionGuid, warehouseReceiverResponsibleGuid, warehouseReceiverUsesLogistics, physicalPersonFio, " +
             "physicalPersonGuid, divisionTitle, divisionGuid, divisionDefaultWarehouseGuid, counterpartyTitle, " +
             "counterpartyGuid, counterpartyInn, counterpartyKpp, employeeGuid, employeeFio, lastModified " +
             "FROM TableScanEntity " +

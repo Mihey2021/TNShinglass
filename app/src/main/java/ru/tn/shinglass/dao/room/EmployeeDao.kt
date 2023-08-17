@@ -19,4 +19,7 @@ interface EmployeeDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun saveEmployee(employee: List<EmployeeEntity>)
+
+    @Query("DELETE FROM EmployeeEntity")
+    fun clearEmployeeTab()
 }

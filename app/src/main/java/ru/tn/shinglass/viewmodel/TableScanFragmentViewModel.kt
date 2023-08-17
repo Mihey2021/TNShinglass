@@ -53,6 +53,11 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
     val counterpartiesList: LiveData<List<Counterparty>>
         get() = _counterpartiesList
 
+    private val _employeeList: MutableLiveData<List<Employee>> = MutableLiveData(listOf())
+    val employeeList: LiveData<List<Employee>>
+        get() = _employeeList
+
+
 
     fun getAllDivisions() {
         viewModelScope.launch {
@@ -186,6 +191,23 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
                     error = true,
                     errorMessage = e.message.toString(),
                     requestName = "getAllEmployees"
+                )
+            }
+        }
+    }
+
+    fun getEmployeesFromPartName(partName: String) {
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                _employeeList.value = repositoryEmployee.getEmployeeList(partName = partName)
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getEmployeesFromPartName",
+                    additionalRequestProperties = listOf(AdditionalRequestOptions("partName", partName))
                 )
             }
         }

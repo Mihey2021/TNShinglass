@@ -14,10 +14,10 @@ interface WarehousesDao {
     @Query("SELECT * FROM WarehousesEntity")
     fun getAllWarehouses(): LiveData<List<WarehousesEntity>>
 
-    @Query("SELECT title, guid, divisionGuid, responsibleGuid FROM WarehousesEntity WHERE divisionGuid=:divisionGuid")
+    @Query("SELECT title, guid, divisionGuid, responsibleGuid, usesLogistics FROM WarehousesEntity WHERE divisionGuid=:divisionGuid")
     fun getAllWarehousesByDivision(divisionGuid: String): List<WarehousesEntity>
 
-    @Query("SELECT title, guid, divisionGuid, responsibleGuid FROM WarehousesEntity WHERE guid=:guid")
+    @Query("SELECT title, guid, divisionGuid, responsibleGuid, usesLogistics FROM WarehousesEntity WHERE guid=:guid")
     fun getWarehouseByGuid(guid: String): WarehousesEntity?
 
 //    @Query("SELECT title, guid, divisionGuid, responsibleGuid FROM WarehousesEntity WHERE id=:id")

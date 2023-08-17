@@ -65,8 +65,8 @@
     <string name="delete_text">Удалить</string>
     <string name="edit_record_text">Изменить</string>
     <string name="document_init_dialog_title">Реквизиты</string>
-    <string name="info_table_scan_start_text">Чтобы начать,\nотсканируйте ячейку</string>
-    <string name="info_table_scan_continue_text">Чтобы продолжить, отсканируйте ячейку или номенклатуру.\nТекущая ячейка:</string>
+    <string name="info_table_scan_start_text">Чтобы начать,\nотсканируйте ячейку или номенклатуру</string>
+    <string name="info_table_scan_continue_text">Чтобы продолжить, отсканируйте ячейку или номенклатуру.</string>
     <string name="division_list_description">Выберите подразделение</string>
     <string name="not_chosen_text">[Не выбрано]</string>
     <string name="incoming_number_text">Вх. номер</string>
@@ -96,6 +96,7 @@
     <string name="cell_text">Ячейка</string>
     <string name="total_text">Всего</string>
     <string name="selected_and_by_document_text">отобрано / в документе</string>
+<!--    <string name="not_scanned_yet">[Еще не отсканирована]</string>-->
     <string name="not_scanned_yet">[Еще не отсканирована]</string>
     <string name="employee_title">Работник</string>
     <string name="select_virtual_cell">Выберите виртуальную ячейку</string>
@@ -136,4 +137,11 @@
     <string name="by_gvzo_text">По ГВЗО</string>
     <string name="by_nomenclature_text">По номенклатуре</string>
     <string name="no_data">[Нет данных]</string>
+    <string name="used_logistics">Использовать логистику</string>
+    <string name="warehouse_uses_logistics">Склад использует логистику</string>
+    <string name="warehouse_not_specified">Не указан склад</string>
+    <string name="warehouse_is_not_set_open_settings">Склад не задан.\\nОткрыть настройки?</string>
+    <string name="current_cell_text">Текущая ячейка</string>
+    <string name="blank_cell">---</string>
+    <string name="enter_part_of_employee_name">Пожалуйста, введите часть ФИО сотрудника</string>
 </resources>

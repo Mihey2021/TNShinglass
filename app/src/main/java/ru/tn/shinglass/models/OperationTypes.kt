@@ -119,6 +119,7 @@ enum class SubOptionType(
     val description: String,
     val headerFields: Array<HeaderFields> = arrayOf(),
     val detailScanFields: Array<DetailScanFields> = arrayOf(),
+    val needLogisics: Boolean = false,
 ) {
     INVOICE_REQUIREMENT(
         0, "Требование накладная", "Создание документа Требование-накладная",
@@ -188,7 +189,8 @@ enum class SubOptionType(
             DetailScanFields.CELL,
             DetailScanFields.ITEM,
             DetailScanFields.COUNT,
-        )
+        ),
+        needLogisics = true,
     ),
     STANDARD_ACCEPTANCE(
         5, "Стандартная приемка", "Создание документа Приходный ордер на товары",
@@ -203,6 +205,7 @@ enum class SubOptionType(
             DetailScanFields.CELL,
             DetailScanFields.ITEM,
             DetailScanFields.COUNT,
+            DetailScanFields.SERIAL_NUMBER,
         )
     ),
     ACCEPTANCE_OF_KITS(
@@ -215,7 +218,8 @@ enum class SubOptionType(
             DetailScanFields.CELL,
             DetailScanFields.ITEM,
             DetailScanFields.COUNT,
-        )
+        ),
+        needLogisics = true,
     ),
     INVENTORY_IN_CELLS(
         7,
@@ -256,7 +260,8 @@ enum class SubOptionType(
             DetailScanFields.CELL,
             DetailScanFields.ITEM,
             DetailScanFields.COUNT,
-        )
+        ),
+        needLogisics = true,
     ),
 
     BETWEEN_CELLS(
@@ -272,7 +277,8 @@ enum class SubOptionType(
             DetailScanFields.CELL_RECEIVER,
             DetailScanFields.ITEM,
             DetailScanFields.COUNT,
-        )
+        ),
+        needLogisics = true,
     ),
 
     BETWEEN_WAREHOUSES(

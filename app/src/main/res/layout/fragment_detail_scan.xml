@@ -46,7 +46,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="16dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="4dp"
             android:layout_marginRight="16dp"
             android:text="@string/apply_text"
             app:icon="@drawable/ic_baseline_check_24" />
@@ -73,11 +73,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/division_title"
                 android:visibility="gone"
-                app:errorEnabled="true"
                 app:startIconDrawable="@drawable/ic_baseline_other_division_24"
                 tools:visibility="visible">
 
@@ -99,11 +98,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/warehouse_title"
                 android:visibility="gone"
-                app:errorEnabled="true"
                 app:startIconDrawable="@drawable/ic_baseline_warehouse_24"
                 tools:visibility="visible">
 
@@ -123,11 +121,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/physical_person_title"
                 android:visibility="gone"
-                app:errorEnabled="true"
                 app:startIconDrawable="@drawable/ic_baseline_account_circle_24"
                 tools:visibility="visible">
 
@@ -148,11 +145,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/cell_text"
                 android:visibility="gone"
-                app:errorEnabled="true"
                 tools:visibility="visible">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -173,11 +169,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/nomenclature_title"
                 android:visibility="gone"
-                app:errorEnabled="true"
                 tools:visibility="visible">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -197,11 +192,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/quantity_full_text"
                 android:visibility="gone"
-                app:errorEnabled="true"
                 tools:visibility="visible">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -217,18 +211,40 @@
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/serialNumberTextInputLayout"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginRight="8dp"
+                android:hint="@string/serial_number"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/serialNumberEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="true"
+                    android:imeOptions="actionDone"
+                    android:inputType="numberDecimal"
+                    android:maxLines="1"
+                    android:textStyle="bold" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/cellReceiverTextInputLayout"
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/header_cell_receiver"
                 android:visibility="gone"
                 app:endIconDrawable="@drawable/ic_baseline_clear_24"
                 app:endIconMode="clear_text"
-                app:errorEnabled="true"
                 tools:visibility="visible">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -249,11 +265,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/quality_text"
                 android:visibility="gone"
-                app:errorEnabled="true"
                 tools:visibility="visible">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -274,11 +289,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="8dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:layout_marginRight="8dp"
                 android:hint="@string/purpose_of_use_title"
                 android:visibility="gone"
-                app:errorEnabled="true"
                 tools:visibility="visible">
 
                 <com.google.android.material.textfield.TextInputEditText

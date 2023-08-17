@@ -17,12 +17,13 @@ data class WarehousesEntity(
     //@ColumnInfo(name = "division_guid")
     val divisionGuid: String,
     val responsibleGuid: String,
+    val usesLogistics: Boolean = false,
 ) {
 
     fun toDto() =
-        Warehouse(warehouseTitle = title, warehouseGuid = guid, warehouseDivisionGuid = divisionGuid, warehouseResponsibleGuid =  responsibleGuid)
+        Warehouse(warehouseTitle = title, warehouseGuid = guid, warehouseDivisionGuid = divisionGuid, warehouseResponsibleGuid =  responsibleGuid, usesLogistics = usesLogistics)
     fun toWarehouseReceiverDto() =
-        WarehouseReceiver(warehouseReceiverTitle = title, warehouseReceiverGuid = guid, warehouseReceiverDivisionGuid = divisionGuid, warehouseReceiverResponsibleGuid =  responsibleGuid)
+        WarehouseReceiver(warehouseReceiverTitle = title, warehouseReceiverGuid = guid, warehouseReceiverDivisionGuid = divisionGuid, warehouseReceiverResponsibleGuid =  responsibleGuid, warehouseReceiverUsesLogistics = usesLogistics)
 
     companion object {
         fun fromDto(dto: Warehouse) =
@@ -31,7 +32,8 @@ data class WarehousesEntity(
                 title = dto.warehouseTitle,
                 guid = dto.warehouseGuid,
                 divisionGuid = dto.warehouseDivisionGuid,
-                responsibleGuid = dto.warehouseResponsibleGuid
+                responsibleGuid = dto.warehouseResponsibleGuid,
+                usesLogistics = dto.usesLogistics,
             )
 
         fun fromWarehouseReceiverDto(dto: WarehouseReceiver) =
@@ -40,7 +42,8 @@ data class WarehousesEntity(
                 title = dto.warehouseReceiverTitle,
                 guid = dto.warehouseReceiverGuid,
                 divisionGuid = dto.warehouseReceiverDivisionGuid,
-                responsibleGuid = dto.warehouseReceiverResponsibleGuid
+                responsibleGuid = dto.warehouseReceiverResponsibleGuid,
+                usesLogistics = dto.warehouseReceiverUsesLogistics,
             )
 
     }

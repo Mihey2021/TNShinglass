@@ -10,9 +10,9 @@
         android:id="@+id/headerBarcode"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
         android:text="@string/barcode_text"
         android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
@@ -23,16 +23,29 @@
         android:id="@+id/barcodeTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginEnd="4dp"
         android:gravity="center_horizontal"
         android:textColor="@color/red_400"
         android:textSize="20sp"
-        android:textStyle="bold"
+        android:textStyle="normal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/headerBarcode"
         tools:text="NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN" />
+    <TextView
+        android:id="@+id/errorDetailText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        android:text=""
+        android:textSize="12sp"
+        android:gravity="center_horizontal"
+        app:layout_constraintTop_toBottomOf="@id/barcodeTextView"
+        android:textColor="@color/black"
+        android:visibility="gone"/>
 
     <androidx.constraintlayout.widget.Group
         android:id="@+id/detailGroup"
@@ -42,7 +55,7 @@
         app:constraint_referenced_ids="scrollDetail"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/barcodeTextView"
+        app:layout_constraintTop_toBottomOf="@id/errorDetailText"
         tools:visibility="visible" />
 
     <ScrollView
@@ -51,7 +64,7 @@
         android:layout_height="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/barcodeTextView"
+        app:layout_constraintTop_toBottomOf="@id/errorDetailText"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <LinearLayout
@@ -67,9 +80,9 @@
                 android:id="@+id/uniqueNumber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
                 android:text="@string/unique_number_id_text"
                 android:textColor="@color/black" />
 
@@ -77,20 +90,20 @@
                 android:id="@+id/uniqueNumberTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
                 android:textColor="@color/light_blue_900"
                 android:textSize="20sp"
-                android:textStyle="bold"
+                android:textStyle="normal"
                 tools:text="NNN" />
 
             <TextView
                 android:id="@+id/dateOfManufacture"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
                 android:text="@string/date_of_manufacture"
                 android:textColor="@color/black" />
 
@@ -98,20 +111,20 @@
                 android:id="@+id/dateOfManufactureTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
                 android:textColor="@color/light_blue_900"
                 android:textSize="20sp"
-                android:textStyle="bold"
+                android:textStyle="normal"
                 tools:text="NNNNNN" />
 
             <TextView
                 android:id="@+id/batchNumber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
                 android:text="@string/batch_number"
                 android:textColor="@color/black" />
 
@@ -119,20 +132,20 @@
                 android:id="@+id/batchNumberTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
                 android:textColor="@color/light_blue_900"
                 android:textSize="20sp"
-                android:textStyle="bold"
+                android:textStyle="normal"
                 tools:text="NNNNN" />
 
             <TextView
                 android:id="@+id/inBatchNumber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
                 android:text="@string/in_batch_number"
                 android:textColor="@color/black" />
 
@@ -140,20 +153,20 @@
                 android:id="@+id/inBatchNumberTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
                 android:textColor="@color/light_blue_900"
                 android:textSize="20sp"
-                android:textStyle="bold"
+                android:textStyle="normal"
                 tools:text="NNN" />
 
             <TextView
                 android:id="@+id/gsOneId"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
                 android:text="@string/gs1_company_id"
                 android:textColor="@color/black" />
 
@@ -161,20 +174,20 @@
                 android:id="@+id/gsOneIdTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
                 android:textColor="@color/light_blue_900"
                 android:textSize="20sp"
-                android:textStyle="bold"
+                android:textStyle="normal"
                 tools:text="NNNNN" />
 
             <TextView
                 android:id="@+id/serialNumber"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
                 android:text="@string/serial_number"
                 android:textColor="@color/black" />
 
@@ -182,20 +195,20 @@
                 android:id="@+id/serialNumberTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
                 android:textColor="@color/light_blue_900"
                 android:textSize="20sp"
-                android:textStyle="bold"
+                android:textStyle="normal"
                 tools:text="NNNNNNNNNNNNNNNNNNNNNNNNNN" />
 
             <TextView
                 android:id="@+id/expiryDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
                 android:text="@string/expiry_date"
                 android:textColor="@color/black" />
 
@@ -203,20 +216,20 @@
                 android:id="@+id/expiryDateTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
                 android:textColor="@color/light_blue_900"
                 android:textSize="20sp"
-                android:textStyle="bold"
+                android:textStyle="normal"
                 tools:text="NNNNNN" />
 
             <TextView
                 android:id="@+id/quantity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
                 android:text="@string/header_quantity"
                 android:textColor="@color/black" />
 
@@ -224,20 +237,20 @@
                 android:id="@+id/quantityTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
                 android:textColor="@color/light_blue_900"
                 android:textSize="20sp"
-                android:textStyle="bold"
+                android:textStyle="normal"
                 tools:text="NNNNNNN" />
 
             <TextView
                 android:id="@+id/measureOfUnit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
                 android:text="@string/measure_of_unit_title"
                 android:textColor="@color/black" />
 
@@ -245,20 +258,20 @@
                 android:id="@+id/measureOfUnitTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
                 android:textColor="@color/light_blue_900"
                 android:textSize="20sp"
-                android:textStyle="bold"
+                android:textStyle="normal"
                 tools:text="NNN" />
 
             <TextView
                 android:id="@+id/productCode"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
                 android:text="@string/product_code"
                 android:textColor="@color/black" />
 
@@ -266,12 +279,12 @@
                 android:id="@+id/productCodeTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
                 android:layout_marginBottom="16dp"
                 android:textColor="@color/light_blue_900"
                 android:textSize="20sp"
-                android:textStyle="bold"
+                android:textStyle="normal"
                 tools:text="NNNNNN" />
 
             <Button

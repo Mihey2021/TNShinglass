@@ -79,8 +79,8 @@
     <string name="delete_text">Delete</string>
     <string name="edit_record_text">Edit</string>
     <string name="document_init_dialog_title">Requisites</string>
-    <string name="info_table_scan_start_text">To get started,\nscan the cell</string>
-    <string name="info_table_scan_continue_text">To continue, scan the cell or item.\nCurrent cell:</string>
+    <string name="info_table_scan_start_text">To get started,\nscan the cell or item</string>
+    <string name="info_table_scan_continue_text">To continue, scan the cell or item.</string>
     <string name="division_list_description">Select division</string>
     <string name="not_chosen_text">[Not chosen]</string>
     <string name="incoming_number_text">In. number</string>
@@ -110,7 +110,9 @@
     <string name="cell_text">Cell</string>
     <string name="total_text">Total</string>
     <string name="selected_and_by_document_text">selected / in document</string>
+<!--    <string name="not_scanned_yet">[Not scanned yet]</string>-->
     <string name="not_scanned_yet">[Not scanned yet]</string>
+    <string name="blank_cell">---</string>
     <string name="select_virtual_cell">Select virtual cell</string>
     <string name="barcode_text">Barcode</string>
     <string name="unique_number_id_text">Unique number within a company ID</string>
@@ -147,4 +149,10 @@
     <string name="by_gvzo_text">By GVZO</string>
     <string name="by_nomenclature_text">By nomenclature</string>
     <string name="no_data">[No data]</string>
+    <string name="used_logistics">Used logistics</string>
+    <string name="warehouse_uses_logistics">Warehouse uses logistics</string>
+    <string name="warehouse_not_specified">Warehouse not specified</string>
+    <string name="warehouse_is_not_set_open_settings">Warehouse is not set. \nOpen settings?</string>
+    <string name="current_cell_text">Current cell</string>
+    <string name="enter_part_of_employee_name">Please enter a part of the employee\'s full name</string>
 </resources>

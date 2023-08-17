@@ -27,62 +27,63 @@ class BarcodeParsingTN : Fragment() {
             findNavController().navigateUp()
         }
 
-        BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) { dataScanPair ->
+        BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) { dataScanTriple ->
 
-            val dataScanBarcode = dataScanPair.first
-            val dataScanBarcodeType = dataScanPair.second
+            val dataScanBarcode = dataScanTriple.first
+            val dataScanBarcodeType = dataScanTriple.second
+            val tnBarcode = dataScanTriple.third
 
             if (dataScanBarcode == "") return@observe
 
             BarcodeScannerReceiver.clearData()
 
-            try {
-                with(binding) {
-                    val barcodeLength = dataScanBarcode.length
-                    headerBarcode.text =
-                        "${getString(R.string.length_text)}: ${barcodeLength}. ${getString(R.string.type_text)}: $dataScanBarcodeType"
 
-                    if (dataScanBarcode.length < 48) {
-                        binding.detailGroup.visibility = View.GONE
-                        binding.barcodeTextView.text =
-                            "$dataScanBarcode\n${getString(R.string.barcode_length_less_than_48_characters)}"
-                        return@observe
-                    } else {
-                        binding.detailGroup.visibility = View.VISIBLE
-                    }
+            with(binding) {
+                val barcodeLength = dataScanBarcode.length
+                headerBarcode.text =
+                    "${getString(R.string.length_text)}: ${barcodeLength}. ${getString(R.string.type_text)}: $dataScanBarcodeType"
 
-                    barcodeTextView.text = dataScanBarcode
-
-                    //Serial number barcode
-                    uniqueNumberTextView.text = dataScanBarcode.substring(0, 3)
-                    dateOfManufactureTextView.text = dataScanBarcode.substring(3, 9)
-                    batchNumberTextView.text = dataScanBarcode.substring(9, 14)
-                    inBatchNumberTextView.text = dataScanBarcode.substring(14, 17)
-                    gsOneIdTextView.text = dataScanBarcode.substring(17, 26)
-
-                    //Shipping unit barcode
-                    serialNumberTextView.text = dataScanBarcode.substring(0, 26)
-                    expiryDateTextView.text = dataScanBarcode.substring(26, 32)
-                    val quantityInBarcode = dataScanBarcode.substring(32, 39)
-                    try {
-                        val numberOfDigits = quantityInBarcode.substring(0, 1).toInt()
-                        var divider = 1
-                        for (i in 1..numberOfDigits) {
-                            divider *= 10
-                        }
-                        val quantityInBarcodeAsInt = quantityInBarcode.substring(1,quantityInBarcode.length).toFloat()
-                        quantityTextView.text = "$quantityInBarcode (${(quantityInBarcodeAsInt / divider)})"
-                    } catch (e:Exception) {
-                        quantityTextView.text = "<?>"
-                    }
-
-                    measureOfUnitTextView.text = dataScanBarcode.substring(39, 42)
-                    productCodeTextView.text = dataScanBarcode.substring(42, dataScanBarcode.length)
-
+                if (dataScanBarcode.length < 48) {
+                    binding.detailGroup.visibility = View.GONE
+                    binding.barcodeTextView.text =
+                        "$dataScanBarcode\n${getString(R.string.barcode_length_less_than_48_characters)}\n${tnBarcode.error}"
+                    return@observe
+                } else {
+                    binding.detailGroup.visibility = View.VISIBLE
                 }
-            } catch (e: Exception) {
-                binding.barcodeTextView.text =
-                    "${getString(R.string.err_barcode_format)}: ${e.message}"
+                barcodeTextView.text = dataScanBarcode
+
+                if (tnBarcode.error.isNotBlank()) {
+                    binding.errorDetailText.visibility = View.VISIBLE
+                    binding.errorDetailText.text =
+                        "${getString(R.string.err_barcode_format)}: ${tnBarcode.error}"
+                } else {
+                    binding.errorDetailText.visibility = View.GONE
+                }
+
+                //Serial number barcode
+                uniqueNumberTextView.text = tnBarcode.uniqueNumber
+                dateOfManufactureTextView.text = tnBarcode.dateOfManufacture
+                batchNumberTextView.text = tnBarcode.batchNumber
+                inBatchNumberTextView.text = tnBarcode.inBatchNumber
+                gsOneIdTextView.text = tnBarcode.gsOneId
+
+                //Shipping unit barcode
+                serialNumberTextView.text = tnBarcode.serialNumber
+                expiryDateTextView.text = tnBarcode.expiryDate
+
+                val quantity = tnBarcode.quantity
+                if (quantity != 0.0f) {
+                    quantityTextView.text =
+                        "${tnBarcode.quantityInBarcode} (${tnBarcode.quantity})"
+                } else {
+                    quantityTextView.text = "<?>"
+                }
+
+                measureOfUnitTextView.text = tnBarcode.measureOfUnit
+                productCodeTextView.text = tnBarcode.productCode
+
+
             }
         }
         return binding.root
