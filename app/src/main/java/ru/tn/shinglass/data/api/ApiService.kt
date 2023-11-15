@@ -63,6 +63,9 @@ interface ApiService {
     @GET("getDivisionsList")
     suspend fun getAllDivisionsList(): Response<List<Division>>
 
+    @GET("getPhysicalPersonFormUser")
+    suspend fun getPhysicalPersonFormUser(@Query("userGUID") userGUID: String = ""): Response<PhysicalPerson>
+
     @GET("getCounterpartiesList")
     suspend fun getCounterpartiesList(@Query("part_name_inn") searchParam: String = ""): Response<List<Counterparty>>
 
@@ -77,6 +80,9 @@ interface ApiService {
 
     @GET("getCellByGuid")
     suspend fun getCellByGuid(@Query("guid") cellGuid: String): Response<Cell>
+
+    @GET("getBarcodesByItem")
+    suspend fun getBarcodesByItem(@Query("guid") itemGuid: String): Response<List<Barcode>>
 
     @POST("createInventoryOfGoods")
     suspend fun createInventoryOfGoods(@Body scanRecords: DocumentToUploaded): Response<CreatedDocumentDetails>

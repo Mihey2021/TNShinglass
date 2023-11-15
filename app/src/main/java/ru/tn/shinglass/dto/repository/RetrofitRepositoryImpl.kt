@@ -160,6 +160,25 @@ class RetrofitRepositoryImpl : RetrofitRepository {
         }
     }
 
+    override suspend fun getPhysicalPersonFormUser(userGUID: String): PhysicalPerson {
+        try {
+            if (ApiUtils.getApiService() != null) {
+                val response =
+                    ApiUtils.getApiService()!!.getPhysicalPersonFormUser(userGUID = userGUID)
+                if (!response.isSuccessful) {
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+                }
+                return response.body() ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+            } else {
+                throw ApiServiceError("API service not ready")
+            }
+        } catch (e: IOException) {
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
+        }
+    }
+
     override suspend fun getCellsList(warehouseGuid: String, partNameCode: String): List<Cell> {
         try {
             if (ApiUtils.getApiService() != null) {
@@ -184,6 +203,25 @@ class RetrofitRepositoryImpl : RetrofitRepository {
             if (ApiUtils.getApiService() != null) {
                 val response =
                     ApiUtils.getApiService()!!.getCellByGuid(cellGuid)
+                if (!response.isSuccessful) {
+                    throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+                }
+                return response.body() ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+            } else {
+                throw ApiServiceError("API service not ready")
+            }
+        } catch (e: IOException) {
+            throw ApiServiceError(e.message.toString())
+        } catch (e: Exception) {
+            throw ApiServiceError(e.message.toString())
+        }
+    }
+
+    override suspend fun getBarcodesByItem(itemGuid: String): List<Barcode> {
+        try {
+            if (ApiUtils.getApiService() != null) {
+                val response =
+                    ApiUtils.getApiService()!!.getBarcodesByItem(itemGuid)
                 if (!response.isSuccessful) {
                     throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
                 }

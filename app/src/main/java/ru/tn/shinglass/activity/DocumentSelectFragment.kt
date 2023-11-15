@@ -16,13 +16,11 @@ import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.adapters.OnTableScanItemInteractionListener
 import ru.tn.shinglass.adapters.TableScanAdapter
+import ru.tn.shinglass.auth.AppAuth
 import ru.tn.shinglass.databinding.FragmentDocumentSelectBinding
 import ru.tn.shinglass.dto.models.DocumentHeaders
 import ru.tn.shinglass.dto.models.User1C
-import ru.tn.shinglass.models.DocType
-import ru.tn.shinglass.models.ExternalDocument
-import ru.tn.shinglass.models.Option
-import ru.tn.shinglass.models.TableScan
+import ru.tn.shinglass.models.*
 import ru.tn.shinglass.viewmodel.DocumentSelectFragmentViewModel
 import ru.tn.shinglass.viewmodel.TableScanFragmentViewModel
 import java.text.SimpleDateFormat
@@ -54,6 +52,11 @@ class DocumentSelectFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
+        AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) { authState ->
+            val authUser1C = authState.user1C
+            if (authUser1C.getUserGUID().isEmpty()) findNavController().navigate(R.id.authFragment)
+        }
 
         BarcodeScannerReceiver.setEnabled(false)
         selectedOption = arguments?.getSerializable("selectedOption") as Option
@@ -128,9 +131,10 @@ class DocumentSelectFragment : Fragment() {
                             )
                         documentItem.externalDocumentItems?.forEach { item ->
                             DocumentHeaders.setWarehouse(item.warehouse)
-                            val physicalPerson = viewModelTableScan.getPhysicalPersonByGuid(
-                                item.warehouse?.warehouseResponsibleGuid ?: ""
-                            )
+//                            val physicalPerson = viewModelTableScan.getPhysicalPersonByGuid(
+//                                item.warehouse?.warehouseResponsibleGuid ?: ""
+//                            )
+                            val physicalPerson: PhysicalPerson? = null
                             DocumentHeaders.setPhysicalPerson(physicalPerson)
                             val sdf = SimpleDateFormat("dd.MM.yyyy")
                             viewModelTableScan.saveRecord(

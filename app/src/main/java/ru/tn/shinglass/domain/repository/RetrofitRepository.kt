@@ -22,6 +22,8 @@ interface RetrofitRepository {
     suspend fun getItemByTitleOrCode(partNameCode: String): List<Nomenclature>
     suspend fun getGvzoByTitle(partNameCode: String): List<Gvzo>
     suspend fun getNomenclatureStocks(warehouseGuid: String, nomenclatureGuid: String = "", cellGuid: String = "", byCell: Boolean = false, gvzoGuid: String = ""): List<NomenclatureStocks>
+    suspend fun getPhysicalPersonFormUser(userGUID: String): PhysicalPerson
+    suspend fun getBarcodesByItem(itemGuid: String): List<Barcode>
     //fun createInventoryOfGoods(scanRecords: List<TableScan>, callback: Callback<CreatedDocumentDetails>)
     //fun getAllDivisionsList(callback: Callback<List<Division>>)
 

@@ -42,7 +42,7 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
     val virtualCellData: LiveData<Cell>
         get() = _virtualCellData
 
-    private val _cellListData: MutableLiveData<List<Cell>> = MutableLiveData(null)
+    private val _cellListData: MutableLiveData<List<Cell>> = MutableLiveData(listOf())
     val cellListData: LiveData<List<Cell>>
         get() = _cellListData
 
@@ -54,9 +54,20 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
     val itemListData: LiveData<List<Nomenclature>>
         get() = _itemListData
 
+    private val _physicalPerson: MutableLiveData<PhysicalPerson> = MutableLiveData(PhysicalPerson("", ""))
+    val physicalPerson: LiveData<PhysicalPerson>
+        get() = _physicalPerson
+
+    private val _barcodesData: MutableLiveData<List<Barcode>> = MutableLiveData(listOf())
+    val barcodesData: LiveData<List<Barcode>>
+        get() = _barcodesData
+
 //    private val _docCreated: MutableLiveData<CreatedDocumentDetails?> = MutableLiveData(null)
 //    val docCreated: LiveData<CreatedDocumentDetails?>
 //        get() = _docCreated
+
+    //private val _cellListData: MutableLiveData<List<Cell>> = MutableLiveData(null)
+
 
     private val _requestError: MutableLiveData<RequestError?> = MutableLiveData(null)
     val requestError: LiveData<RequestError?>
@@ -109,6 +120,25 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
 //        })
 //    }
 
+    fun getBarcodesByItem(itemGuid: String) {
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                _barcodesData.value = repository.getBarcodesByItem(itemGuid)
+                //_requestError.value = null
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                //_requestError.value = RequestError(e.message.toString(), "getCellByBarcode")
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getBarcodesByItem",
+                    additionalRequestProperties = listOf(AdditionalRequestOptions("itemGuid", itemGuid))
+                )
+            }
+        }
+    }
+
     fun getCellByBarcode(barcode: String, warehouseGuid: String) {
         viewModelScope.launch {
             try {
@@ -139,7 +169,7 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
                     error = true,
                     errorMessage = e.message.toString(),
                     requestName = "getCellsList",
-                    additionalRequestProperties = listOf(AdditionalRequestOptions("partNameCode", partNameCode))
+                    additionalRequestProperties = listOf(AdditionalRequestOptions("partNameCode", partNameCode), AdditionalRequestOptions("warehouseGuid", warehouseGuid))
                 )
             }
         }
@@ -231,6 +261,23 @@ class RetrofitViewModel(application: Application) : AndroidViewModel(application
                     errorMessage = e.message.toString(),
                     requestName = "getWarehousesListByGuid",
                     additionalRequestProperties = listOf(AdditionalRequestOptions("warehouseGuid", warehouseGuid))
+                )
+            }
+        }
+    }
+
+    fun getPhysicalPersonFormUser(userGUID: String) {
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                _physicalPerson.value = repository.getPhysicalPersonFormUser(userGUID = userGUID)
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "getPhysicalPersonFormUser",
+                    additionalRequestProperties = listOf(AdditionalRequestOptions("userGUID", userGUID))
                 )
             }
         }

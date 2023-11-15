@@ -8,7 +8,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Filter
+import androidx.viewbinding.ViewBinding
+import ru.tn.shinglass.R
 import ru.tn.shinglass.databinding.DynamicPrefsLayoutBinding
+import ru.tn.shinglass.databinding.DynamicPrefsLayoutChoiceBinding
 import ru.tn.shinglass.models.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -16,8 +19,16 @@ import kotlin.collections.ArrayList
 
 
 class DynamicListAdapter<T> : ArrayAdapter<T> {
-    constructor(context: Context, layout: Int) : super(context, layout)
-    constructor(context: Context, layout: Int, listData: List<T>, filterOff: Boolean = true) : super(
+    constructor(context: Context, layout: Int) : super(context, layout) {
+        this.layout = layout
+    }
+
+    constructor(
+        context: Context,
+        layout: Int,
+        listData: List<T>,
+        filterOff: Boolean = true
+    ) : super(
         context,
         layout,
         listData
@@ -25,6 +36,7 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
         listData.forEach { tempItems.add(it) }
         //this.layout = layout
         this.filterOff = filterOff
+        this.layout = layout
     }
 
     //private val listData: ArrayList<T> = arrayListOf<T>()
@@ -33,16 +45,19 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
     val tempItems: ArrayList<T> = arrayListOf()
     private val suggestions: ArrayList<T> = arrayListOf()
     private var filterOff: Boolean = true
+    private var layout: Int? = null
 
     //private fun getLayout() = this.layout
 
     @SuppressLint("SetTextI18n")
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val binding = DynamicPrefsLayoutBinding.inflate(
-            LayoutInflater.from(parent?.context ?: context),
-            parent,
-            false
-        )
+        val binding =
+                DynamicPrefsLayoutBinding.inflate(
+                    LayoutInflater.from(parent?.context ?: context),
+                    parent,
+                    false
+                )
+
 
 //        val view = convertView ?: LayoutInflater.from(parent?.context ?: context).inflate(
 //            getLayout(),
@@ -57,35 +72,41 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
 //            view.findViewById<TextView>(R.id.itemListDecriptionTextView)
 
         val item = getItem(position)
-
-       with(binding) {
-           itemListTextView?.setTextColor(Color.BLACK)
-           when (item) {
-               is Warehouse -> itemListTextView?.text = item.warehouseTitle
-               is WarehouseReceiver -> itemListTextView?.text = item.warehouseReceiverTitle
-               is Division -> itemListTextView?.text = item.divisionTitle
-               is PhysicalPerson -> itemListTextView?.text = item.physicalPersonFio
-               is Employee -> itemListTextView?.text = item.employeeFio
-               is Cell -> itemListTextView?.text = item.title
-               is Counterparty -> {
-                   itemListTextView?.text = item.title
-                   itemListDescriptionTextView.text = "ИНН: ${item.inn}. КПП: ${item.kpp}"
-               }
-               is Nomenclature -> {
-                   itemListTextView?.text = item.itemTitle
-                   itemListDescriptionTextView.text = "Код: ${item.code}."
-               }
-               is Gvzo -> {
-                   itemListTextView?.text = item.title
-                   itemListDescriptionTextView.text = "Код: ${item.code}."
-               }
-               is ExternalDocument -> {
-                   itemListTextView?.text = "${item.externalOrderDocumentTitle} ${item.externalOrderNumber}"
-                   itemListDescriptionTextView.text = "Дата документа: ${if(item.externalOrderDate == 0L) "<нет>" else sdf.format(item.externalOrderDate)}"
-               }
-               else -> itemListTextView?.text = ""
-           }
-       }
+        with(binding) {
+            itemListTextView?.setTextColor(Color.BLACK)
+            when (item) {
+                is Warehouse -> itemListTextView?.text = item.warehouseTitle
+                is WarehouseReceiver -> itemListTextView?.text = item.warehouseReceiverTitle
+                is Division -> itemListTextView?.text = item.divisionTitle
+                is PhysicalPerson -> itemListTextView?.text = item.physicalPersonFio
+                is Employee -> itemListTextView?.text = item.employeeFio
+                is Cell -> itemListTextView?.text = item.title
+                is Counterparty -> {
+                    itemListTextView?.text = item.title
+                    itemListDescriptionTextView.text = "ИНН: ${item.inn}. КПП: ${item.kpp}"
+                }
+                is Nomenclature -> {
+                    itemListTextView?.text = item.itemTitle
+                    itemListDescriptionTextView.text = "Код: ${item.code}."
+                }
+                is Gvzo -> {
+                    itemListTextView?.text = item.title
+                    itemListDescriptionTextView.text = "Код: ${item.code}."
+                }
+                is ExternalDocument -> {
+                    itemListTextView?.text =
+                        "${item.externalOrderDocumentTitle} ${item.externalOrderNumber}"
+                    itemListDescriptionTextView.text = "Дата документа: ${
+                        if (item.externalOrderDate == 0L) "<нет>" else sdf.format(item.externalOrderDate)
+                    }"
+                }
+                is Barcode -> {
+                    itemListTextView.text = item.unitOfMeasurementTitle
+                    itemListDescriptionTextView.text = "Штрихкод: ${item.barcode} [${item.type}]"
+                }
+                else -> itemListTextView?.text = ""
+            }
+        }
 
         return binding.root
         //return view
@@ -94,8 +115,8 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
     override fun getFilter(): Filter {
         return object : Filter() {
             override fun performFiltering(constraint: CharSequence?): FilterResults {
-                return if (constraint != null && !filterOff){
-                //return if (constraint != null) {
+                return if (constraint != null && !filterOff) {
+                    //return if (constraint != null) {
                     suggestions.clear()
                     for (item in tempItems) {
                         if (item is PhysicalPerson) {
@@ -126,6 +147,9 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
                             suggestions.add(item)
                         }
                         if (item is Gvzo) {
+                            suggestions.add(item)
+                        }
+                        if (item is Barcode) {
                             suggestions.add(item)
                         }
                     }
@@ -166,9 +190,13 @@ class DynamicListAdapter<T> : ArrayAdapter<T> {
                     return resultValue.itemTitle
                 if (resultValue is Gvzo)
                     return resultValue.title
+                if (resultValue is Barcode)
+                    return resultValue.unitOfMeasurementTitle
                 return if (resultValue is ExternalDocument)
                     "${resultValue.externalOrderDocumentTitle} ${resultValue.externalOrderNumber} " +
-                            if(resultValue.externalOrderDate == 0L) "" else " от" + sdf.format(resultValue.externalOrderDate)
+                            if (resultValue.externalOrderDate == 0L) "" else " от" + sdf.format(
+                                resultValue.externalOrderDate
+                            )
                 else (resultValue as Counterparty).title
             }
         }

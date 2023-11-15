@@ -100,5 +100,25 @@
             app:argType="ru.tn.shinglass.models.TableScan[]" />
     </dialog>
     <action android:id="@+id/action_global_headersDialogFragment" app:destination="@id/headersDialogFragment" />
+    <fragment
+        android:id="@+id/barcodePrintFragment"
+        android:name="ru.tn.shinglass.activity.BarcodePrintFragment"
+        android:label="fragment_barcode_print"
+        tools:layout="@layout/fragment_barcode_print" >
+        <argument
+            android:name="cellArg"
+            app:argType="ru.tn.shinglass.models.Cell"
+            app:nullable="true"
+            android:defaultValue="@null" />
+        <argument
+            android:name="nomenclatureArg"
+            app:argType="ru.tn.shinglass.models.Nomenclature"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment><action android:id="@+id/action_global_barcodePrintFragment" app:destination="@id/barcodePrintFragment"/>
+    <fragment
+        android:id="@+id/printerSettingsFragment"
+        android:name="ru.tn.shinglass.activity.PrinterSettingsFragment"
+        android:label="PrinterSettingsFragment" /><action android:id="@+id/action_global_printerSettingsFragment" app:destination="@id/printerSettingsFragment"/>
 
 </navigation>

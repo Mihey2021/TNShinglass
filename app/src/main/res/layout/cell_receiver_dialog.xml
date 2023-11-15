@@ -21,18 +21,22 @@
         android:layout_marginTop="8dp"
         android:layout_marginRight="8dp"
         android:hint="@string/header_cell_receiver"
+        app:endIconContentDescription="@string/cell_text"
+        app:endIconDrawable="@drawable/ic_baseline_search_24"
+        app:endIconMode="custom"
         android:visibility="visible"
         app:errorEnabled="true"
         tools:visibility="visible">
 
-        <com.google.android.material.textfield.TextInputEditText
+        <AutoCompleteTextView
             android:id="@+id/cellReceiverTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:editable="false"
+            android:paddingLeft="16dp"
             android:enabled="true"
+            android:ellipsize="end"
             android:imeOptions="actionDone"
-            android:inputType="none"
+            android:inputType="text"
             android:maxLines="1"
             android:textStyle="bold" />
     </com.google.android.material.textfield.TextInputLayout>

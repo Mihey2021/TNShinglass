@@ -10,7 +10,7 @@ import ru.tn.shinglass.entity.OptionsEntity
 
 @Dao
 interface DivisionsDao {
-    @Query("SELECT * FROM DivisionsEntity")
+    @Query("SELECT * FROM DivisionsEntity ORDER BY title")
     fun getAllDivisions(): LiveData<List<DivisionsEntity>>
 
     @Query("SELECT * FROM DivisionsEntity WHERE guid = :guid")

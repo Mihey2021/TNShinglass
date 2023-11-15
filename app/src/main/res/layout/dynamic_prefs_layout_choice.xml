@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <RadioGroup
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent">
+
+        <RadioButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="0"
+            android:gravity="center"/>
+    </RadioGroup>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/itemListTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin4"
+            android:layout_marginTop="@dimen/margin12"
+            android:layout_marginEnd="@dimen/margin4"
+            android:textSize="16sp"
+            tools:text="Элемент списка" />
+
+        <TextView
+            android:id="@+id/itemListDescriptionTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin4"
+            android:layout_marginEnd="@dimen/margin4"
+            android:textSize="12sp"
+            tools:text="Элемент списка" />
+    </LinearLayout>
+<!--    <CheckedTextView-->
+<!--        android:id="@android:id/text1"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:minHeight="?android:attr/listPreferredItemHeight"-->
+<!--        android:textAppearance="?android:attr/textAppearanceListItemSmall"-->
+<!--        android:textColor="?android:attr/textColorAlertDialogListItem"-->
+<!--        android:gravity="center_vertical"-->
+<!--        android:paddingStart="16dip"-->
+<!--        android:paddingEnd="7dip"-->
+<!--        android:ellipsize="marquee"-->
+<!--        android:text="dsfdgfg"-->
+<!--        android:checkMark="?android:listChoiceIndicatorSingle"/>-->
+</LinearLayout>

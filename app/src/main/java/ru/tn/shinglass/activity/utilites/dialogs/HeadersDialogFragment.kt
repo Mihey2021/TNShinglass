@@ -22,6 +22,7 @@ import ru.tn.shinglass.dto.models.DocumentHeaders
 import ru.tn.shinglass.dto.models.HeaderFields
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.models.*
+import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
 import ru.tn.shinglass.viewmodel.TableScanFragmentViewModel
 import java.text.SimpleDateFormat
@@ -31,6 +32,7 @@ class HeadersDialogFragment : DialogFragment() {
 
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val viewModel: TableScanFragmentViewModel by viewModels()
+    private val retrofitViewModel: RetrofitViewModel by viewModels()
 
     private val dataListWarehouses: ArrayList<Warehouse> = arrayListOf()
     private val dataListWarehousesReceiver: ArrayList<WarehouseReceiver> = arrayListOf()
@@ -278,6 +280,46 @@ class HeadersDialogFragment : DialogFragment() {
             }
         }
 
+        retrofitViewModel.physicalPerson.observe(viewLifecycleOwner) {
+            //if (it.physicalPersonGuid.isEmpty()) return@observe
+            if (DocumentHeaders.getPhysicalPerson()?.physicalPersonGuid?.isEmpty() == false) return@observe
+            fillResponsible(
+                it.physicalPersonGuid,
+                dlgBinding.physicalPersonTextView
+            )
+        }
+
+        retrofitViewModel.dataState.observe(viewLifecycleOwner) {
+            if (it.loading) {
+                if (DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.isShowing == false || DialogScreen.getDialog(
+                        DialogScreen.IDD_PROGRESS
+                    ) == null
+                )
+                    DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+            } else {
+                DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+            }
+
+            if (it.error) {
+                DialogScreen.showDialog(
+                    requireContext(),
+                    DialogScreen.IDD_ERROR,
+                    it.errorMessage,
+                    onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                        override fun onPositiveClickButton() {
+                            when (it.requestName) {
+                                "getPhysicalPersonFormUser" -> {
+                                    val requestParam = it.additionalRequestProperties.firstOrNull()
+                                    if (requestParam?.propertyName == "userGUID")
+                                        retrofitViewModel.getPhysicalPersonFormUser(userGUID = requestParam.propertyValue)
+                                }
+                            }
+                        }
+                    }
+                )
+            }
+        }
+
 //
 //
 //        var dialogHeadersNeedOpen = checkHeadersDataFail()
@@ -510,10 +552,15 @@ class HeadersDialogFragment : DialogFragment() {
                         DocumentHeaders.setWarehouse(warehouseItem)
                     }
                     //if (physicalPersonTextView.text.isNullOrBlank()) {
-                    fillResponsible(
-                        DocumentHeaders.getWarehouse()?.warehouseResponsibleGuid ?: "",
-                        dlgBinding.physicalPersonTextView
-                    )
+                    //Если Смета (ТОиР), установим МОЛ авторизовавшегося пользователя, а не МОЛ склада из настроек
+                    if (args.selectedOption.subOption == SubOptionType.TOIR_REPAIR_ESTIMATE) {
+                        retrofitViewModel.getPhysicalPersonFormUser(args.user1C.getUserGUID())
+                    } else {
+                        fillResponsible(
+                            DocumentHeaders.getWarehouse()?.warehouseResponsibleGuid ?: "",
+                            dlgBinding.physicalPersonTextView
+                        )
+                    }
                     //}
                     warehouseTextView.setText(warehouseItem.warehouseTitle)
                     warehouseTextInputLayout.error = null
@@ -596,10 +643,16 @@ class HeadersDialogFragment : DialogFragment() {
                     ru.tn.shinglass.activity.utilites.AndroidUtils.hideKeyboard(dlgBinding.root)
                 }
 
-                fillResponsible(
-                    DocumentHeaders.getWarehouse()?.warehouseResponsibleGuid ?: "",
-                    dlgBinding.physicalPersonTextView
-                )
+                if (args.selectedOption.subOption == SubOptionType.TOIR_REPAIR_ESTIMATE) {
+                    retrofitViewModel.getPhysicalPersonFormUser(args.user1C.getUserGUID())
+                } else {
+                    if (DocumentHeaders.getPhysicalPerson()?.physicalPersonGuid?.isEmpty() != false) {
+                        fillResponsible(
+                            DocumentHeaders.getWarehouse()?.warehouseResponsibleGuid ?: "",
+                            dlgBinding.physicalPersonTextView
+                        )
+                    }
+                }
             } else {
                 physicalPersonTextInputLayout.isVisible = false
             }

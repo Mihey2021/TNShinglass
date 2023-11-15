@@ -134,7 +134,7 @@ class DesktopFragment : Fragment(), OnBackPressedListener {
             onDialogsInteractionListener = object : OnDialogsInteractionListener {
                 override fun onPositiveClickButton() {
                     //exitProcess(0)
-                    //BarcodeScannerReceiver.setEnabled()
+                    AppAuth.getInstance().clearAuthData()
                     findNavController().navigateUp()
                 }
 

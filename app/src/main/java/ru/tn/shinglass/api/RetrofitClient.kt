@@ -18,15 +18,25 @@ object RetrofitClient {
 
         if (retrofit == null && basicPreferences != null) {
             initializeBasicPrefs(basicPreferences)
+            //debug
             var mUrl = basicPreferences.getString(
                 Settings.URL_SETTINGS.value,
                 "https://10.16.62.7/zil-test/hs/wos/"
             ).toString()
+//            //release
+//            var mUrl = basicPreferences.getString(
+//                Settings.URL_SETTINGS.value,
+//                "https://10.16.62.7/tehnoizolCobot/hs/wos/"
+//            ).toString()
             if (!mUrl[mUrl.length - 1].equals('/', true)) mUrl += "/"
             val serviceUserName =
                 basicPreferences.getString(Settings.USER_NAME_SETTINGS.value, "obmen").toString()
+            //debug
             val serviceUserPassword =
                 basicPreferences.getString(Settings.USER_PASSWORD_SETTINGS.value, "123").toString()
+//            //release
+//            val serviceUserPassword =
+//                basicPreferences.getString(Settings.USER_PASSWORD_SETTINGS.value, "j,vty").toString()
 
             val okHttpClient = createSocketFactory(serviceUserName, serviceUserPassword)
 
@@ -46,18 +56,28 @@ object RetrofitClient {
             val editor = edit()
             if (!contains(Settings.URL_SETTINGS.value)) {
                 editingSharedPrefs = true
+                //debug
                 editor.putString(
                     Settings.URL_SETTINGS.value,
                     "https://10.16.62.7/zil-test/hs/wos/"
                 )
+//                //release
+//                editor.putString(
+//                    Settings.URL_SETTINGS.value,
+//                    "https://10.16.62.7/tehnoizolCobot/hs/wos/"
+//                )
             }
             if (!contains(Settings.USER_NAME_SETTINGS.value)) {
                 editingSharedPrefs = true
                 editor.putString(Settings.USER_NAME_SETTINGS.value, "obmen")
             }
             if (!contains(Settings.USER_PASSWORD_SETTINGS.value)) {
+                //debug
                 editingSharedPrefs = true
                 editor.putString(Settings.USER_PASSWORD_SETTINGS.value, "123")
+//                //release
+//                editingSharedPrefs = true
+//                editor.putString(Settings.USER_PASSWORD_SETTINGS.value, "j,vty")
             }
             if (editingSharedPrefs) editor.apply()
         }

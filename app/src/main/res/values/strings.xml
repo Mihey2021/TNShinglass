@@ -110,7 +110,7 @@
     <string name="cell_text">Cell</string>
     <string name="total_text">Total</string>
     <string name="selected_and_by_document_text">selected / in document</string>
-<!--    <string name="not_scanned_yet">[Not scanned yet]</string>-->
+    <!--    <string name="not_scanned_yet">[Not scanned yet]</string>-->
     <string name="not_scanned_yet">[Not scanned yet]</string>
     <string name="blank_cell">---</string>
     <string name="select_virtual_cell">Select virtual cell</string>
@@ -155,4 +155,45 @@
     <string name="warehouse_is_not_set_open_settings">Warehouse is not set. \nOpen settings?</string>
     <string name="current_cell_text">Current cell</string>
     <string name="enter_part_of_employee_name">Please enter a part of the employee\'s full name</string>
+    <string name="scan_the_cell">Scan the cell!</string>
+    <string name="print_text">Print</string>
+    <string name="print_barcode_text">Print barcode</string>
+    <string name="ean13_text">EAN13</string>
+    <string name="qr_text">QR</string>
+    <string name="code128_text">CODE 128</string>
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="printer_settings">Printer settings</string>
+    <string name="applicaton_settings">Application settings</string>
+    <string name="use_system_printer">Use system printer</string>
+    <string name="use_android_print_service">Use Android Print Service</string>
+    <string name="set_printer_settings_manually">Set Printer Settings Manually</string>
+    <string name="manual_setting">Manual setting</string>
+    <string name="tsc_family_printer">TSC Family Printer</string>
+    <string name="printer_model">Printer model</string>
+    <string name="another">Another</string>
+    <string name="automatic_or_manual">Automatic/Manual</string>
+    <string name="label_width_mm">Label width, mm</string>
+    <string name="label_height_mm">Label height, mm</string>
+    <string name="printing_in_process">Printing in process</string>
+    <string name="value_text">Value</string>
+    <string name="printer_ip_address">IP address</string>
+    <string name="type_of_printer_is_not_supported_yet">This type of printer is not supported yet</string>
+    <string name="document_is_closed_in_1C">The document is closed in 1C, sending data is impossible!</string>
+    <string name="document_has_been_updated">The document has been updated</string>
+    <string name="undefined_value">&lt;?&gt;</string>
+    <string name="print_cell_barcode">Print cell barcode</string>
+    <string name="print_item_barcode">Print item barcode</string>
 </resources>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        app:icon="@drawable/ic_baseline_print_black_24"
+        app:title="@string/printer_settings">
+
+        <SwitchPreferenceCompat
+            android:summaryOff="@string/use_android_print_service"
+            android:summaryOn="@string/set_printer_settings_manually"
+            app:key="useManualSettings"
+            app:title="@string/automatic_or_manual" />
+        <PreferenceCategory
+            android:key="manualPreferenceCategory"
+            app:dependency="useManualSettings"
+            app:icon="@drawable/ic_baseline_app_settings_24"
+            app:title="@string/manual_setting">
+            <ListPreference
+                app:defaultValue="TSC"
+                app:entries="@array/printer_models"
+                app:entryValues="@array/printer_models_values"
+                app:key="printerModel"
+                app:title="@string/printer_model"
+                app:useSimpleSummaryProvider="true" />
+            <EditTextPreference
+                android:id="@+id/printerIP"
+                android:title="@string/printer_ip_address"
+                app:defaultValue=""
+                app:key="printerIP"
+                app:useSimpleSummaryProvider="true"
+                android:dialogLayout="@layout/printer_ip_input"/>
+            <SeekBarPreference
+                android:id="@+id/paperWidthSeekBar"
+                app:key="paperWidth"
+                android:title="@string/label_width_mm"
+                android:defaultValue="10"
+                android:max="420"
+                app:min="10"
+                app:showSeekBarValue="true"/>
+            <SeekBarPreference
+                android:id="@+id/paperHeightSeekBar"
+                android:title="@string/label_height_mm"
+                app:key="paperHeight"
+                android:defaultValue="10"
+                android:max="297"
+                app:min="10"
+                app:showSeekBarValue="true"/>
+        </PreferenceCategory>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

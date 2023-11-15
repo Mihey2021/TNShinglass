@@ -41,6 +41,7 @@ import ru.tn.shinglass.dto.models.DocumentHeaders
 import ru.tn.shinglass.dto.models.HeaderFields
 import ru.tn.shinglass.dto.models.User1C
 import ru.tn.shinglass.models.*
+import ru.tn.shinglass.viewmodel.DocumentSelectFragmentViewModel
 import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
 import ru.tn.shinglass.viewmodel.TableScanFragmentViewModel
@@ -55,6 +56,7 @@ class TableScanFragment : Fragment() {
     private val viewModel: TableScanFragmentViewModel by viewModels()
     private val retrofitViewModel: RetrofitViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
+    private val externalDocumentViewModel: DocumentSelectFragmentViewModel by viewModels()
 
     private lateinit var selectedOption: Option
     private lateinit var user1C: User1C
@@ -72,6 +74,10 @@ class TableScanFragment : Fragment() {
     private var refreshing: Boolean = false
 
     private var usedLogistics: Boolean = false
+
+    private var documentBlocked: Boolean = false
+    private var sendDocumentCommand: Boolean = false
+    private var documentCheckedProgress: Boolean = false
 
     @SuppressLint("SimpleDateFormat", "SetTextI18n", "ClickableViewAccessibility")
     override fun onCreateView(
@@ -252,6 +258,10 @@ class TableScanFragment : Fragment() {
 //        }
 
         binding.completeAndSendBtn.setOnTouchListener { _, motionEvent ->
+            if (documentBlocked) {
+                showDocumentBlockedErrorDialog()
+                return@setOnTouchListener false
+            }
             when (motionEvent.action) {
                 MotionEvent.ACTION_DOWN -> {
                     if (selectedOption.docType == DocType.DISPOSABLE_PPE) {
@@ -320,6 +330,7 @@ class TableScanFragment : Fragment() {
             if (it == null) return@observe
             //progressDialog?.dismiss()
             //Toast.makeText(requireContext(),"Документ отправлен!", Toast.LENGTH_LONG).show()
+            sendDocumentCommand = false
             currentDialog?.dismiss()
             //currentDialog =
             BarcodeScannerReceiver.setEnabled(false)
@@ -345,9 +356,9 @@ class TableScanFragment : Fragment() {
             //if (selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE) {
             if (isExternalDocument && (selectedOption.docType != DocType.TOIR_REPAIR_ESTIMATE)) {
                 binding.completeAndSendBtn.isEnabled =
-                    checkScanTableForExternalDocument(it) && itemList.isNotEmpty()
+                    checkScanTableForExternalDocument(it) && itemList.isNotEmpty() && !documentBlocked
             } else {
-                binding.completeAndSendBtn.isEnabled = it.isNotEmpty()
+                binding.completeAndSendBtn.isEnabled = it.isNotEmpty() && !documentBlocked
                 if (it.isEmpty()) {
                     if (checkHeadersDataFail() && selectedOption.docType == DocType.DISPOSABLE_PPE) {
                         DocumentHeaders.setDivision(null)
@@ -615,7 +626,61 @@ class TableScanFragment : Fragment() {
             }
         }
 
+        externalDocumentViewModel.externalDocumentList.observe(viewLifecycleOwner) {
+            if (it == null) return@observe
+            if (itemList.isNotEmpty()) {
+                documentBlocked =
+                    !it.any { externalDocument -> externalDocument.externalOrderDocumentGuid == itemList[0].docGuid }
+            } else {
+                documentBlocked = false
+            }
+
+            binding.completeAndSendBtn.isEnabled = !documentBlocked
+
+            DialogScreen.getDialog(DialogScreen.IDD_ERROR)?.dismiss()
+
+            if (documentBlocked) {
+                binding.externalDocumentTextView.setTextColor(requireContext().getColor(R.color.red_900))
+                val oldText = binding.externalDocumentTextView.text
+                binding.externalDocumentTextView.text = "$oldText - Закрыт в 1С!"
+                showDocumentBlockedErrorDialog()
+            } else {
+                binding.externalDocumentTextView.setTextColor(requireContext().getColor(R.color.light_blue))
+                if (sendDocumentCommand) {
+                    createDocumentIn1C(needCheckedDocument = false)
+                }
+            }
+
+        }
+
+        externalDocumentViewModel.dataState.observe(viewLifecycleOwner) {
+            if (it.loading) {
+                documentCheckedProgress = true
+                if (DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.isShowing == false || DialogScreen.getDialog(
+                        DialogScreen.IDD_PROGRESS
+                    ) == null
+                )
+                    DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
+            } else {
+                DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
+                documentCheckedProgress = false
+            }
+        }
+
         return binding.root
+    }
+
+    private fun showDocumentBlockedErrorDialog() {
+        if (documentBlocked) {
+            DialogScreen.showDialog(
+                requireContext(),
+                DialogScreen.IDD_ERROR_SINGLE_BUTTON,
+                title = getString(R.string.document_has_been_updated),
+                message = getString(R.string.document_is_closed_in_1C),
+                isCancelable = false,
+                positiveButtonTitle = getString(R.string.ok_text)
+            )
+        }
     }
 
     private fun thisOnePositionAndEmpty(itemList: List<TableScan>): Boolean {
@@ -678,6 +743,7 @@ class TableScanFragment : Fragment() {
         args.putSerializable("userData", user1C)
         args.putSerializable("selectedOption", selectedOption)
         args.putString("itemBarCode", "")
+        //args.putString("warehouseGuid", DocumentHeaders.getWarehouse()?.warehouseGuid ?: "")
         args.putSerializable("editRecord", item)
         findNavController().navigate(
             R.id.action_tableScanFragment_to_detailScanFragment,
@@ -715,7 +781,12 @@ class TableScanFragment : Fragment() {
 
     }
 
-    private fun createDocumentIn1C() {
+    private fun createDocumentIn1C(needCheckedDocument: Boolean = true) {
+        if (needCheckedDocument) {
+            sendDocumentCommand = true
+            checkDocumentValidity()
+            return
+        }
         currentDialog?.dismiss()
         currentDialog = DialogScreen.showDialog(requireContext(), DialogScreen.IDD_PROGRESS)
         viewModel.createDocumentIn1C(
@@ -724,6 +795,27 @@ class TableScanFragment : Fragment() {
             settingsViewModel.getPreferenceByKey<String>("virtual_cell_guid", "") ?: ""
         )
     }
+
+    private fun checkDocumentValidity() {
+        if (!isExternalDocument) {
+            documentBlocked = false
+            if (sendDocumentCommand) createDocumentIn1C(needCheckedDocument = false)
+            return
+        }
+        when (selectedOption.docType) {
+            DocType.TOIR_REQUIREMENT_INVOICE -> {
+                externalDocumentViewModel.getInternalOrderList()
+            }
+            DocType.TOIR_REPAIR_ESTIMATE -> {
+                externalDocumentViewModel.getRepairEstimate()
+            }
+            else -> {
+                documentBlocked = false
+                if (sendDocumentCommand) createDocumentIn1C(needCheckedDocument = false)
+            }
+        }
+    }
+
 
     @SuppressLint("SimpleDateFormat")
     private fun getDocumentHeadersDialog(
@@ -862,6 +954,7 @@ class TableScanFragment : Fragment() {
             if (checkHeadersDataFail() && (dlgHeadersAndOther?.isShowing == false))
                 getDocumentHeadersDialog()
         }
+        checkDocumentValidity()
         super.onResume()
     }
 

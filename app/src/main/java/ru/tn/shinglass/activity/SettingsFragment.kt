@@ -5,15 +5,11 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
-import android.widget.CheckBox
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.preference.CheckBoxPreference
-import androidx.preference.EditTextPreference
-import androidx.preference.ListPreference
-import androidx.preference.PreferenceCategory
-import androidx.preference.PreferenceFragmentCompat
+import androidx.preference.*
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
@@ -37,8 +33,10 @@ class SettingsFragment : PreferenceFragmentCompat() {
     private val settingsViewModel: SettingsViewModel by viewModels()
     private val retrofitViewModel: RetrofitViewModel by viewModels()
 
+
     @SuppressLint("UseCompatLoadingForDrawables")
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+
         setPreferencesFromResource(R.xml.root_preferences, rootKey)
 
         val serviceUserPassword = findPreference<EditTextPreference>("serviceUserPassword")
@@ -258,7 +256,15 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        //Фон экрана настроек
+        val backgroundIcon = ContextCompat.getDrawable(requireActivity(), R.drawable.ic_tn)
+        //backgroundIcon?.setTint(requireContext().getColor(R.color.red_400))
+        backgroundIcon?.alpha = 20
+        if (backgroundIcon != null) {
+            requireView().background = backgroundIcon
+        } else {
+            requireView().setBackgroundResource(R.color.red_100)
+        }
         val warehouseListPreference =
             preferenceManager.preferenceScreen.findPreference<ListPreference>("warehouse_guid") as ExtendListPreference<Warehouse>
 
@@ -418,6 +424,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     override fun onDestroyView() {
         DialogScreen.getDialog(DialogScreen.IDD_PROGRESS)?.dismiss()
         DialogScreen.getDialog()?.dismiss()
+        ContextCompat.getDrawable(requireActivity(), R.drawable.ic_tn)?.alpha = 100
         super.onDestroyView()
     }
 

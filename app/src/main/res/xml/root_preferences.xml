@@ -25,37 +25,67 @@
             app:useSimpleSummaryProvider="false" />
 
     </PreferenceCategory>
+<!--    <PreferenceCategory app:title="@string/messages_header">-->
 
-<!--    <PreferenceCategory app:title="@string/documents_settings_title">-->
-<!--        <ru.tn.shinglass.adapters.extendsPreferences.ExtendListPreference-->
-<!--            android:key="warehouse_list"-->
-<!--            android:summary="@string/warehouse_list_description"-->
-<!--            android:title="@string/warehouse_title" />-->
-<!--    </PreferenceCategory>-->
-
-<!--    <PreferenceCategory app:title="@string/additional_settings_title">-->
-
-<!--        <ListPreference-->
-<!--            android:dialogIcon="@drawable/ic_baseline_volume_mute_24"-->
-<!--            android:icon="@drawable/ic_baseline_volume_mute_24"-->
-<!--            app:defaultValue="nothing"-->
-<!--            app:entries="@array/response_when_scanning"-->
-<!--            app:entryValues="@array/response_when_scanning_values"-->
-<!--            app:key="response_when_scanning"-->
-<!--            app:title="@string/response_scanning_title"-->
+<!--        <EditTextPreference-->
+<!--            app:key="signature"-->
+<!--            app:title="@string/signature_title"-->
 <!--            app:useSimpleSummaryProvider="true" />-->
 
-<!--        &lt;!&ndash;        <SwitchPreferenceCompat&ndash;&gt;-->
-<!--        &lt;!&ndash;            app:key="sync"&ndash;&gt;-->
-<!--        &lt;!&ndash;            app:title="@string/sync_title" />&ndash;&gt;-->
-
-<!--        &lt;!&ndash;        <SwitchPreferenceCompat&ndash;&gt;-->
-<!--        &lt;!&ndash;            app:dependency="sync"&ndash;&gt;-->
-<!--        &lt;!&ndash;            app:key="attachment"&ndash;&gt;-->
-<!--        &lt;!&ndash;            app:summaryOff="@string/attachment_summary_off"&ndash;&gt;-->
-<!--        &lt;!&ndash;            app:summaryOn="@string/attachment_summary_on"&ndash;&gt;-->
-<!--        &lt;!&ndash;            app:title="@string/attachment_title" />&ndash;&gt;-->
+<!--        <ListPreference-->
+<!--            app:defaultValue="reply"-->
+<!--            app:entries="@array/reply_entries"-->
+<!--            app:entryValues="@array/reply_values"-->
+<!--            app:key="reply"-->
+<!--            app:title="@string/reply_title"-->
+<!--            app:useSimpleSummaryProvider="true" />-->
 
 <!--    </PreferenceCategory>-->
+<!--    <PreferenceCategory app:title="@string/sync_header">-->
+
+<!--        <SwitchPreferenceCompat-->
+<!--            app:key="sync"-->
+<!--            app:title="@string/sync_title" />-->
+
+<!--        <SwitchPreferenceCompat-->
+<!--            app:dependency="sync"-->
+<!--            app:key="attachment"-->
+<!--            app:summaryOff="@string/attachment_summary_off"-->
+<!--            app:summaryOn="@string/attachment_summary_on"-->
+<!--            app:title="@string/attachment_title" />-->
+
+<!--    </PreferenceCategory>-->
+
+    <!--    <PreferenceCategory app:title="@string/documents_settings_title">-->
+    <!--        <ru.tn.shinglass.adapters.extendsPreferences.ExtendListPreference-->
+    <!--            android:key="warehouse_list"-->
+    <!--            android:summary="@string/warehouse_list_description"-->
+    <!--            android:title="@string/warehouse_title" />-->
+    <!--    </PreferenceCategory>-->
+
+    <!--    <PreferenceCategory app:title="@string/additional_settings_title">-->
+
+    <!--        <ListPreference-->
+    <!--            android:dialogIcon="@drawable/ic_baseline_volume_mute_24"-->
+    <!--            android:icon="@drawable/ic_baseline_volume_mute_24"-->
+    <!--            app:defaultValue="nothing"-->
+    <!--            app:entries="@array/response_when_scanning"-->
+    <!--            app:entryValues="@array/response_when_scanning_values"-->
+    <!--            app:key="response_when_scanning"-->
+    <!--            app:title="@string/response_scanning_title"-->
+    <!--            app:useSimpleSummaryProvider="true" />-->
+
+    <!--        &lt;!&ndash;        <SwitchPreferenceCompat&ndash;&gt;-->
+    <!--        &lt;!&ndash;            app:key="sync"&ndash;&gt;-->
+    <!--        &lt;!&ndash;            app:title="@string/sync_title" />&ndash;&gt;-->
+
+    <!--        &lt;!&ndash;        <SwitchPreferenceCompat&ndash;&gt;-->
+    <!--        &lt;!&ndash;            app:dependency="sync"&ndash;&gt;-->
+    <!--        &lt;!&ndash;            app:key="attachment"&ndash;&gt;-->
+    <!--        &lt;!&ndash;            app:summaryOff="@string/attachment_summary_off"&ndash;&gt;-->
+    <!--        &lt;!&ndash;            app:summaryOn="@string/attachment_summary_on"&ndash;&gt;-->
+    <!--        &lt;!&ndash;            app:title="@string/attachment_title" />&ndash;&gt;-->
+
+    <!--    </PreferenceCategory>-->
 
 </PreferenceScreen>

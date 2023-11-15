@@ -6,10 +6,8 @@ import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.AutoCompleteTextView
 import android.widget.TextView
 import android.widget.Toast
@@ -30,11 +28,11 @@ import ru.tn.shinglass.activity.utilites.AndroidUtils
 import ru.tn.shinglass.activity.utilites.SoundPlayer
 import ru.tn.shinglass.activity.utilites.SoundType
 import ru.tn.shinglass.activity.utilites.dialogs.DialogScreen
+import ru.tn.shinglass.activity.utilites.dialogs.HeadersDialogFragmentDirections
 import ru.tn.shinglass.activity.utilites.dialogs.OnDialogsInteractionListener
 import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
-import ru.tn.shinglass.adapters.DynamicListAdapter
-import ru.tn.shinglass.adapters.NomenclatureStocksAdapter
-import ru.tn.shinglass.adapters.OnStocksItemInteractionListener
+import ru.tn.shinglass.adapters.*
+import ru.tn.shinglass.auth.AppAuth
 import ru.tn.shinglass.databinding.FragmentStocksBinding
 import ru.tn.shinglass.models.*
 import ru.tn.shinglass.viewmodel.RetrofitViewModel
@@ -47,10 +45,12 @@ enum class ChipType(val tag: String) {
     GVZO_FILTER_CHIP("byGvzo"),
 }
 
+
 class StocksFragment : Fragment() {
 
     private val retrofitViewModel: RetrofitViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
+
     private var nomenclature: Nomenclature? = null
     private var gvzo: Gvzo? = null
     private var cell: Cell? = null
@@ -63,6 +63,40 @@ class StocksFragment : Fragment() {
 
     private var stocksAdapter =
         NomenclatureStocksAdapter(onStocksItemInteractionListener = getItemClickListener())
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        var position: NomenclatureStocks? = null
+        try {
+            position = stocksAdapter.getPosition()
+        } catch (e: Exception) {
+            Log.d("CONTEXT_MENU_ERROR", e.localizedMessage, e)
+            return super.onContextItemSelected(item)
+        }
+        when (item.itemId) {
+            IDM_PRINT_CELL -> {
+//                Toast.makeText(requireContext(), "Печать ${position?.cell}", Toast.LENGTH_SHORT)
+//                    .show()
+                val direction = BarcodePrintFragmentDirections.actionGlobalBarcodePrintFragment(
+                    cellArg = position?.cell,
+                    nomenclatureArg = null
+                )
+                findNavController().navigate(direction)
+            }
+            IDM_PRINT_ITEM -> {
+//                Toast.makeText(
+//                    requireContext(),
+//                    "Печать ${position?.nomenclature}",
+//                    Toast.LENGTH_SHORT
+//                ).show()
+                val direction = BarcodePrintFragmentDirections.actionGlobalBarcodePrintFragment(
+                    nomenclatureArg = position?.nomenclature,
+                    cellArg = null
+                )
+                findNavController().navigate(direction)
+            }
+        }
+        return super.onContextItemSelected(item)
+    }
 
     private fun getItemClickListener(): OnStocksItemInteractionListener =
         object : OnStocksItemInteractionListener {
@@ -320,6 +354,8 @@ class StocksFragment : Fragment() {
 
             groupTableItems.visibility = View.VISIBLE
             list.adapter = stocksAdapter
+
+            registerForContextMenu(list)
 
             backButton.setOnClickListener {
                 findNavController().navigateUp()

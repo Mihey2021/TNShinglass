@@ -9,6 +9,7 @@ import android.text.SpannableStringBuilder
 import android.text.TextWatcher
 import android.util.Log
 import android.view.*
+import android.widget.AutoCompleteTextView
 import androidx.fragment.app.Fragment
 import android.widget.CheckBox
 import android.widget.EditText
@@ -16,10 +17,6 @@ import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.textfield.TextInputLayout
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.SoundPlayer
 import ru.tn.shinglass.activity.utilites.SoundType
@@ -39,7 +36,6 @@ import ru.tn.shinglass.viewmodel.RetrofitViewModel
 import ru.tn.shinglass.viewmodel.SettingsViewModel
 import ru.tn.shinglass.viewmodel.TableScanFragmentViewModel
 import java.lang.Exception
-import kotlin.coroutines.EmptyCoroutineContext
 
 class DetailScanFragment : Fragment() {
 
@@ -61,6 +57,7 @@ class DetailScanFragment : Fragment() {
     private var usedLogistics: Boolean = false
     private lateinit var currentRecord: TableScan
     lateinit var tempScanRecord: TempScanRecord
+    private var warehouseGuid: String? = null
 
     lateinit var user1C: User1C
 
@@ -84,6 +81,7 @@ class DetailScanFragment : Fragment() {
         var barcode = arguments?.getString("barcode")
         var barcodeType = arguments?.getString("barcodeType")
         var editRecord = arguments?.getSerializable("editRecord") as TableScan
+        warehouseGuid = arguments?.getString("warehouseGuid")
 
 
         if (selectedOption.docType == DocType.TOIR_REQUIREMENT_INVOICE) {
@@ -99,6 +97,8 @@ class DetailScanFragment : Fragment() {
         tempScanRecord = TempScanRecord(editRecord)
         tempScanRecord.OperationId = selectedOption.id
         tempScanRecord.OperationTitle = selectedOption.docType?.title ?: ""
+        tempScanRecord.warehouseGuid =
+            DocumentHeaders.getWarehouse()?.warehouseGuid ?: ""//warehouseGuid ?: ""
 
         if (selectedOption.docType == DocType.BETWEEN_CELLS) {
             binding.cellTextInputLayout.hint = getString(R.string.header_cell)
@@ -127,6 +127,8 @@ class DetailScanFragment : Fragment() {
             } else {
                 retrofitViewModel.getWarehousesListByGuid(currentWarehouseGuid)
             }
+        } else {
+            usedLogistics = DocumentHeaders.getWarehouse()?.usesLogistics ?: false
         }
 
         //usedLogistics = settingsViewModel.getPreferenceByKey("usedLogistics", true) ?: false
@@ -188,13 +190,14 @@ class DetailScanFragment : Fragment() {
                 retrofitViewModel.getItemByBarcode(dataScanBarcode)
             } else {
                 if (binding.cellTextView.text.isNullOrBlank()) {
-                    binding.cellTextInputLayout.error = "Отсканируйте ячейку!"
+                    binding.cellTextInputLayout.error = getString(R.string.scan_the_cell)
                     return@observe
                 }
                 if (cellReceiverDialogBinding != null) {
-                    if (cellReceiverDialogBinding!!.cellReceiverTextView.text.isNullOrBlank()) {
+                    //if (cellReceiverDialogBinding!!.cellReceiverTextView.text.isNullOrBlank()) {
+                    if (tempScanRecord.cellReceiverGuid.isBlank()) {
                         cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error =
-                            "Отсканируйте ячейку!"
+                            getString(R.string.scan_the_cell)
                         return@observe
                     }
                 }
@@ -244,37 +247,8 @@ class DetailScanFragment : Fragment() {
                 SoundPlayer(requireContext(), SoundType.CELL_NOT_FOUND).playSound()
                 return@observe
             }
-            DialogScreen.getDialog()?.dismiss()
-            if (cellReceiverDialogBinding != null) {
-                if (it.guid == tempScanRecord.cellGuid) {
-                    cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error =
-                        getString(R.string.to_cell_equal_from_cell)//"Ячейка Куда не может совпадать с ячейкой Откуда"
-                    cellReceiverDialogBinding!!.cellReceiverTextView.setText("")
-                    return@observe
-                }
-                cellReceiverDialogBinding!!.cellReceiverTextView.setText(it.title)
-                cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error = null
-                cellReceiverDialogBinding!!.cellReceiverTextInputLayout.isErrorEnabled = false
-                tempScanRecord.cellReceiverGuid = it.guid
-                tempScanRecord.cellReceiverTitle = it.title
-            } else {
-                if (it.guid == tempScanRecord.cellReceiverGuid) {
-                    //binding.cellTextInputLayout.error = getString(R.string.to_cell_equal_from_cell)
-                    scannerIsBlocked = true
-
-                    DialogScreen.showDialog(requireContext(), DialogScreen.IDD_ERROR_SINGLE_BUTTON,
-                        title = getString(R.string.cell_text),
-                        message = getString(R.string.to_cell_equal_from_cell),
-                        isCancelable = false,
-                        positiveButtonTitle = getString(R.string.ok_text),
-                        onDialogsInteractionListener = object : OnDialogsInteractionListener {
-                            override fun onPositiveClickButton() {
-                                scannerIsBlocked = false
-                            }
-                        }
-                    )
-                    return@observe
-                }
+            checkCellReceiver(it)
+            if (cellReceiverDialogBinding == null) {
                 binding.cellTextView.setText(it.title)
                 binding.cellTextInputLayout.error = null
                 binding.cellTextInputLayout.isErrorEnabled = false
@@ -349,6 +323,36 @@ class DetailScanFragment : Fragment() {
             setWarehousesAdapter(binding)
         }
 
+        retrofitViewModel.cellListData.observe(viewLifecycleOwner) {
+            if (it.isEmpty()) return@observe
+
+            val cellArrayList: ArrayList<Cell> = arrayListOf()
+            cellArrayList.clear()
+            cellArrayList.add(Cell(getString(R.string.not_chosen_text), ""))
+
+            it.forEach { cell ->
+                cellArrayList.add(cell)
+            }
+
+            val cellAdapter = DynamicListAdapter<Cell>(
+                requireContext(),
+                R.layout.dynamic_prefs_layout,
+                cellArrayList
+            )
+
+            if (cellReceiverDialogBinding != null) {
+                cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error = null
+                cellReceiverDialogBinding!!.cellReceiverTextInputLayout.isErrorEnabled = false
+                (cellReceiverDialogBinding!!.cellReceiverTextView as? AutoCompleteTextView)?.setAdapter(
+                    cellAdapter
+                )
+                cellReceiverDialogBinding!!.cellReceiverTextView.showDropDown()
+            } else {
+                (binding.cellTextView as? AutoCompleteTextView)?.setAdapter(cellAdapter)
+                binding.cellTextView.showDropDown()
+            }
+        }
+
         retrofitViewModel.dataState.observe(viewLifecycleOwner) {
 //            if (it.loading) {
 //                if (dialog?.isShowing == false || dialog == null)
@@ -414,6 +418,64 @@ class DetailScanFragment : Fragment() {
         return binding.root
     }
 
+    private fun checkCellReceiver(cellData: Cell): Boolean {
+        DialogScreen.getDialog()?.dismiss()
+        var isError = false
+        if (cellReceiverDialogBinding != null) {
+            if (cellData.guid == tempScanRecord.cellGuid) {
+                cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error =
+                    getString(R.string.to_cell_equal_from_cell)//"Ячейка Куда не может совпадать с ячейкой Откуда"
+                cellReceiverDialogBinding!!.cellReceiverTextView.setText("")
+                tempScanRecord.cellReceiverGuid = ""
+                tempScanRecord.cellReceiverTitle = ""
+                isError = true
+                return isError
+            }
+            cellReceiverDialogBinding!!.cellReceiverTextView.setText(cellData.title)
+            cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error = null
+            cellReceiverDialogBinding!!.cellReceiverTextInputLayout.isErrorEnabled = false
+            tempScanRecord.cellReceiverGuid = cellData.guid
+            tempScanRecord.cellReceiverTitle = cellData.title
+            isError = false
+        } else {
+            if (cellData.guid == tempScanRecord.cellReceiverGuid) {
+                //binding.cellTextInputLayout.error = getString(R.string.to_cell_equal_from_cell)
+//                scannerIsBlocked = true
+//
+//                DialogScreen.showDialog(requireContext(), DialogScreen.IDD_ERROR_SINGLE_BUTTON,
+//                    title = getString(R.string.cell_text),
+//                    message = getString(R.string.to_cell_equal_from_cell),
+//                    isCancelable = false,
+//                    positiveButtonTitle = getString(R.string.ok_text),
+//                    onDialogsInteractionListener = object : OnDialogsInteractionListener {
+//                        override fun onPositiveClickButton() {
+//                            scannerIsBlocked = false
+//                        }
+//                    }
+//                )
+                isError = true
+                return isError
+            }
+
+//            val binding = FragmentDetailScanBinding.inflate(LayoutInflater.from(requireContext()))
+//            binding.cellTextView.setText(cellData.title)
+//            binding.cellTextInputLayout.error = null
+//            binding.cellTextInputLayout.isErrorEnabled = false
+////                println("tableFromExternalDocument.isNotEmpty() = ${tableFromExternalDocument.isNotEmpty()}")
+////                println("tableFromExternalDocument.isEmpty() = ${tableFromExternalDocument.isEmpty()}")
+//            tempScanRecord.replacement =
+//                (tempScanRecord.id != 0L && cellData.guid != tempScanRecord.cellGuid && tempScanRecord.cellGuid.isNotEmpty())
+//            if (tempScanRecord.replacement) SoundPlayer(
+//                requireContext(),
+//                SoundType.CELL_CHANGED
+//            ).playSound()
+//            tempScanRecord.cellGuid = cellData.guid
+//            tempScanRecord.cellTitle = cellData.title
+        }
+
+        return isError
+    }
+
     private fun initViewsInScreen(
         binding: FragmentDetailScanBinding,
         editRecord: TableScan,
@@ -442,6 +504,8 @@ class DetailScanFragment : Fragment() {
 
             cellReceiverTextInputLayout.setEndIconOnClickListener {
                 cellReceiverTextView.setText("")
+                tempScanRecord.cellReceiverGuid = ""
+                tempScanRecord.cellReceiverTitle = ""
                 binding.buttonApply.setText(R.string.next)
             }
 
@@ -522,6 +586,24 @@ class DetailScanFragment : Fragment() {
 
 
             binding.cellTextView.setText(editRecord.cellTitle)
+
+            setTextInputElementProperties(
+                element = cellTextView,
+                elementLayout = cellTextInputLayout
+            )
+
+            if (!cellTextView.text.isNullOrBlank()) {
+                cellTextView.inputType = android.text.InputType.TYPE_NULL
+                cellTextInputLayout.endIconDrawable =
+                    androidx.appcompat.content.res.AppCompatResources.getDrawable(
+                        requireContext(),
+                        R.drawable.ic_baseline_clear_24
+                    )
+                cellTextInputLayout.endIconContentDescription =
+                    getString(R.string.clear_text)
+                cellTextInputLayout.error = null
+                ru.tn.shinglass.activity.utilites.AndroidUtils.hideKeyboard(binding.root)
+            }
             binding.cellReceiverTextView.setText(editRecord.cellReceiverTitle)
             binding.itemTextView.setText(editRecord.ItemTitle)
 
@@ -546,6 +628,86 @@ class DetailScanFragment : Fragment() {
             buttonApply.setOnClickListener {
                 checkFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
             }
+        }
+    }
+
+    private fun setTextInputElementProperties(
+        element: AutoCompleteTextView,
+        elementLayout: TextInputLayout,
+        receivedCell: Boolean = false
+    ) {
+        element.setOnClickListener {
+            if (elementLayout.error == null) return@setOnClickListener
+            elementLayout.error = null
+            element.text = null
+            element.inputType = android.text.InputType.TYPE_CLASS_TEXT
+            elementLayout.endIconMode = TextInputLayout.END_ICON_CUSTOM
+            elementLayout.endIconDrawable =
+                androidx.appcompat.content.res.AppCompatResources.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_baseline_search_24
+                )
+            elementLayout.endIconContentDescription =
+                getString(R.string.find_text)
+        }
+
+        elementLayout.setEndIconOnClickListener {
+            ru.tn.shinglass.activity.utilites.AndroidUtils.hideKeyboard(element)
+            if (element.inputType != android.text.InputType.TYPE_NULL) {
+                retrofitViewModel.getCellsList(
+                    warehouseGuid = tempScanRecord.warehouseGuid ?: "",
+                    partNameCode = element.text.toString()
+                )
+            } else {
+                DocumentHeaders.setEmployee(null)
+                element.text = null
+                elementLayout.helperText = null
+                if (!receivedCell) {
+                    tempScanRecord.cellGuid = ""
+                    tempScanRecord.cellTitle = ""
+                } else {
+                    tempScanRecord.cellReceiverGuid = ""
+                    tempScanRecord.cellReceiverTitle = ""
+                }
+                element.inputType = android.text.InputType.TYPE_CLASS_TEXT
+                elementLayout.endIconMode = TextInputLayout.END_ICON_CUSTOM
+                elementLayout.endIconDrawable =
+                    androidx.appcompat.content.res.AppCompatResources.getDrawable(
+                        requireContext(),
+                        R.drawable.ic_baseline_search_24
+                    )
+                elementLayout.endIconContentDescription =
+                    getString(R.string.find_text)
+            }
+        }
+
+        element.setOnItemClickListener { adapterView, _, position, _ ->
+            val cell = adapterView.getItemAtPosition(position) as Cell
+            tempScanRecord.replacement =
+                (tempScanRecord.id != 0L && cell.guid != tempScanRecord.cellGuid && tempScanRecord.cellGuid.isNotEmpty())
+            if (tempScanRecord.replacement) SoundPlayer(
+                requireContext(),
+                SoundType.CELL_CHANGED
+            ).playSound()
+            if (!receivedCell) {
+                tempScanRecord.cellGuid = cell.guid
+                tempScanRecord.cellTitle = cell.title
+            } else {
+                tempScanRecord.cellReceiverGuid = cell.guid
+                tempScanRecord.cellReceiverTitle = cell.title
+            }
+            element.setText(cell.title)
+            element.inputType = android.text.InputType.TYPE_NULL
+            elementLayout.endIconDrawable =
+                androidx.appcompat.content.res.AppCompatResources.getDrawable(
+                    requireContext(),
+                    R.drawable.ic_baseline_clear_24
+                )
+            elementLayout.endIconContentDescription =
+                getString(R.string.clear_text)
+            elementLayout.error = null
+            val binding = FragmentDetailScanBinding.inflate(LayoutInflater.from(requireContext()))
+            ru.tn.shinglass.activity.utilites.AndroidUtils.hideKeyboard(binding.root)
         }
     }
 
@@ -801,7 +963,8 @@ class DetailScanFragment : Fragment() {
 
         detailScanFields?.forEach {
             if (it == DetailScanFields.CELL) {
-                fieldValueIsNotCorrect = binding.cellTextView.text.isNullOrBlank()
+//                fieldValueIsNotCorrect = binding.cellTextView.text.isNullOrBlank()
+                fieldValueIsNotCorrect = tempScanRecord.cellGuid.isBlank()
                 isError = (fieldValueIsNotCorrect || isError)
                 if (isError && fieldValueIsNotCorrect) {
                     binding.cellTextInputLayout.error = "Ячейка не отсканирована!"
@@ -839,7 +1002,14 @@ class DetailScanFragment : Fragment() {
             }
 
             if (it == DetailScanFields.CELL_RECEIVER) {
-                fieldValueIsNotCorrect = binding.cellReceiverTextView.text.isNullOrBlank()
+                //fieldValueIsNotCorrect = binding.cellReceiverTextView.text.isNullOrBlank()
+                fieldValueIsNotCorrect =
+                    tempScanRecord.cellReceiverGuid.isBlank() || checkCellReceiver(
+                        Cell(
+                            title = tempScanRecord.cellTitle,
+                            guid = tempScanRecord.cellGuid
+                        )
+                    )
                 needShowCellReceiverDialog =
                     (fieldValueIsNotCorrect || isError || needShowCellReceiverDialog)
                 if (needShowCellReceiverDialog) {
@@ -853,6 +1023,24 @@ class DetailScanFragment : Fragment() {
             if (cellReceiverDialogBinding == null) {
                 binding.buttonApply.setText(R.string.next)
                 cellReceiverDialogBinding = getCellReceiverDialogBinding()
+                setTextInputElementProperties(
+                    cellReceiverDialogBinding!!.cellReceiverTextView,
+                    cellReceiverDialogBinding!!.cellReceiverTextInputLayout,
+                    receivedCell = true
+                )
+                if (tempScanRecord.cellReceiverGuid == tempScanRecord.cellGuid)
+                    cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error =
+                        getString(R.string.to_cell_equal_from_cell)
+                if (tempScanRecord.cellReceiverGuid.isBlank())
+                    cellReceiverDialogBinding!!.cellReceiverTextInputLayout.error =
+                        getString((R.string.scan_the_cell))
+//                val needOpenCellReceiverDialog = checkCellReceiver(
+//                    Cell(
+//                        title = tempScanRecord.cellTitle,
+//                        guid = tempScanRecord.cellGuid
+//                    )
+//                )
+//                if (needOpenCellReceiverDialog) {
                 val cellReceiverDialog = DialogScreen.showDialog(
                     requireContext(),
                     DialogScreen.IDD_INPUT,
@@ -860,19 +1048,21 @@ class DetailScanFragment : Fragment() {
                     customView = cellReceiverDialogBinding!!.root,
                     positiveButtonTitle = getString(R.string.save_text),
                 )
-                cellReceiverDialog.getButton(DialogInterface.BUTTON_POSITIVE)?.setOnClickListener {
-                    binding.cellReceiverTextView.setText(
-                        cellReceiverDialogBinding?.cellReceiverTextView?.text ?: ""
-                    )
-                    if (binding.cellReceiverTextView.text.isNullOrBlank())
-                        binding.buttonApply.setText(R.string.next)
-                    else
-                        binding.buttonApply.setText(R.string.apply_text)
+                cellReceiverDialog.getButton(DialogInterface.BUTTON_POSITIVE)
+                    ?.setOnClickListener {
+                        binding.cellReceiverTextView.setText(
+                            cellReceiverDialogBinding?.cellReceiverTextView?.text ?: ""
+                        )
+                        if (binding.cellReceiverTextView.text.isNullOrBlank())
+                            binding.buttonApply.setText(R.string.next)
+                        else
+                            binding.buttonApply.setText(R.string.apply_text)
 
-                    cellReceiverDialogBinding = null
-                    cellReceiverDialog.dismiss()
-                }
+                        cellReceiverDialogBinding = null
+                        cellReceiverDialog.dismiss()
+                    }
             }
+            //}
             return
         }
 

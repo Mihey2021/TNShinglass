@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
     <item
         android:id="@+id/menu_settings"
         android:icon="@drawable/ic_baseline_settings_24"
@@ -18,6 +19,14 @@
         android:icon="@drawable/ic_baseline_filter_center_focus_24"
         android:title="@string/barcode_parsing_tn"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_print_barcode"
+        android:icon="@drawable/ic_baseline_print_24"
+        android:title="@string/print_barcode_text"
+        app:showAsAction="ifRoom"
+        android:visible="false"
+        tools:visible="true"/>
 
     <item
         android:id="@+id/menu_exit"

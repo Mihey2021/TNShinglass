@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Склад ТМЦ (Шинглас)</string>
+    <string name="app_name">Склад ТМЦ</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY CONTENT</string>
     <string name="password">Пароль</string>
@@ -144,4 +144,39 @@
     <string name="current_cell_text">Текущая ячейка</string>
     <string name="blank_cell">---</string>
     <string name="enter_part_of_employee_name">Пожалуйста, введите часть ФИО сотрудника</string>
+    <string name="scan_the_cell">Отсканируйте ячейку!</string>
+    <string name="print_text">Печать</string>
+    <string name="print_barcode_text">Распечатать штрихкод</string>
+    <string name="ean13_text">EAN13</string>
+    <string name="qr_text">QR</string>
+    <string name="code128_text">CODE 128</string>
+    <string name="messages_header">Сообщения</string>
+    <string name="sync_header">Синхронизировать</string>
+    <string name="signature_title">Подпись</string>
+    <string name="reply_title">Действие по умолчанию</string>
+    <string name="sync_title">Синхронизировать электронную почту периодически</string>
+    <string name="attachment_title">Загружать входящие вложения</string>
+    <string name="attachment_summary_on">Автоматически загружать вложения для входящих писем</string>
+    <string name="attachment_summary_off">Загружать вложения только по запросу вручную</string>
+    <string name="printer_settings">Настройки принтера</string>
+    <string name="applicaton_settings">Настройки приложения</string>
+    <string name="use_system_printer">Использовать системный принтер</string>
+    <string name="use_android_print_service">Использовать службу печати Android</string>
+    <string name="set_printer_settings_manually">Задать настройки принтера вручную</string>
+    <string name="manual_setting">Ручная настройка</string>
+    <string name="tsc_family_printer">Принтер семейства TSC</string>
+    <string name="printer_model">Модель принтера</string>
+    <string name="another">Другой</string>
+    <string name="automatic_or_manual">Автоматически/Вручную</string>
+    <string name="label_width_mm">Ширина этикетки, мм</string>
+    <string name="label_height_mm">Высота этикетки, мм</string>
+    <string name="printing_in_process">Идет печать</string>
+    <string name="value_text">Значение</string>
+    <string name="printer_ip_address">IP адрес</string>
+    <string name="type_of_printer_is_not_supported_yet">Данный тип принтеров пока не поддердивается</string>
+    <string name="document_is_closed_in_1C">Документ закрыт в 1С, отправка данных невозможна!</string>
+    <string name="document_has_been_updated">Документ обновился</string>
+    <string name="undefined_value">&lt;?&gt;</string>
+    <string name="print_cell_barcode">Распечатать штрихкод ячейки</string>
+    <string name="print_item_barcode">Распечатать штрихкод номенклатуры</string>
 </resources>

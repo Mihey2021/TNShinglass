@@ -7,6 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
+import androidx.core.view.forEach
+import androidx.core.view.get
+import androidx.core.view.isVisible
 import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
 import ru.tn.shinglass.R
@@ -32,7 +35,8 @@ class MainMenuFragment : Fragment() {
         //binding.operationTextView.text = optionsViewModel.getSelectedOption()?.title ?: "[ UNDEFINED ]"
 
         binding.userDescriptionText.setOnClickListener {
-            PopupMenu(it.context, it).apply {
+            val popupMenu = PopupMenu(it.context, it)
+            popupMenu.apply {
                 inflate(R.menu.desktop_menu)
                 setOnMenuItemClickListener { menuItem ->
                     when (menuItem.itemId) {
@@ -56,10 +60,19 @@ class MainMenuFragment : Fragment() {
                             findNavController().navigate(R.id.action_global_stocksFragment)
                             true
                         }
+                        R.id.menu_print_barcode -> {
+                            findNavController().navigate(R.id.action_global_barcodePrintFragment)
+                            true
+                        }
                         else -> false
                     }
                 }
-            }.show()
+            }
+            //popupMenu.menu[R.id.menu_print_barcode].isVisible = true
+            popupMenu.menu.forEach { menuItem ->
+                if (menuItem.itemId == R.id.menu_print_barcode) menuItem.isVisible = true
+            }
+            popupMenu.show()
         }
 
 //        requireParentFragment().setFragmentResultListener("requestUserData") { requestKey, bundle ->
@@ -71,12 +84,13 @@ class MainMenuFragment : Fragment() {
 //            }
 //        }
 
-        AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) {authState ->
+        AppAuth.getInstance().authStateFlow.observe(viewLifecycleOwner) { authState ->
             val authData = authState.user1C.getUser1C()
-            if ( authData.isBlank() ) {
+            if (authData.isBlank()) {
                 findNavController().navigate(R.id.authFragment)
             } else {
-                binding.userDescriptionText.text = authState.user1C.getUser1C() ?: "[Не авторизован]"
+                binding.userDescriptionText.text =
+                    authState.user1C.getUser1C() ?: "[Не авторизован]"
             }
         }
 
