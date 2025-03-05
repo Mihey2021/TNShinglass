@@ -14,6 +14,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ru.tn.shinglass.R
 import ru.tn.shinglass.activity.utilites.SoundPlayer
 import ru.tn.shinglass.activity.utilites.SoundType
+import ru.tn.shinglass.activity.utilites.scanner.BarcodeScannerReceiver
 import ru.tn.shinglass.adapters.DynamicListAdapter
 import ru.tn.shinglass.models.Barcode
 import kotlin.Exception
@@ -108,6 +109,7 @@ object DialogScreen {
             3 -> {
                 with(alertDialog) {
                     getDialog(3)?.dismiss()
+                    //BarcodeScannerReceiver.setEnabled(true)
                     setView(R.layout.progress_layout)
                     setCancelable(isCancelable)
                 }

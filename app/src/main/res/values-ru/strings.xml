@@ -179,4 +179,9 @@
     <string name="undefined_value">&lt;?&gt;</string>
     <string name="print_cell_barcode">Распечатать штрихкод ячейки</string>
     <string name="print_item_barcode">Распечатать штрихкод номенклатуры</string>
+    <string name="residue_control">Контроль остатков</string>
+    <string name="no_remaining_balance">Нет остатка по</string>
+    <string name="requested_text">Запрошено</string>
+    <string name="available_in_stock_text">Доступно на складе</string>
+    <string name="available_in_cell_text">Доступно в ячейке</string>
 </resources>

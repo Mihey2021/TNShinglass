@@ -150,6 +150,10 @@ class TableScanFragment : Fragment() {
                 binding.externalDocumentTextView.visibility = View.VISIBLE
 
             }
+
+            if (selectedOption.subOption == SubOptionType.TOIR_REPAIR_ESTIMATE && DocumentHeaders.getPhysicalPerson() == null) {
+                retrofitViewModel.getPhysicalPersonFormUser(user1C.getUserGUID())
+            }
         }
 
         binding.externalDocumentTextView.setOnClickListener {
@@ -324,6 +328,13 @@ class TableScanFragment : Fragment() {
                 }
                 else -> false
             }
+        }
+
+        retrofitViewModel.physicalPerson.observe(viewLifecycleOwner) {
+            if (DocumentHeaders.getPhysicalPerson()?.physicalPersonGuid?.isEmpty() == false) return@observe
+            fillResponsible(
+                it.physicalPersonGuid
+            )
         }
 
         viewModel.docCreated.observe(viewLifecycleOwner) {
@@ -892,12 +903,11 @@ class TableScanFragment : Fragment() {
     }
 
     private fun fillResponsible(
-        responsibleGuid: String,
-        physicalPersonTextView: AutoCompleteTextView
+        responsibleGuid: String
     ) {
         val physicalPerson = viewModel.getPhysicalPersonByGuid(responsibleGuid)
         DocumentHeaders.setPhysicalPerson(physicalPerson)
-        physicalPersonTextView.setText(physicalPerson?.physicalPersonFio ?: "")
+        //physicalPersonTextView.setText(physicalPerson?.physicalPersonFio ?: "")
     }
 
 

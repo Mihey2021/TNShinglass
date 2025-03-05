@@ -58,6 +58,7 @@ class DetailScanFragment : Fragment() {
     private lateinit var currentRecord: TableScan
     lateinit var tempScanRecord: TempScanRecord
     private var warehouseGuid: String? = null
+    private var firstOpen: Boolean = false
 
     lateinit var user1C: User1C
 
@@ -77,6 +78,8 @@ class DetailScanFragment : Fragment() {
             user1C = authState.user1C
             if (user1C.getUserGUID().isEmpty()) findNavController().navigate(R.id.authFragment)
         }
+
+        firstOpen = true
 
         var barcode = arguments?.getString("barcode")
         var barcodeType = arguments?.getString("barcodeType")
@@ -139,6 +142,37 @@ class DetailScanFragment : Fragment() {
             if (it.isNullOrEmpty()) return@observe
             usedLogistics = it.firstOrNull()?.usesLogistics ?: false
             initViewsInScreen(binding, editRecord, selectedOption)
+        }
+
+        retrofitViewModel.listNomenclatureStocks.observe(viewLifecycleOwner) {
+            if (firstOpen) return@observe
+
+            //В свободном перемещении если перемещаем из ниоткуда в ячейку, операциях приемки и инвентаризации остаток смотреть бессмысленно
+            if (selectedOption.option == OptionType.ACCEPTANCE || selectedOption.option == OptionType.INVENTORY || selectedOption.docType == DocType.FREE_MOVEMENT) {
+                checkFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
+                return@observe
+            }
+
+            if (tempScanRecord.warehouseGuid.isNullOrBlank() || tempScanRecord.ItemGUID.isNullOrBlank() || tempScanRecord.cellGuid.isNullOrBlank()) return@observe
+
+            val currentUserCount = try {
+                (binding.countEditText.text.toString()).toDouble()
+            } catch (e: Exception) {
+                0.0
+            }
+
+            if (it.isEmpty()) {
+                showErrorStocksDialog(tempScanRecord, 0.0, currentUserCount)
+                return@observe
+            } else
+            {
+                if(it[0].totalCount < currentUserCount) {
+                    showErrorStocksDialog(tempScanRecord, it[0].totalCount, currentUserCount)
+                    return@observe
+                }
+                checkFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
+            }
+            return@observe
         }
 
         BarcodeScannerReceiver.dataScan.observe(viewLifecycleOwner) { dataScanTriple ->
@@ -418,6 +452,21 @@ class DetailScanFragment : Fragment() {
         return binding.root
     }
 
+    private fun showErrorStocksDialog(tempScanRecord: TempScanRecord, availableInCell: Double, currentUserCount: Double) {
+        DialogScreen.showDialog(
+            requireContext(),
+            DialogScreen.IDD_ERROR_SINGLE_BUTTON,
+            title = getString(R.string.residue_control),
+            message = "${getString(R.string.no_remaining_balance)} ${tempScanRecord.ItemTitle} \n${getString(R.string.cell_text)} ${tempScanRecord.cellTitle}\n${getString(R.string.requested_text)}: ${currentUserCount.toString()}. ${getString(R.string.available_in_cell_text)}: ${availableInCell.toString()}",
+            positiveButtonTitle = getString(R.string.ok_text),
+            onDialogsInteractionListener = object : OnDialogsInteractionListener {
+                override fun onPositiveClickButton() {
+                    BarcodeScannerReceiver.setEnabled(true)
+                }
+            }
+        )
+    }
+
     private fun checkCellReceiver(cellData: Cell): Boolean {
         DialogScreen.getDialog()?.dismiss()
         var isError = false
@@ -626,9 +675,15 @@ class DetailScanFragment : Fragment() {
 //            }
 
             buttonApply.setOnClickListener {
-                checkFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
+                //checkFillingAndSave(tempScanRecord, user1C, selectedOption, binding)
+                firstOpen = false
+                checkStocks(tempScanRecord)
             }
         }
+    }
+
+    private fun checkStocks(tempScanRecord: TempScanRecord) {
+        retrofitViewModel.getNomenclatureStocks(tempScanRecord.warehouseGuid, tempScanRecord.ItemGUID, tempScanRecord.cellGuid)
     }
 
     private fun setTextInputElementProperties(

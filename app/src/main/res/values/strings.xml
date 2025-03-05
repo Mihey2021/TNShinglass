@@ -196,4 +196,9 @@
     <string name="undefined_value">&lt;?&gt;</string>
     <string name="print_cell_barcode">Print cell barcode</string>
     <string name="print_item_barcode">Print item barcode</string>
+    <string name="residue_control">Residue control</string>
+    <string name="no_remaining_balance">No remaining balance</string>
+    <string name="requested_text">Requested</string>
+    <string name="available_in_stock_text">Available in stock</string>
+    <string name="available_in_cell_text">Available in cell</string>
 </resources>

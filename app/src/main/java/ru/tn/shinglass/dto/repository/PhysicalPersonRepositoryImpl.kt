@@ -29,6 +29,7 @@ class PhysicalPersonRepositoryImpl(private val dao: PhysicalPersonDao) : Physica
                     throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
                 }
                 val body = response.body() ?: throw ApiServiceError(response.errorBody()?.string() ?: response.message()) //ApiError(response.code(), response.message())
+                dao.clearAllPhysicalPerson()
                 dao.savePhysicalPerson(body.toEntity())
             } else {
                 throw ApiServiceError("API service not ready")

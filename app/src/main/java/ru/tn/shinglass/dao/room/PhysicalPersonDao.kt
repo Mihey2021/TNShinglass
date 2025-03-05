@@ -2,6 +2,7 @@ package ru.tn.shinglass.dao.room
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -18,4 +19,8 @@ interface PhysicalPersonDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun savePhysicalPerson(physicalPerson: List<PhysicalPersonEntity>)
+
+    @Delete
+    fun clearAllPhysicalPerson()
+
 }
