@@ -131,7 +131,8 @@ class TableScanFragment : Fragment() {
             }
             if (selectedOption.subOption?.headerFields?.contains(HeaderFields.PHYSICAL_PERSON) == true) {
                 if (DocumentHeaders.getPhysicalPerson() == null)
-                    viewModel.getAllPhysicalPerson()
+                viewModel.reloadAllPhysicalPerson()
+                //viewModel.getAllPhysicalPerson()
             }
             if (selectedOption.subOption?.headerFields?.contains(HeaderFields.EMPLOYEE) == true) {
                 if (DocumentHeaders.getEmployee() == null) {

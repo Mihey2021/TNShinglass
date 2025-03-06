@@ -164,6 +164,22 @@ class TableScanFragmentViewModel(application: Application) : AndroidViewModel(ap
     fun updateRecordUpload(ownerGuid: String, operationId: Long) =
         repositoryTableScan.updateRecordUpload(ownerGuid, operationId)
 
+    fun reloadAllPhysicalPerson() {
+        viewModelScope.launch {
+            try {
+                _dataState.value = ModelState(loading = true)
+                repositoryPhysicalPerson.getPhysicalPersonList()
+                _dataState.value = ModelState()
+            } catch (e: Exception) {
+                _dataState.value = ModelState(
+                    error = true,
+                    errorMessage = e.message.toString(),
+                    requestName = "reloadAllPhysicalPerson"
+                )
+            }
+        }
+    }
+
     fun getAllPhysicalPerson() {
         viewModelScope.launch {
             try {

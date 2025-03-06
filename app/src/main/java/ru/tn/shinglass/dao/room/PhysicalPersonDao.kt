@@ -20,7 +20,7 @@ interface PhysicalPersonDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun savePhysicalPerson(physicalPerson: List<PhysicalPersonEntity>)
 
-    @Delete
+    @Query("DELETE FROM PhysicalPersonEntity")
     fun clearAllPhysicalPerson()
 
 }
